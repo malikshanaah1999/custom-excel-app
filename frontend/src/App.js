@@ -1,5 +1,6 @@
 import React from 'react';
-import CustomSpreadsheet from './components/CustomSpreadsheet';
+// src/App.js
+import CustomSpreadsheet from './components/Spreadsheet/CustomSpreadsheet';
 
 function App() {
     return (
