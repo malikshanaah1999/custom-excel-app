@@ -15,6 +15,7 @@ const useSpreadsheetData = (showNotification) => {
     const [hasChanges, setHasChanges] = useState(false);
     const [debugInfo, setDebugInfo] = useState(null);
     const [selectedRow, setSelectedRow] = useState(null);
+    const [lastAutoSave, setLastAutoSave] = useState(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -52,14 +53,17 @@ const useSpreadsheetData = (showNotification) => {
                 showNotification('تم حفظ البيانات بنجاح');
                 setHasChanges(false);
                 
+                // Update last auto-save time
+                const now = new Date();
+                setLastAutoSave(now);
+                
                 // Update debug info
-                if (result.id) {
-                    setDebugInfo(prev => ({
-                        ...prev,
-                        lastSavedId: result.id,
-                        timestamp: new Date().toLocaleString()
-                    }));
-                }
+                setDebugInfo(prev => ({
+                    ...prev,
+                    lastSavedId: result.id,
+                    timestamp: now.toLocaleString(),
+                    lastAutoSave: now // Add this to debug info
+                }));
             }
         } catch (error) {
             console.error('Error saving data:', error);
@@ -69,62 +73,118 @@ const useSpreadsheetData = (showNotification) => {
         }
     }, [data, hasChanges, showNotification]);
 
-    const deleteRow = useCallback(async (rowIndex) => {
-        try {
-            setIsLoading(true);
+    // src/components/Spreadsheet/hooks/useSpreadsheetData.js
 
-            if (rowIndex < 0 || rowIndex >= data.length) {
-                showNotification('خطأ في تحديد السجل', 'error');
-                return;
-            }
+const deleteRow = useCallback(async (rowIndex) => {
+    try {
+        setIsLoading(true);
 
-            const isCurrentRowEmpty = isRowEmpty(data[rowIndex]);
+        // Validate row index
+        if (rowIndex < 0 || rowIndex >= data.length) {
+            showNotification('خطأ في تحديد السجل', 'error');
+            return;
+        }
 
-            // Handle last row case
-            if (data.length === 1 && isCurrentRowEmpty) {
-                showNotification('يجب أن تحتوي الورقة على سجل واحد على الأقل', 'warning');
-                return;
-            }
+        const isCurrentRowEmpty = !data[rowIndex] || !data[rowIndex].some(cell => (cell ?? '').toString().trim() !== '');
 
-            // If it's the last row with data, delete from backend first
-            if (data.length === 1 && !isCurrentRowEmpty) {
-                const result = await deleteSpreadsheetRow(rowIndex);
-                if (result.status === 'success') {
-                    setData([createEmptyRow()]);
+        // Check if it's the last row AND it's empty
+        if (data.length === 1 && isCurrentRowEmpty) {
+            showNotification('يجب أن تحتوي الورقة على سجل واحد على الأقل', 'warning');
+            return;
+        }
+
+        // Handle UI-only deletion for auto-filled or empty rows
+        if ((isCurrentRowEmpty && data.length > 1) || !data[rowIndex][0]) {
+            setData(prev => {
+                const newData = [...prev];
+                newData.splice(rowIndex, 1);
+                return newData.length === 0 ? [Array(17).fill('')] : newData;
+            });
+            showNotification('تم حذف السجل بنجاح');
+            setSelectedRow(null);
+            setHasChanges(true);
+            return;
+        }
+
+        // If it's the last row with data, handle both UI and backend
+        if (data.length === 1 && !isCurrentRowEmpty) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/delete-row/${rowIndex}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    setData([Array(17).fill('')]);
                     showNotification('تم حذف بيانات السجل');
+                    setSelectedRow(null);
                     setHasChanges(true);
+                } else {
+                    throw new Error('Failed to delete record');
                 }
-                return;
+            } catch (error) {
+                console.error('Error deleting last record:', error);
+                // Even if backend fails, still clear the UI for better UX
+                setData([Array(17).fill('')]);
+                showNotification('تم حذف السجل محلياً', 'warning');
             }
+            return;
+        }
 
-            // Handle empty row deletion (UI only)
-            if (isCurrentRowEmpty && data.length > 1) {
+        // Handle regular deletion with backend sync
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/delete-row/${rowIndex}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                let newData = Array.isArray(result.data) ? result.data : [];
+                
+                if (newData.length === 0) {
+                    newData = [Array(17).fill('')];
+                }
+
+                // Clean the data
+                newData = newData.map(row => {
+                    if (!Array.isArray(row)) return Array(17).fill('');
+                    const cleanRow = row.map(cell => (cell ?? '').toString().trim());
+                    while (cleanRow.length < 17) cleanRow.push('');
+                    return cleanRow.slice(0, 17);
+                });
+
+                setData(newData);
+                showNotification('تم حذف السجل بنجاح');
+                setHasChanges(true);
+            } else {
+                // If backend delete fails, still remove from UI
                 setData(prev => {
                     const newData = [...prev];
                     newData.splice(rowIndex, 1);
-                    return newData;
+                    return newData.length === 0 ? [Array(17).fill('')] : newData;
                 });
-                showNotification('تم حذف السجل بنجاح');
-                setHasChanges(true);
-                return;
-            }
-
-            // Handle regular row deletion
-            const result = await deleteSpreadsheetRow(rowIndex);
-            if (result.status === 'success') {
-                const newData = cleanData(result.data);
-                setData(newData.length > 0 ? newData : [createEmptyRow()]);
-                showNotification('تم حذف السجل بنجاح');
-                setHasChanges(true);
+                showNotification('تم حذف السجل محلياً', 'warning');
             }
         } catch (error) {
-            console.error('Error deleting row:', error);
-            showNotification('فشل حذف السجل', 'error');
-        } finally {
-            setIsLoading(false);
-            setSelectedRow(null);
+            console.error('Error deleting record:', error);
+            // Still remove from UI even if backend fails
+            setData(prev => {
+                const newData = [...prev];
+                newData.splice(rowIndex, 1);
+                return newData.length === 0 ? [Array(17).fill('')] : newData;
+            });
+            showNotification('تم حذف السجل محلياً', 'warning');
         }
-    }, [data, showNotification]);
+    } finally {
+        setIsLoading(false);
+        setSelectedRow(null);
+    }
+}, [data, setData, setSelectedRow, setHasChanges, showNotification]);
 
     const addNewRow = useCallback(() => {
         setData(prev => [...prev, createEmptyRow()]);
@@ -149,16 +209,17 @@ const useSpreadsheetData = (showNotification) => {
 
     return {
         data,
+        setData,
         isLoading,
         isSaving,
-        hasChanges,
         debugInfo,
         selectedRow,
         setSelectedRow,
         setHasChanges,
         saveData,
         deleteRow,
-        addNewRow
+        addNewRow,
+        lastAutoSave
     };
 };
 

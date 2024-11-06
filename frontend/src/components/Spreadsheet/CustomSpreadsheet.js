@@ -14,13 +14,15 @@ import DebugInfo from '../Spreadsheet/components/DebugInfo';
 import LoadingSpinner from '../Spreadsheet/components/LoadingSpinner';
 import Notification from '../Spreadsheet/components/Notification';
 import SpreadsheetToolbar from '../Spreadsheet/components/SpreadsheetToolbar';
-
+import GenerateButton from './components/GenerateButton';
+import useExcelGeneration from './hooks/useExcelGeneration';
 const CustomSpreadsheet = () => {
     const { notification, showNotification } = useNotification();
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    
+    const { isGenerating, handleGenerate } = useExcelGeneration(showNotification);
     const {
         data,
+        setData,  // Add this line
         isLoading,
         isSaving,
         debugInfo,
@@ -34,9 +36,11 @@ const CustomSpreadsheet = () => {
 
     const hotSettings = useHotSettings({
         data,
+        setData,  // Now we can pass it
         setSelectedRow,
         setHasChanges,
-        onDeleteRow: () => setShowDeleteConfirm(true)
+        onDeleteRow: () => setShowDeleteConfirm(true),
+        showNotification
     });
 
     if (isLoading) {
@@ -73,7 +77,46 @@ const CustomSpreadsheet = () => {
                     }}>
                         Odoo Task Automation - Custom Spreadsheet
                     </h2>
-
+                    <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        backgroundColor: '#f0f9ff',
+        padding: '6px 12px',
+        borderRadius: '6px',
+        border: '1px solid #bae6fd',
+        fontSize: '14px',
+        color: '#0369a1',
+        marginRight: '16px'
+    }}>
+        <div className="flex items-center gap-2">
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+            >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            <span>آخر حفظ تلقائي: {
+                debugInfo?.lastAutoSave 
+                    ? new Date(debugInfo.lastAutoSave).toLocaleTimeString('ar-SA', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    })
+                    : 'لم يتم الحفظ بعد'
+            }</span>
+        </div>
+    </div>
                     <button 
                         onClick={() => saveData(true)}
                         disabled={isSaving}
@@ -241,7 +284,10 @@ const CustomSpreadsheet = () => {
                     </div>
                 </div>
             )}
-
+<GenerateButton 
+        onClick={() => handleGenerate(data)}
+        isGenerating={isGenerating}
+    />
             <Notification notification={notification} />
         </div>
     );
