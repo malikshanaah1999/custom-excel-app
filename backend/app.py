@@ -9,6 +9,7 @@ import traceback
 from logging.handlers import RotatingFileHandler
 import os
 
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ file_handler.setFormatter(logging.Formatter(
 file_handler.setLevel(logging.INFO)
 logger.addHandler(file_handler)
 
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -30,7 +32,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 # Database Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:TiKelam1999#@localhost/custom_excel_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JSON_ENSURE_ASCII'] = False  # Ensures proper handling of Arabic characters
+app.config['JSON_ENSURE_ASCII'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 10,
     'pool_timeout': 30,
@@ -38,22 +40,35 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 }
 
 # Initialize SQLAlchemy
-db = SQLAlchemy(app)
-
+db = SQLAlchemy(app)  # Move this before the Sheet class
+# In app.py, update the Sheet model
 class Sheet(db.Model):
     __tablename__ = 'sheets'
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)  # Add this
+    description = db.Column(db.Text)                  # Add this
     data = db.Column(db.JSON, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Add this
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)  # Add this
+    record_count = db.Column(db.Integer, default=0)   # Add this
 
-    def __init__(self, data):
-        self.data = data
-
+    def __init__(self, name, data=None, description=None):
+        self.name = name
+        self.data = data if data is not None else [["" for _ in range(17)]]
+        self.description = description
+        self.record_count = len(self.data) if self.data else 0
+        self.created_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
+        
     def to_dict(self):
         return {
             'id': self.id,
+            'name': self.name,
+            'description': self.description,
             'data': self.data,
-            'timestamp': self.timestamp.isoformat() if self.timestamp else None
+            'record_count': self.record_count,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
 @app.route('/')
@@ -65,90 +80,160 @@ def index():
         "version": "1.0"
     })
 
-@app.route('/save', methods=['POST'])
-def save_data():
-    """Save spreadsheet data to database"""
+@app.route('/save/<int:sheet_id>', methods=['POST'])
+def save_data(sheet_id):
     try:
+        sheet = Sheet.query.get_or_404(sheet_id)
         content = request.get_json(force=True)
+        
         if not content or 'data' not in content:
-            logger.error("No data provided in request")
             return jsonify({
                 "status": "error",
                 "message": "No data provided"
             }), 400
 
-        data = content['data']
+        # Update sheet data
+        sheet.data = content['data']
+        sheet.record_count = len(content['data'])
+        sheet.updated_at = datetime.utcnow()
         
-        # Clean and validate data
-        cleaned_data = []
-        for row in data:
-            if row and any(str(cell).strip() for cell in row):  # Only include non-empty rows
-                padded_row = row[:17]  # Limit to 17 columns
-                # Ensure all cells are strings and properly encoded
-                padded_row = [str(cell).strip() if cell is not None else '' for cell in padded_row]
-                while len(padded_row) < 17:
-                    padded_row.append('')
-                cleaned_data.append(padded_row)
-
-        try:
-            # Begin transaction
-            db.session.begin_nested()
-            
-            # Clear previous data
-            Sheet.query.delete()
-            
-            # Create new sheet
-            new_sheet = Sheet(data=cleaned_data)
-            db.session.add(new_sheet)
-            
-            # Commit transaction
-            db.session.commit()
-            
-            logger.info(f"Data saved successfully with ID: {new_sheet.id}")
-            return jsonify({
-                "status": "success",
-                "message": "Data saved successfully",
-                "id": new_sheet.id,
-                "timestamp": new_sheet.timestamp.isoformat()
-            }), 200
-
-        except Exception as db_error:
-            db.session.rollback()
-            logger.error(f"Database error: {str(db_error)}")
-            raise
+        db.session.commit()
+        
+        return jsonify({
+            "status": "success",
+            "message": "Data saved successfully",
+            "id": sheet.id,
+            "updated_at": sheet.updated_at.isoformat()
+        }), 200
 
     except Exception as e:
-        logger.error(f"Error saving data: {str(e)}\n{traceback.format_exc()}")
+        db.session.rollback()
+        logger.error(f"Error saving data: {str(e)}")
         return jsonify({
             "status": "error",
             "message": "Failed to save data",
             "error": str(e)
         }), 500
 
-@app.route('/data', methods=['GET'])
-def get_data():
-    """Retrieve latest spreadsheet data"""
+# Get all sheets (for landing page)
+@app.route('/sheets', methods=['GET'])
+def get_sheets():
     try:
-        latest_sheet = Sheet.query.order_by(Sheet.timestamp.desc()).first()
+        search_term = request.args.get('search', '')
+        logger.info(f"Fetching sheets with search term: {search_term}")
         
-        if latest_sheet:
-            # Ensure proper encoding of Arabic text
-            return jsonify({
-                "status": "success",
-                "message": "Data retrieved successfully",
-                "data": latest_sheet.data,
-                "id": latest_sheet.id,
-                "timestamp": latest_sheet.timestamp.isoformat()
-            }), 200
+        query = Sheet.query
+
+        if search_term:
+            query = query.filter(Sheet.name.ilike(f'%{search_term}%'))
+
+        sheets = query.order_by(Sheet.updated_at.desc()).all()
         
+        # Return empty array instead of error when no sheets found
         return jsonify({
             "status": "success",
-            "message": "No data found",
-            "data": [["" for _ in range(17)]]
+            "sheets": [{
+                "id": sheet.id,
+                "name": sheet.name,
+                "description": sheet.description,
+                "record_count": sheet.record_count,
+                "created_at": sheet.created_at.isoformat() if sheet.created_at else None,
+                "updated_at": sheet.updated_at.isoformat() if sheet.updated_at else None
+            } for sheet in sheets] if sheets else []
         }), 200
-    
+
     except Exception as e:
-        logger.error(f"Error retrieving data: {str(e)}\n{traceback.format_exc()}")
+        logger.error(f"Error fetching sheets: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "خطأ في جلب البيانات"
+        }), 500
+
+# Create new sheet
+# In app.py, update create_sheet
+@app.route('/sheets', methods=['POST'])
+def create_sheet():
+    try:
+        content = request.get_json(force=True)
+        logger.info(f"Received sheet creation request: {content}")  # Add logging
+        
+        if not content.get('name'):
+            logger.warning("Sheet creation failed: No name provided")
+            return jsonify({
+                "status": "error",
+                "message": "اسم الجدول مطلوب"
+            }), 400
+
+        new_sheet = Sheet(
+            name=content['name'],
+            description=content.get('description', ''),
+            data=[["" for _ in range(17)]]  # Initialize with one empty row
+        )
+        
+        try:
+            db.session.add(new_sheet)
+            db.session.commit()
+            logger.info(f"Sheet created successfully with ID: {new_sheet.id}")
+
+            return jsonify({
+                "status": "success",
+                "message": "تم إنشاء الجدول بنجاح",
+                "id": new_sheet.id,
+                "name": new_sheet.name,
+                "description": new_sheet.description
+            }), 201
+
+        except Exception as db_error:
+            db.session.rollback()
+            logger.error(f"Database error during sheet creation: {str(db_error)}")
+            return jsonify({
+                "status": "error",
+                "message": "خطأ في قاعدة البيانات"
+            }), 500
+
+    except Exception as e:
+        logger.error(f"Error creating sheet: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "فشل في إنشاء الجدول"
+        }), 500
+
+# Delete sheet
+@app.route('/sheets/<int:sheet_id>', methods=['DELETE'])
+def delete_sheet(sheet_id):
+    try:
+        sheet = Sheet.query.get_or_404(sheet_id)
+        db.session.delete(sheet)
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": "Sheet deleted successfully"
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting sheet: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Failed to delete sheet"
+        }), 500
+
+@app.route('/data/<int:sheet_id>', methods=['GET'])
+def get_data(sheet_id):
+    try:
+        sheet = Sheet.query.get_or_404(sheet_id)
+        return jsonify({
+            "status": "success",
+            "message": "Data retrieved successfully",
+            "data": sheet.data,
+            "id": sheet.id,
+            "name": sheet.name,
+            "description": sheet.description,
+            "updated_at": sheet.updated_at.isoformat()
+        }), 200
+    except Exception as e:
+        logger.error(f"Error retrieving data: {str(e)}")
         return jsonify({
             "status": "error",
             "message": "Failed to retrieve data",

@@ -7,7 +7,7 @@ import {
     deleteSpreadsheetRow 
 } from '../utils/apiHelpers';
 import { cleanData, createEmptyRow, isRowEmpty } from '../utils/dataHelpers';
-
+import { useParams } from 'react-router-dom';
 const useSpreadsheetData = (showNotification) => {
     const [data, setData] = useState([createEmptyRow()]);
     const [isLoading, setIsLoading] = useState(true);
@@ -16,15 +16,25 @@ const useSpreadsheetData = (showNotification) => {
     const [debugInfo, setDebugInfo] = useState(null);
     const [selectedRow, setSelectedRow] = useState(null);
     const [lastAutoSave, setLastAutoSave] = useState(null);
-
+    const { id } = useParams(); // Get sheet ID from URL
+    const [sheetInfo, setSheetInfo] = useState(null);
+ 
     const fetchData = useCallback(async () => {
         try {
-            const result = await fetchSpreadsheetData();
+            setIsLoading(true);
+            const response = await fetch(`http://127.0.0.1:5000/data/${id}`);
+            const result = await response.json();
             
-            if (result.status === 'success') {
-                const cleanedData = cleanData(result.data);
+            if (response.ok && result.status === 'success') {
+                const cleanedData = cleanData(result.data || []);
                 setData(cleanedData.length > 0 ? cleanedData : [createEmptyRow()]);
                 
+                setSheetInfo({
+                    name: result.name,
+                    description: result.description,
+                    recordCount: cleanedData.length
+                });
+
                 if (result.id) {
                     setDebugInfo({
                         lastSavedId: result.id,
@@ -32,6 +42,8 @@ const useSpreadsheetData = (showNotification) => {
                         timestamp: new Date().toLocaleString()
                     });
                 }
+            } else {
+                throw new Error(result.message || 'Failed to fetch data');
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -39,7 +51,11 @@ const useSpreadsheetData = (showNotification) => {
         } finally {
             setIsLoading(false);
         }
-    }, [showNotification]);
+    }, [id, showNotification]); // Add dependencies
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]); // Now fetchData is properly memoized
 
     const saveData = useCallback(async (forceUpdate = false) => {
         if (!hasChanges && !forceUpdate) return;
@@ -47,31 +63,36 @@ const useSpreadsheetData = (showNotification) => {
         setIsSaving(true);
         try {
             const cleanedData = cleanData(data);
-            const result = await saveSpreadsheetData(cleanedData);
+            const response = await fetch(`http://127.0.0.1:5000/save/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: cleanedData }),
+            });
 
-            if (result.status === 'success') {
+            const result = await response.json();
+            
+            if (response.ok && result.status === 'success') {
                 showNotification('تم حفظ البيانات بنجاح');
                 setHasChanges(false);
                 
-                // Update last auto-save time
                 const now = new Date();
-                setLastAutoSave(now);
-                
-                // Update debug info
                 setDebugInfo(prev => ({
                     ...prev,
                     lastSavedId: result.id,
                     timestamp: now.toLocaleString(),
-                    lastAutoSave: now // Add this to debug info
+                    lastAutoSave: now
                 }));
+            } else {
+                throw new Error('Failed to save');
             }
         } catch (error) {
-            console.error('Error saving data:', error);
             showNotification('فشل حفظ البيانات. يرجى المحاولة مرة أخرى.', 'error');
+            console.error('Error saving data:', error);
         } finally {
             setIsSaving(false);
         }
-    }, [data, hasChanges, showNotification]);
+    }, [data, hasChanges, id, showNotification]); // Add all dependencies
+
 
     // src/components/Spreadsheet/hooks/useSpreadsheetData.js
 
@@ -186,41 +207,36 @@ const deleteRow = useCallback(async (rowIndex) => {
     }
 }, [data, setData, setSelectedRow, setHasChanges, showNotification]);
 
-    const addNewRow = useCallback(() => {
-        setData(prev => [...prev, createEmptyRow()]);
-        setHasChanges(true);
-    }, []);
+const addNewRow = useCallback(() => {
+    setData(prev => [...prev, createEmptyRow()]);
+    setHasChanges(true);
+}, []);
 
-    // Initial data load
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+// Auto-save effect
+useEffect(() => {
+    const interval = setInterval(() => {
+        if (hasChanges) {
+            saveData();
+        }
+    }, 60000); // Auto-save every minute
 
-    // Auto-save effect
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (hasChanges) {
-                saveData();
-            }
-        }, 60000); // Auto-save every minute
+    return () => clearInterval(interval);
+}, [hasChanges, saveData]);
 
-        return () => clearInterval(interval);
-    }, [hasChanges, saveData]);
-
-    return {
-        data,
-        setData,
-        isLoading,
-        isSaving,
-        debugInfo,
-        selectedRow,
-        setSelectedRow,
-        setHasChanges,
-        saveData,
-        deleteRow,
-        addNewRow,
-        lastAutoSave
-    };
+return {
+    data,
+    setData,
+    isLoading,
+    isSaving,
+    debugInfo,
+    selectedRow,
+    setSelectedRow,
+    setHasChanges,
+    saveData,
+    deleteRow,
+    addNewRow,
+    sheetInfo
+};
 };
 
 export default useSpreadsheetData;

@@ -2,21 +2,23 @@
 
 import React, { useState } from 'react';
 import { HotTable } from '@handsontable/react';
-import { Loader2, Trash2 } from 'lucide-react';
 import 'handsontable/dist/handsontable.full.min.css';
-
-import useSpreadsheetData from '../Spreadsheet/hooks/useSpreadsheetData';
-import useNotification from '../Spreadsheet/hooks/useNotification';
-import useHotSettings from '../Spreadsheet/hooks/useHotSettings';
-
-import DeleteConfirmModal from '../Spreadsheet/components/DeleteConfirmModal';
-import DebugInfo from '../Spreadsheet/components/DebugInfo';
-import LoadingSpinner from '../Spreadsheet/components/LoadingSpinner';
-import Notification from '../Spreadsheet/components/Notification';
-import SpreadsheetToolbar from '../Spreadsheet/components/SpreadsheetToolbar';
-import GenerateButton from './components/GenerateButton';
-import useExcelGeneration from './hooks/useExcelGeneration';
-const CustomSpreadsheet = () => {
+import { useParams, useNavigate } from 'react-router-dom';
+import useSpreadsheetData from '../hooks/useSpreadsheetData';
+import useNotification from '../hooks/useNotification';
+import useHotSettings from '../hooks/useHotSettings';
+import { Loader2, Trash2, ArrowLeft } from 'lucide-react';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import DebugInfo from '../components/DebugInfo';
+import LoadingSpinner from '../components/LoadingSpinner';
+import Notification from '../components/Notification';
+import SpreadsheetToolbar from '../components/SpreadsheetToolbar';
+import GenerateButton from '../components/GenerateButton';
+import useExcelGeneration from '../hooks/useExcelGeneration';
+const SheetPage = () => {
+    const { id } = useParams();  // Add this
+    const navigate = useNavigate();  // Add this
+    const [sheetInfo, setSheetInfo] = useState(null);  // Add this
     const { notification, showNotification } = useNotification();
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const { isGenerating, handleGenerate } = useExcelGeneration(showNotification);
@@ -137,7 +139,41 @@ const CustomSpreadsheet = () => {
                         {isSaving ? 'جاري الحفظ...' : 'حفظ'}
                     </button>
                 </div>
-
+                <div className="flex items-center mb-4">
+        <button
+            onClick={() => navigate('/')}
+            className="flex items-center text-gray-600 hover:text-gray-800"
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '8px',
+                cursor: 'pointer',
+                borderRadius: '6px',
+                transition: 'all 0.2s'
+            }}
+        >
+            <ArrowLeft className="ml-2" size={20} />
+            العودة للرئيسية
+        </button>
+    </div>
+    {sheetInfo && (
+        <div style={{ 
+            marginBottom: '20px',
+            padding: '10px 0'
+        }}>
+            <h1 style={{ 
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#2d3748'
+            }}>{sheetInfo.name}</h1>
+            {sheetInfo.description && (
+                <p style={{
+                    color: '#718096',
+                    marginTop: '4px'
+                }}>{sheetInfo.description}</p>
+            )}
+        </div>
+    )}
                 <DebugInfo info={debugInfo} />
 
                 <div style={{ 
@@ -293,4 +329,4 @@ const CustomSpreadsheet = () => {
     );
 };
 
-export default CustomSpreadsheet;
+export default SheetPage;
