@@ -1,5 +1,3 @@
-// src/components/Spreadsheet/components/CreateSheetModal.js
-
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
@@ -15,60 +13,163 @@ const CreateSheetModal = ({ isOpen, onClose, onCreate, isCreating }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{ direction: 'rtl' }}>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        إنشاء جدول جديد
-                    </h2>
-                    <button 
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
+        <div
+            style={{
+                position: 'fixed',
+                inset: '0',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: '50',
+            }}
+        >
+            <div
+                style={{
+                    backgroundColor: '#fff',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    width: '100%',
+                    maxWidth: '500px',
+                    direction: 'rtl',
+                    position: 'relative',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                }}
+            >
+                <button
+                    onClick={onClose}
+                    style={{
+                        position: 'absolute',
+                        left: '16px',
+                        top: '16px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#718096',
+                        transition: 'color 0.2s',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#4a5568')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#718096')}
+                >
+                    <X size={20} />
+                </button>
+                <h2
+                    style={{
+                        fontSize: '24px',
+                        fontWeight: '600',
+                        color: '#2d3748',
+                        marginBottom: '24px',
+                        textAlign: 'center',
+                    }}
+                >
+                    إنشاء جدول جديد
+                </h2>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
-                            اسم الجدول*
+                    <div style={{ marginBottom: '16px' }}>
+                        <label
+                            style={{
+                                display: 'block',
+                                color: '#2d3748',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                marginBottom: '8px',
+                            }}
+                        >
+                            اسم الجدول<span style={{ color: '#e53e3e' }}>*</span>
                         </label>
                         <input
                             type="text"
                             value={sheetName}
                             onChange={(e) => setSheetName(e.target.value)}
-                            className="w-full p-2 border rounded-md"
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '1px solid #cbd5e0',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                color: '#4a5568',
+                                outline: 'none',
+                                backgroundColor: '#fff',
+                            }}
                             required
                             placeholder="أدخل اسم الجدول"
+                            onFocus={(e) => (e.target.style.borderColor = '#3182ce')}
+                            onBlur={(e) => (e.target.style.borderColor = '#cbd5e0')}
                         />
                     </div>
 
-                    <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                    <div style={{ marginBottom: '24px' }}>
+                        <label
+                            style={{
+                                display: 'block',
+                                color: '#2d3748',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                marginBottom: '8px',
+                            }}
+                        >
                             الوصف
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="w-full p-2 border rounded-md"
-                            rows="3"
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '1px solid #cbd5e0',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                color: '#4a5568',
+                                outline: 'none',
+                                resize: 'vertical',
+                                minHeight: '80px',
+                                backgroundColor: '#fff',
+                            }}
                             placeholder="أدخل وصف الجدول (اختياري)"
+                            onFocus={(e) => (e.target.style.borderColor = '#3182ce')}
+                            onBlur={(e) => (e.target.style.borderColor = '#cbd5e0')}
                         />
                     </div>
 
-                    <div className="flex justify-end gap-4">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                            style={{
+                                padding: '10px 20px',
+                                fontSize: '16px',
+                                color: '#718096',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                transition: 'color 0.2s',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = '#4a5568')}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = '#718096')}
                         >
                             إلغاء
                         </button>
                         <button
                             type="submit"
                             disabled={isCreating}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                            style={{
+                                padding: '10px 20px',
+                                fontSize: '16px',
+                                color: '#fff',
+                                backgroundColor: '#4299e1',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: isCreating ? 'not-allowed' : 'pointer',
+                                opacity: isCreating ? '0.6' : '1',
+                                transition: 'background-color 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!isCreating) e.currentTarget.style.backgroundColor = '#3182ce';
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!isCreating) e.currentTarget.style.backgroundColor = '#4299e1';
+                            }}
                         >
                             {isCreating ? 'جاري الإنشاء...' : 'إنشاء'}
                         </button>

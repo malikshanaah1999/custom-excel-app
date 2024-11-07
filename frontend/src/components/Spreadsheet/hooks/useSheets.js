@@ -6,7 +6,7 @@ const useSheets = (showNotification) => {
     const [sheets, setSheets] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
-
+    const [isDeleting, setIsDeleting] = useState(false);
     const fetchSheets = useCallback(async (searchTerm = '') => {
         try {
             setIsLoading(true);
@@ -32,7 +32,30 @@ const useSheets = (showNotification) => {
             setIsLoading(false);
         }
     }, [showNotification]);
-
+    const deleteSheet = useCallback(async (sheetId) => {
+        try {
+            setIsDeleting(true);
+            const response = await fetch(`http://127.0.0.1:5000/sheets/${sheetId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.status === 'success') {
+                showNotification('تم حذف الجدول بنجاح', 'success');
+                await fetchSheets();
+                return true;
+            } else {
+                throw new Error(result.message || 'Failed to delete sheet');
+            }
+        } catch (error) {
+            console.error('Error deleting sheet:', error);
+            showNotification('فشل في حذف الجدول', 'error');
+            return false;
+        } finally {
+            setIsDeleting(false);
+        }
+    }, [fetchSheets, showNotification]);
     const createSheet = useCallback(async (sheetData) => {
         try {
             setIsCreating(true);
@@ -74,8 +97,10 @@ const useSheets = (showNotification) => {
         sheets,
         isLoading,
         isCreating,
+        isDeleting,
         fetchSheets,
-        createSheet
+        createSheet,
+        deleteSheet
     };
 };
 

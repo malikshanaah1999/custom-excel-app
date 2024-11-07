@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Loader2 } from 'lucide-react';
+import { Plus, Search, Loader2, FileX } from 'lucide-react';
 import useSheets from '../hooks/useSheets';
 import useNotification from '../hooks/useNotification';
 import SheetCard from '../components/SheetCard';
 import CreateSheetModal from '../components/CreateSheetModal';
 import Notification from '../components/Notification';
+import DeleteSheetModal from '../components/DeleteSheetModal';
 
 const HomePage = () => {
     const { notification, showNotification } = useNotification();
-    const { sheets, isLoading, isCreating, fetchSheets, createSheet } = useSheets(showNotification);
+    const { 
+        sheets, 
+        isLoading, 
+        isCreating, 
+        isDeleting,
+        fetchSheets, 
+        createSheet,
+        deleteSheet
+    } = useSheets(showNotification);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [sheetToDelete, setSheetToDelete] = useState(null);
 
     useEffect(() => {
         fetchSheets();
@@ -33,53 +43,124 @@ const HomePage = () => {
         }
     };
 
+    const handleDeleteSheet = async () => {
+        if (sheetToDelete) {
+            const success = await deleteSheet(sheetToDelete.id);
+            if (success) {
+                setSheetToDelete(null);
+            }
+        }
+    };
+
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-r from-blue-50 to-gray-50 min-h-screen">
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 16px', backgroundColor: '#f7fafc' }}>
             {/* Header */}
-            <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow-sm">
-                <h1 className="text-3xl font-bold text-blue-700">📊 الجداول</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#2d3748' }}>الجداول</h1>
                 <button
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 shadow-md transition-transform transform hover:scale-105"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        backgroundColor: '#4299e1',
+                        color: '#fff',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                        transition: 'background-color 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3182ce'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4299e1'}
                 >
-                    <Plus size={20} />
+                    <Plus size={20} color="#fff" />
                     جدول جديد
                 </button>
             </div>
 
             {/* Search Bar */}
-            <div className="relative mb-6">
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    marginBottom: '24px',
+                }}
+            >
+                <div
+                    style={{
+                        position: 'relative',
+                        width: '30%',
+                    }}
+                >
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        placeholder="البحث عن جدول..."
+                        style={{
+                            width: '100%',
+                            padding: '12px 16px 12px 40px', // Adjusted padding to prevent overlap
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            color: '#4a5568',
+                            backgroundColor: '#fff',
+                            outline: 'none',
+                            direction: 'rtl',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+                            transition: 'border-color 0.2s, box-shadow 0.2s',
+                        }}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#3182ce';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(66, 153, 225, 0.3)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = '#e2e8f0';
+                            e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                        }}
+                    />
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            right: '12px',
+                            transform: 'translateY(-50%)',
+                            pointerEvents: 'none',
+                            color: '#a0aec0',
+                        }}
+                    >
+                        <Search size={20} />
+                    </div>
                 </div>
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    placeholder="البحث عن جدول..."
-                    className="block w-full pr-10 py-3 border border-gray-300 rounded-full shadow-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    style={{ direction: 'rtl' }}
-                />
             </div>
 
-            {/* Sheets Grid */}
+            {/* Sheets Grid with Loading State */}
             {isLoading ? (
-                <div className="flex justify-center items-center h-64">
-                    <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                    <Loader2 size={48} style={{ color: '#4299e1', animation: 'spin 2s linear infinite' }} />
                 </div>
             ) : sheets.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
                     {sheets.map(sheet => (
-                        <SheetCard key={sheet.id} sheet={sheet} />
+                        <SheetCard 
+                            key={sheet.id} 
+                            sheet={sheet} 
+                            onDelete={setSheetToDelete}
+                        />
                     ))}
                 </div>
             ) : (
-                <div className="text-center text-gray-600 py-16 bg-white rounded-lg shadow-sm">
-                    {searchTerm ? 'لا توجد نتائج تطابق البحث' : 'لا توجد جداول. أنشئ جدولاً جديداً للبدء!'}
+                <div style={{ textAlign: 'center', color: '#718096', padding: '48px 0' }}>
+                    <FileX size={48} color="#cbd5e0" />
+                    <p style={{ marginTop: '16px', fontSize: '18px' }}>
+                        {searchTerm ? 'لا توجد نتائج للبحث' : 'لا توجد جداول. أنشئ جدولاً جديداً للبدء!'}
+                    </p>
                 </div>
             )}
 
-            {/* Create Sheet Modal */}
+            {/* Modals */}
             <CreateSheetModal
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
@@ -87,7 +168,15 @@ const HomePage = () => {
                 isCreating={isCreating}
             />
 
-            {/* Notification */}
+            <DeleteSheetModal
+                isOpen={!!sheetToDelete}
+                onClose={() => setSheetToDelete(null)}
+                onConfirm={handleDeleteSheet}
+                sheetName={sheetToDelete?.name}
+                isDeleting={isDeleting}
+            />
+
+            {/* Notifications */}
             <Notification notification={notification} />
         </div>
     );
