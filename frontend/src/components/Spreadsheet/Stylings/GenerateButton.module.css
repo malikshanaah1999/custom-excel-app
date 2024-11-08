@@ -1,0 +1,47 @@
+/* src/components/Spreadsheet/components/GenerateButton.module.css */
+
+.generateButton {
+    background-color: #2563eb;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    margin: 20px auto;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+  }
+  
+  .generateButton:hover {
+    background-color: #1e4bb8;
+    transform: translateY(-2px);
+  }
+  
+  .generateButton:active {
+    transform: translateY(0);
+  }
+  
+  .generateButton:disabled,
+  .disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  

@@ -2,20 +2,15 @@
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import styles from '../Stylings/LoadingSpinner.module.css';
 
 const LoadingSpinner = ({ message = 'جاري تحميل البيانات...' }) => {
-    return (
-        <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100vh', 
-            fontSize: '20px' 
-        }}>
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <span style={{ marginRight: '10px' }}>{message}</span>
-        </div>
-    );
+  return (
+    <div className={styles.loadingContainer} role="status" aria-live="polite">
+      <Loader2 className={styles.spinner} />
+      <span className={styles.loadingMessage}>{message}</span>
+    </div>
+  );
 };
 
 export default LoadingSpinner;

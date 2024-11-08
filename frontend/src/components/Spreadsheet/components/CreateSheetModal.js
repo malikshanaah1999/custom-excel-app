@@ -1,183 +1,136 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+// src/components/CreateSheetModal.js
+
+import React, { useState, useEffect } from 'react';
+import { X, FileText, Edit3, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import styles from '../Stylings/CreateSheetModal.module.css'; // Import the CSS module
 
 const CreateSheetModal = ({ isOpen, onClose, onCreate, isCreating }) => {
-    const [sheetName, setSheetName] = useState('');
-    const [description, setDescription] = useState('');
+  const [sheetName, setSheetName] = useState('');
+  const [description, setDescription] = useState('');
+  const [nameError, setNameError] = useState(false);
 
-    if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) {
+      setNameError(false);
+      setSheetName('');
+      setDescription('');
+    }
+  }, [isOpen]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onCreate({ name: sheetName, description });
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (sheetName.trim() === '') {
+      setNameError(true);
+    } else {
+      setNameError(false);
+      onCreate({ name: sheetName, description });
+    }
+  };
 
-    return (
-        <div
-            style={{
-                position: 'fixed',
-                inset: '0',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: '50',
-            }}
-        >
-            <div
-                style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    width: '100%',
-                    maxWidth: '500px',
-                    direction: 'rtl',
-                    position: 'relative',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                }}
-            >
-                <button
-                    onClick={onClose}
-                    style={{
-                        position: 'absolute',
-                        left: '16px',
-                        top: '16px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#718096',
-                        transition: 'color 0.2s',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#4a5568')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#718096')}
-                >
-                    <X size={20} />
-                </button>
-                <h2
-                    style={{
-                        fontSize: '24px',
-                        fontWeight: '600',
-                        color: '#2d3748',
-                        marginBottom: '24px',
-                        textAlign: 'center',
-                    }}
-                >
-                    إنشاء جدول جديد
-                </h2>
+  if (!isOpen) return null;
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '16px' }}>
-                        <label
-                            style={{
-                                display: 'block',
-                                color: '#2d3748',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                marginBottom: '8px',
-                            }}
-                        >
-                            اسم الجدول<span style={{ color: '#e53e3e' }}>*</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={sheetName}
-                            onChange={(e) => setSheetName(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                border: '1px solid #cbd5e0',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                color: '#4a5568',
-                                outline: 'none',
-                                backgroundColor: '#fff',
-                            }}
-                            required
-                            placeholder="أدخل اسم الجدول"
-                            onFocus={(e) => (e.target.style.borderColor = '#3182ce')}
-                            onBlur={(e) => (e.target.style.borderColor = '#cbd5e0')}
-                        />
-                    </div>
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+      onClick={onClose}
+      className={styles.modalOverlay}
+    >
+      <motion.div
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.3 }}
+        className={styles.modalContent}
+      >
+        {/* Modal Title */}
+        <h2 id="modalTitle" className={styles.modalTitle}>
+          إنشاء جدول جديد
+        </h2>
 
-                    <div style={{ marginBottom: '24px' }}>
-                        <label
-                            style={{
-                                display: 'block',
-                                color: '#2d3748',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                marginBottom: '8px',
-                            }}
-                        >
-                            الوصف
-                        </label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                border: '1px solid #cbd5e0',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                color: '#4a5568',
-                                outline: 'none',
-                                resize: 'vertical',
-                                minHeight: '80px',
-                                backgroundColor: '#fff',
-                            }}
-                            placeholder="أدخل وصف الجدول (اختياري)"
-                            onFocus={(e) => (e.target.style.borderColor = '#3182ce')}
-                            onBlur={(e) => (e.target.style.borderColor = '#cbd5e0')}
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            style={{
-                                padding: '10px 20px',
-                                fontSize: '16px',
-                                color: '#718096',
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                cursor: 'pointer',
-                                transition: 'color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.color = '#4a5568')}
-                            onMouseLeave={(e) => (e.currentTarget.style.color = '#718096')}
-                        >
-                            إلغاء
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isCreating}
-                            style={{
-                                padding: '10px 20px',
-                                fontSize: '16px',
-                                color: '#fff',
-                                backgroundColor: '#4299e1',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: isCreating ? 'not-allowed' : 'pointer',
-                                opacity: isCreating ? '0.6' : '1',
-                                transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => {
-                                if (!isCreating) e.currentTarget.style.backgroundColor = '#3182ce';
-                            }}
-                            onMouseLeave={(e) => {
-                                if (!isCreating) e.currentTarget.style.backgroundColor = '#4299e1';
-                            }}
-                        >
-                            {isCreating ? 'جاري الإنشاء...' : 'إنشاء'}
-                        </button>
-                    </div>
-                </form>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {/* Sheet Name Input */}
+          <div className={styles.inputContainer}>
+            <input
+              type="text"
+              id="sheetName"
+              value={sheetName}
+              onChange={(e) => {
+                setSheetName(e.target.value);
+                if (e.target.value.trim() !== '') {
+                  setNameError(false);
+                }
+              }}
+              className={`${styles.inputField} ${nameError ? styles.errorInput : ''}`}
+              placeholder=" "
+              onFocus={(e) => e.target.classList.add(styles.inputFocus)}
+              onBlur={(e) => e.target.classList.remove(styles.inputFocus)}
+              aria-required="true"
+            />
+            <label htmlFor="sheetName" className={styles.inputLabel}>
+              اسم الجدول<span className={styles.requiredAsterisk}>*</span>
+            </label>
+            <FileText size={20} className={styles.inputIcon} />
+          </div>
+          {nameError && (
+            <div className={styles.errorMessage}>
+              <span>هذا الحقل مطلوب.</span>
             </div>
-        </div>
-    );
+          )}
+
+          {/* Description Input */}
+          <div className={styles.inputContainer}>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={styles.textareaField}
+              placeholder=" "
+              onFocus={(e) => e.target.classList.add(styles.inputFocus)}
+              onBlur={(e) => e.target.classList.remove(styles.inputFocus)}
+            />
+            <label htmlFor="description" className={styles.inputLabel}>
+              الوصف
+            </label>
+            <Edit3 size={20} className={styles.inputIcon} />
+          </div>
+
+          {/* Buttons */}
+          <div className={styles.buttonContainer}>
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close Modal"
+              className={styles.closeButton}
+            >
+              <X size={20} />
+            </button>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isCreating}
+              className={styles.submitButton}
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 size={16} className={styles.spinner} />
+                  جاري الإنشاء...
+                </>
+              ) : (
+                'إنشاء'
+              )}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
 };
 
 export default CreateSheetModal;
