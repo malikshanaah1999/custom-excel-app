@@ -1,0 +1,198 @@
+/* src/pages/HomePage.module.css */
+
+:root {
+    /* Define CSS variables based on COLORS */
+    --lightBlueBackground: #e6f7ff;
+    --darkText: #2d3748;
+    --primaryBlue: #4299e1;
+    --primaryBlueHover: #3182ce;
+    --inputBorder: #e2e8f0;
+    --inputFocusBorder: #3182ce;
+    --inputBackground: #fff;
+    --placeholderText: #a0aec0;
+    --spinnerColor: #4299e1;
+    --errorText: #718096;
+    --errorIcon: #cbd5e0;
+    --cardBackground: #ffffff;
+    --cardHoverBackground: #f0f4f8;
+    --cardBorder: #e2e8f0;
+    --cardShadow: rgba(0, 0, 0, 0.1);
+    --cardHoverShadow: rgba(0, 0, 0, 0.15);
+    --secondaryText: #4a5568;
+    --accentBlue: #4299e1;
+    --dangerRed: #e53e3e;
+    --dangerRedHover: #c53030;
+    --iconGray: #718096;
+  }
+  
+  .homePage {
+    position: relative;
+    overflow: hidden;
+    direction: rtl;
+    background-color: var(--lightBlueBackground);
+    min-height: 100vh;
+  }
+  
+  .mainContent {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    transition: filter 0.3s ease;
+  }
+  
+  .mainContentBlur {
+    filter: blur(5px);
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  
+  .title {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--darkText);
+  }
+  
+  .headerActions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .viewToggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+  }
+  
+  .switchInput {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    margin: 0;
+  }
+  
+  .switchSlider {
+    position: absolute;
+    inset: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: 0.4s;
+  }
+  
+  .switchCircle {
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    right: 26px; /* Default position (RTL) */
+    top: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: 0.4s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .switchInput:checked + .switchSlider {
+    background-color: var(--primaryBlue);
+  }
+  
+  .switchInput:checked + .switchSlider + .switchCircle {
+    right: 4px; /* Move circle when checked */
+  }
+  
+  .createButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primaryBlue);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s;
+  }
+  
+  .createButton:hover {
+    background-color: var(--primaryBlueHover);
+  }
+  
+  .searchBar {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 24px;
+  }
+  
+  .searchContainer {
+    position: relative;
+    width: 30%;
+  }
+  
+  .searchInput {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--inputBorder);
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--darkText);
+    background-color: var(--inputBackground);
+    outline: none;
+    direction: rtl;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .searchInput:focus {
+    border-color: var(--inputFocusBorder);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+  }
+  
+  .loaderContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
+  
+  .loaderIcon {
+    color: var(--spinnerColor);
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .noData {
+    text-align: center;
+    color: var(--errorText);
+    padding: 48px 0;
+  }
+  
+  .noDataText {
+    margin-top: 16px;
+    font-size: 18px;
+  }
+  
+  

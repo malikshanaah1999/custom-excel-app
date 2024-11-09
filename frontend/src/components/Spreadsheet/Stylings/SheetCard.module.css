@@ -1,0 +1,104 @@
+/* src/components/SheetCard.module.css */
+
+:root {
+    /* Define CSS variables based on COLORS */
+    --cardBackground: #ffffff;
+    --cardHoverBackground: #f0f4f8;
+    --cardBorder: #e2e8f0;
+    --cardShadow: rgba(0, 0, 0, 0.1);
+    --cardHoverShadow: rgba(0, 0, 0, 0.15);
+    --primaryText: #2d3748;
+    --secondaryText: #4a5568;
+    --accentBlue: #4299e1;
+    --accentBlueHover: #3182ce;
+    --dangerRed: #e53e3e;
+    --dangerRedHover: #c53030;
+    --iconGray: #718096;
+  }
+  
+  .sheetCard {
+    background-color: var(--cardBackground);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px var(--cardShadow);
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+    direction: rtl;
+    border: 1px solid var(--cardBorder);
+    overflow: hidden;
+  }
+  
+  .sheetCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 20px var(--cardHoverShadow);
+    background-color: var(--cardHoverBackground);
+  }
+  
+  .deleteButton {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    background-color: transparent;
+    color: var(--dangerRed);
+    padding: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--dangerRed);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s, opacity 0.2s;
+    opacity: 0;
+    transform: scale(0);
+  }
+  
+  .sheetCard:hover .deleteButton {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .deleteButton:hover {
+    background-color: var(--dangerRed);
+    color: #fff;
+    transform: scale(1.1);
+  }
+  
+  .sheetInfo {
+    margin-bottom: 16px;
+  }
+  
+  .sheetTitleContainer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .sheetTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--primaryText);
+    margin: 0;
+  }
+  
+  .sheetRecordCount {
+    font-size: 14px;
+    color: var(--secondaryText);
+    margin-right: 40px;
+  }
+  
+  .sheetDescription {
+    color: var(--secondaryText);
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  
+  .sheetUpdated {
+    display: flex;
+    align-items: center;
+    color: var(--iconGray);
+    font-size: 14px;
+  }
+  
+  .sheetUpdatedIcon {
+    margin-left: 8px;
+  }
+  

@@ -1,138 +1,136 @@
-import React from 'react';
+// src/components/Spreadsheet/components/DeleteConfirmModal.js
+
+import React, { useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { X } from 'lucide-react';
-
-const DeleteSheetModal = ({ 
-    isOpen, 
-    onClose, 
-    onConfirm, 
-    sheetName,
-    isDeleting 
+import styles from '../Stylings/DeleteSheetModal.module.css';
+const DeleteConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  sheetName,
+  isDeleting,
 }) => {
-    if (!isOpen) return null;
+  const modalRef = useRef(null);
 
-    return (
-        <div
-            style={{
-                position: 'fixed',
-                inset: '0',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: '50',
-            }}
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      // Focus the modal for accessibility
+      modalRef.current.focus();
+
+      // Trap focus within the modal
+      const focusableElements = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      const handleTab = (e) => {
+        if (e.key === 'Tab') {
+          if (e.shiftKey) {
+            // Backward tab
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            }
+          } else {
+            // Forward tab
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
+        } else if (e.key === 'Escape') {
+          // Close modal on Escape key
+          onClose();
+        }
+      };
+
+      modalRef.current.addEventListener('keydown', handleTab);
+
+      return () => {
+        // Cleanup function
+        if (modalRef.current) {
+          modalRef.current.removeEventListener('keydown', handleTab);
+        }
+      };
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      onClick={onClose}
+      className={styles.modalOverlay}
+    >
+      <div
+        ref={modalRef}
+        tabIndex="-1"
+        className={styles.modalContent}
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+      >
+        <button
+          onClick={onClose}
+          className={styles.closeButton}
+          aria-label="إغلاق"
         >
-            <div
-                style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    width: '100%',
-                    maxWidth: '500px',
-                    direction: 'rtl',
-                    position: 'relative',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                }}
+          <X size={20} />
+        </button>
+
+        <h2 id="modal-title" className={styles.modalTitle}>
+          تأكيد حذف الجدول
+        </h2>
+
+        <p className={styles.modalMessage}>
+          هل أنت متأكد من حذف الجدول <span style={{ fontWeight: 'bold' }}>"{sheetName}"</span>؟
+          <br />
+          لا يمكن التراجع عن هذا الإجراء.
+        </p>
+
+        <div className={styles.buttonContainer}>
+          <button
+            onClick={onClose}
+            disabled={isDeleting}
+            className={styles.cancelButton}
+            aria-label="إلغاء الحذف"
+          >
+            إلغاء
+          </button>
+          {!isDeleting && (
+            <button
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className={styles.deleteButton}
+              aria-label="تأكيد الحذف"
             >
-                <button 
-                    onClick={onClose}
-                    style={{
-                        position: 'absolute',
-                        left: '16px',
-                        top: '16px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#718096',
-                        transition: 'color 0.2s',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#4a5568')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#718096')}
-                >
-                    <X size={20} />
-                </button>
-
-                <h2
-                    style={{
-                        fontSize: '24px',
-                        fontWeight: '600',
-                        color: '#2d3748',
-                        marginBottom: '16px',
-                        textAlign: 'center',
-                    }}
-                >
-                    تأكيد حذف الجدول
-                </h2>
-
-                <p
-                    style={{
-                        color: '#4a5568',
-                        fontSize: '16px',
-                        marginBottom: '24px',
-                        textAlign: 'center',
-                        lineHeight: '1.5',
-                    }}
-                >
-                    هل أنت متأكد من حذف الجدول "<span style={{ fontWeight: 'bold' }}>{sheetName}</span>"؟
-                    <br />
-                    لا يمكن التراجع عن هذا الإجراء.
-                </p>
-
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        gap: '12px',
-                    }}
-                >
-                    <button
-                        onClick={onClose}
-                        disabled={isDeleting}
-                        style={{
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                            color: '#718096',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            cursor: isDeleting ? 'not-allowed' : 'pointer',
-                            transition: 'color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!isDeleting) e.currentTarget.style.color = '#4a5568';
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!isDeleting) e.currentTarget.style.color = '#718096';
-                        }}
-                    >
-                        إلغاء
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        disabled={isDeleting}
-                        style={{
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                            color: '#fff',
-                            backgroundColor: '#e53e3e',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: isDeleting ? 'not-allowed' : 'pointer',
-                            opacity: isDeleting ? '0.6' : '1',
-                            transition: 'background-color 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!isDeleting) e.currentTarget.style.backgroundColor = '#c53030';
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!isDeleting) e.currentTarget.style.backgroundColor = '#e53e3e';
-                        }}
-                    >
-                        {isDeleting ? 'جاري الحذف...' : 'حذف'}
-                    </button>
-                </div>
-            </div>
+              حذف
+            </button>
+          )}
+          {isDeleting && (
+            <button
+              disabled
+              className={`${styles.deleteButton} ${styles.deleteButtonDisabled}`}
+              aria-label="جاري الحذف..."
+            >
+              جارٍ الحذف...
+            </button>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
-export default DeleteSheetModal;
+DeleteConfirmModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  sheetName: PropTypes.string.isRequired,
+  isDeleting: PropTypes.bool.isRequired,
+};
+
+export default DeleteConfirmModal;

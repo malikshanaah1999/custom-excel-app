@@ -1,0 +1,110 @@
+/* src/components/ListView.module.css */
+
+:root {
+    /* Define CSS variables based on COLORS */
+    --cardBackground: #ffffff;
+    --cardHoverBackground: #f9fafb;
+    --rowAlternateBackground: #a7f0f7;
+    --borderColor: #e2e8f0;
+    --primaryText: #2d3748;
+    --secondaryText: #4a5568;
+    --accentBlue: #4299e1;
+    --dangerRed: #e53e3e;
+    --dangerRedHover: #c53030;
+    --iconGray: #718096;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    direction: rtl;
+    background-color: var(--cardBackground);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .table thead tr {
+    background-color: var(--cardHoverBackground);
+  }
+  
+  .table th {
+    text-align: right;
+    padding: 12px;
+    color: var(--primaryText);
+    font-weight: 600;
+    font-size: 16px;
+    border-bottom: 2px solid var(--borderColor);
+  }
+  
+  .table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background-color: var(--rowAlternateBackground);
+  }
+  
+  .table tbody tr:hover {
+    background-color: var(--cardHoverBackground);
+  }
+  
+  .table td {
+    padding: 12px;
+    text-align: right;
+    color: var(--secondaryText);
+    font-size: 14px;
+  }
+  
+  .deleteButton {
+    background-color: transparent;
+    border: none;
+    color: var(--dangerRed);
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+  }
+  
+  .deleteButton:hover {
+    color: var(--dangerRedHover);
+    transform: scale(1.1);
+  }
+  
+  .sheetTitleContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .sheetTitle {
+    color: var(--primaryText);
+    font-weight: 500;
+  }
+  
+  .sheetDescription {
+    line-height: 1.6;
+  }
+  
+  .sheetUpdated {
+    display: flex;
+    align-items: center;
+    color: var(--iconGray);
+  }
+  
+  .sheetUpdatedIcon {
+    margin-left: 8px;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
