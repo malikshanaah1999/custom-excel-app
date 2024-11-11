@@ -37,3 +37,8 @@ class Sheet(db.Model):
         self.data = data
         self.record_count = len(data)
         self.updated_at = datetime.utcnow()
+    def update_name(self, new_name):
+        if not new_name or not new_name.strip():
+            raise ValueError("Sheet name cannot be empty")
+        self.name = new_name.strip()
+        self.updated_at = datetime.utcnow()

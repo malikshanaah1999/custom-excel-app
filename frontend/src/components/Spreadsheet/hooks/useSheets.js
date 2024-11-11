@@ -7,6 +7,7 @@ const useSheets = (showNotification) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const fetchSheets = useCallback(async (searchTerm = '') => {
         try {
             setIsLoading(true);
@@ -93,15 +94,47 @@ const useSheets = (showNotification) => {
         fetchSheets();
     }, [fetchSheets]);
 
-    return {
+    const editSheet = useCallback(async (sheetId, updatedData) => {
+        try {
+          setIsEditing(true);
+          const response = await fetch(`http://127.0.0.1:5000/sheets/${sheetId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+          });
+          
+          const result = await response.json();
+          
+          if (response.ok && result.status === 'success') {
+            showNotification('تم تعديل اسم الجدول بنجاح', 'success');
+            await fetchSheets();  // Refresh the sheets list
+            return true;
+          } else {
+            throw new Error(result.message || 'Failed to edit sheet');
+          }
+        } catch (error) {
+          console.error('Error editing sheet:', error);
+          showNotification('فشل في تعديل اسم الجدول الاسم موجود مسبقا', 'error');
+          return false;
+        } finally {
+          setIsEditing(false);
+        }
+      }, [fetchSheets, showNotification]);
+      
+      // Add isEditing and editSheet to the return object
+      return {
         sheets,
         isLoading,
         isCreating,
         isDeleting,
+        isEditing,
         fetchSheets,
         createSheet,
-        deleteSheet
-    };
+        deleteSheet,
+        editSheet
+      };
 };
 
 export default useSheets;

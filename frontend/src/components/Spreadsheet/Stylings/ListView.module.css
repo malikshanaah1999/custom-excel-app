@@ -57,12 +57,40 @@
     font-size: 14px;
   }
   
+  .actionButtons {
+    display: flex;
+    gap: 8px;
+    justify-content: center; /* Center the buttons */
+    align-items: center;
+  }
+  
+  .editButton {
+    background-color: transparent;
+    border: none;
+    color: var(--accentBlue);
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+  }
+  
+  .editButton:hover {
+    color: var(--accentBlueHover);
+    transform: scale(1.1);
+  }
+  
   .deleteButton {
     background-color: transparent;
     border: none;
     color: var(--dangerRed);
     cursor: pointer;
     transition: color 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
   }
   
   .deleteButton:hover {
@@ -107,4 +135,11 @@
   .spinner {
     animation: spin 1s linear infinite;
   }
-  
+  .table th.actionsHeader {
+    text-align: center;  /* Center the header text */
+    padding-right: 16px; /* Add some padding to match the cell content */
+  }
+  .actionsCell {
+    text-align: center;  /* Center the buttons container */
+    padding: 12px 16px;  /* Consistent padding */
+  }

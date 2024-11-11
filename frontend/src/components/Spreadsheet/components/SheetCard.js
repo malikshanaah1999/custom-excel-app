@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileSpreadsheet, Trash2 } from 'lucide-react';
+import { Calendar, FileSpreadsheet, Trash2, Edit2 } from 'lucide-react';
 import SheetCardColors from '../../../constants/SheetCardColors.js';
 import styles from '../Stylings/SheetCard.module.css';
 
-const SheetCard = ({ sheet, onDelete }) => {
+const SheetCard = ({ sheet, onDelete, onEdit }) => {
   const navigate = useNavigate();
 
   const formatDate = (dateString) => {
@@ -22,8 +22,8 @@ const SheetCard = ({ sheet, onDelete }) => {
   };
 
   const handleClick = (e) => {
-    // Prevent navigation if clicking delete button
-    if (e.target.closest(`.${styles.deleteButton}`)) {
+    // Prevent navigation if clicking action buttons
+    if (e.target.closest(`.${styles.actionButton}`)) {
       e.stopPropagation();
       return;
     }
@@ -32,16 +32,23 @@ const SheetCard = ({ sheet, onDelete }) => {
 
   return (
     <div className={styles.sheetCard} onClick={handleClick}>
-      {/* Delete Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(sheet);
-        }}
-        className={styles.deleteButton}
-      >
-        <Trash2 size={16} />
-      </button>
+      {/* Action Buttons */}
+      <div className={styles.actionButtons}>
+        <button
+          onClick={() => onEdit(sheet)}
+          className={`${styles.actionButton} ${styles.editButton}`}
+          aria-label={`تعديل ${sheet.name}`}
+        >
+          <Edit2 size={16} />
+        </button>
+        <button
+          onClick={() => onDelete(sheet)}
+          className={`${styles.actionButton} ${styles.deleteButton}`}
+          aria-label={`حذف ${sheet.name}`}
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
 
       {/* Sheet Info */}
       <div className={styles.sheetInfo}>

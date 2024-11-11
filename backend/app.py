@@ -8,7 +8,7 @@ import json
 import traceback
 from logging.handlers import RotatingFileHandler
 import os
-
+from sqlalchemy.exc import IntegrityError
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -151,12 +151,11 @@ def get_sheets():
         }), 500
 
 # Create new sheet
-# In app.py, update create_sheet
 @app.route('/sheets', methods=['POST'])
 def create_sheet():
     try:
         content = request.get_json(force=True)
-        logger.info(f"Received sheet creation request: {content}")  # Add logging
+        logger.info(f"Received sheet creation request: {content}")
         
         if not content.get('name'):
             logger.warning("Sheet creation failed: No name provided")
@@ -165,10 +164,18 @@ def create_sheet():
                 "message": "اسم الجدول مطلوب"
             }), 400
 
+        # Check if name already exists
+        existing_sheet = Sheet.query.filter(Sheet.name == content['name'].strip()).first()
+        if existing_sheet:
+            return jsonify({
+                "status": "error",
+                "message": "هذا الاسم مستخدم بالفعل"
+            }), 409  # 409 Conflict
+
         new_sheet = Sheet(
             name=content['name'],
             description=content.get('description', ''),
-            data=[["" for _ in range(17)]]  # Initialize with one empty row
+            data=[["" for _ in range(17)]]
         )
         
         try:
@@ -183,6 +190,14 @@ def create_sheet():
                 "name": new_sheet.name,
                 "description": new_sheet.description
             }), 201
+
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.error(f"Integrity error during sheet creation: {str(e)}")
+            return jsonify({
+                "status": "error",
+                "message": "هذا الاسم مستخدم بالفعل"
+            }), 409
 
         except Exception as db_error:
             db.session.rollback()
@@ -296,6 +311,73 @@ def delete_row(row_index):
             "status": "error",
             "message": "Failed to delete row",
             "error": str(e)
+        }), 500
+
+@app.route('/sheets/<int:sheet_id>', methods=['PATCH'])
+def update_sheet(sheet_id):
+    try:
+        sheet = Sheet.query.get_or_404(sheet_id)
+        content = request.get_json(force=True)
+        
+        if 'name' in content:
+            new_name = content['name'].strip()
+            if not new_name:
+                return jsonify({
+                    "status": "error",
+                    "message": "اسم الجدول مطلوب"
+                }), 400
+                
+            # Check if name already exists for different sheet
+            existing_sheet = Sheet.query.filter(
+                Sheet.name == new_name,
+                Sheet.id != sheet_id
+            ).first()
+            if existing_sheet:
+                return jsonify({
+                    "status": "error",
+                    "message": "هذا الاسم مستخدم بالفعل"
+                }), 409
+
+            sheet.name = new_name
+            
+        if 'description' in content:
+            sheet.description = content['description']
+            
+        sheet.updated_at = datetime.utcnow()
+        
+        try:
+            db.session.commit()
+            logger.info(f"Sheet updated successfully with ID: {sheet.id}")
+
+            return jsonify({
+                "status": "success",
+                "message": "تم تحديث الجدول بنجاح",
+                "id": sheet.id,
+                "name": sheet.name,
+                "description": sheet.description
+            }), 200
+
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.error(f"Integrity error during sheet update: {str(e)}")
+            return jsonify({
+                "status": "error",
+                "message": "هذا الاسم مستخدم بالفعل"
+            }), 409
+
+        except Exception as db_error:
+            db.session.rollback()
+            logger.error(f"Database error during sheet update: {str(db_error)}")
+            return jsonify({
+                "status": "error",
+                "message": "خطأ في قاعدة البيانات"
+            }), 500
+
+    except Exception as e:
+        logger.error(f"Error updating sheet: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "فشل في تحديث الجدول"
         }), 500
 
 @app.errorhandler(404)

@@ -1,17 +1,18 @@
 // src/pages/HomePage.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';  
 import { Plus, Loader2, FileX, List, Grid } from 'lucide-react';
 import useSheets from '../hooks/useSheets';
 import useNotification from '../hooks/useNotification';
 import CreateSheetModal from '../components/CreateSheetModal';
+import EditSheetModal from '../components/EditSheetModal';
 import Notification from '../components/Notification';
 import DeleteSheetModal from '../components/DeleteSheetModal';
 import GridView from '../components/ListTypeView/GridView';
 import ListView from '../components/ListTypeView/ListView';
 import COLORS from '../../../constants/HomePageColors';
 import styles from '../Stylings/HomePage.module.css';
-
+import SortDropdown from '../components/SortDropdown'; 
 const HomePage = () => {
   const { notification, showNotification } = useNotification();
   const {
@@ -19,26 +20,31 @@ const HomePage = () => {
     isLoading,
     isCreating,
     isDeleting,
+    isEditing,
     fetchSheets,
     createSheet,
     deleteSheet,
+    editSheet,
   } = useSheets(showNotification);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [sheetToDelete, setSheetToDelete] = useState(null);
+  const [sheetToEdit, setSheetToEdit] = useState(null);
   const [isListView, setIsListView] = useState(false);
+  const [sortBy, setSortBy] = useState('recent-activity');
 
   useEffect(() => {
     fetchSheets();
   }, [fetchSheets]);
 
   useEffect(() => {
-    if (showCreateModal || !!sheetToDelete) {
+    if (showCreateModal || !!sheetToDelete || !!sheetToEdit) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [showCreateModal, sheetToDelete]);
+  }, [showCreateModal, sheetToDelete, sheetToEdit]);
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -66,6 +72,24 @@ const HomePage = () => {
     }
   };
 
+  const handleEditSheet = async (sheetId, updatedData) => {
+    const success = await editSheet(sheetId, updatedData);
+    if (success) {
+      setSheetToEdit(null);
+    }
+  };
+  const getSortedSheets = useCallback(() => {
+    if (!sheets) return [];
+    
+    return [...sheets].sort((a, b) => {
+      if (sortBy === 'recent-activity') {
+        return new Date(b.updated_at) - new Date(a.updated_at);
+      } else {
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+    });
+  }, [sheets, sortBy]);
+
   return (
     <div className={styles.homePage}>
       {/* Main Content Container */}
@@ -79,6 +103,10 @@ const HomePage = () => {
         <div className={styles.header}>
           <h1 className={styles.title}>الجداول</h1>
           <div className={styles.headerActions}>
+          <SortDropdown 
+    currentSort={sortBy}
+    onSortChange={setSortBy}
+  />
             {/* View Toggle Switch */}
             <div className={styles.viewToggle}>
               <span>{isListView ? 'عرض الشبكة' : 'عرض القائمة'}</span>
@@ -119,16 +147,24 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Sheets Grid or List */}
-        {isLoading ? (
+     {/* Sheets Grid or List */}
+     {isLoading ? (
           <div className={styles.loaderContainer}>
             <Loader2 size={48} className={styles.loaderIcon} />
           </div>
         ) : sheets.length > 0 ? (
           isListView ? (
-            <ListView sheets={sheets} onDelete={setSheetToDelete} />
+            <ListView 
+    sheets={getSortedSheets()} 
+    onDelete={setSheetToDelete}
+    onEdit={setSheetToEdit}
+  />
           ) : (
-            <GridView sheets={sheets} onDelete={setSheetToDelete} />
+            <GridView 
+    sheets={getSortedSheets()} 
+    onDelete={setSheetToDelete}
+    onEdit={setSheetToEdit}
+  />
           )
         ) : (
           <div className={styles.noData}>
@@ -148,6 +184,15 @@ const HomePage = () => {
         onClose={() => setShowCreateModal(false)}
         onCreate={handleCreateSheet}
         isCreating={isCreating}
+      />
+
+      <EditSheetModal
+        isOpen={!!sheetToEdit}
+        onClose={() => setSheetToEdit(null)}
+        onEdit={handleEditSheet}
+        isEditing={isEditing}
+        initialName={sheetToEdit?.name}
+        sheetId={sheetToEdit?.id}
       />
 
       <DeleteSheetModal

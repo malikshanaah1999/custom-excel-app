@@ -36,18 +36,8 @@
   }
   
   .deleteButton {
-    position: absolute;
-    left: 16px;
-    top: 16px;
-    background-color: transparent;
     color: var(--dangerRed);
-    padding: 8px;
-    border-radius: 50%;
-    border: 1px solid var(--dangerRed);
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s, transform 0.2s, opacity 0.2s;
-    opacity: 0;
-    transform: scale(0);
+    border-color: var(--dangerRed);
   }
   
   .sheetCard:hover .deleteButton {
@@ -57,7 +47,7 @@
   
   .deleteButton:hover {
     background-color: var(--dangerRed);
-    color: #fff;
+    color: white;
     transform: scale(1.1);
   }
   
@@ -101,4 +91,41 @@
   .sheetUpdatedIcon {
     margin-left: 8px;
   }
+  .actionButtons {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
   
+  .sheetCard:hover .actionButtons {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .actionButton {
+    padding: 8px;
+    border-radius: 50%;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+  }
+  
+  .editButton {
+    color: var(--accentBlue);
+    border-color: var(--accentBlue);
+  }
+  
+  .editButton:hover {
+    background-color: var(--accentBlue);
+    color: white;
+    transform: scale(1.1);
+  }
