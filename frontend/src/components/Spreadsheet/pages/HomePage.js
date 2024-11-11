@@ -10,6 +10,7 @@ import Notification from '../components/Notification';
 import DeleteSheetModal from '../components/DeleteSheetModal';
 import GridView from '../components/ListTypeView/GridView';
 import ListView from '../components/ListTypeView/ListView';
+import Pagination from '../components/Pagination';
 import COLORS from '../../../constants/HomePageColors';
 import styles from '../Stylings/HomePage.module.css';
 import SortDropdown from '../components/SortDropdown'; 
@@ -33,6 +34,8 @@ const HomePage = () => {
   const [sheetToEdit, setSheetToEdit] = useState(null);
   const [isListView, setIsListView] = useState(false);
   const [sortBy, setSortBy] = useState('recent-activity');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
 
   useEffect(() => {
     fetchSheets();
@@ -45,6 +48,12 @@ const HomePage = () => {
       document.body.style.overflow = 'auto';
     }
   }, [showCreateModal, sheetToDelete, sheetToEdit]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortBy]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -90,6 +99,24 @@ const HomePage = () => {
     });
   }, [sheets, sortBy]);
 
+  // Add this function to get paginated sheets
+const getPaginatedSheets = useCallback(() => {
+  const sortedSheets = getSortedSheets();
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  return sortedSheets.slice(startIndex, endIndex);
+}, [getSortedSheets, currentPage]);
+
+// Add this function to calculate total pages
+const getTotalPages = useCallback(() => {
+  return Math.ceil(sheets.length / ITEMS_PER_PAGE);
+}, [sheets]);
+
+// Add handle page change function
+const handlePageChange = (newPage) => {
+  setCurrentPage(newPage);
+};
+
   return (
     <div className={styles.homePage}>
       {/* Main Content Container */}
@@ -99,14 +126,20 @@ const HomePage = () => {
           showCreateModal || !!sheetToDelete ? styles.mainContentBlur : ''
         }`}
       >
-        {/* Header */}
+
         <div className={styles.header}>
           <h1 className={styles.title}>الجداول</h1>
           <div className={styles.headerActions}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={getTotalPages()}
+            onPageChange={handlePageChange}
+          />
           <SortDropdown 
-    currentSort={sortBy}
-    onSortChange={setSortBy}
-  />
+            currentSort={sortBy}
+            onSortChange={setSortBy}
+          />
+          
             {/* View Toggle Switch */}
             <div className={styles.viewToggle}>
               <span>{isListView ? 'عرض الشبكة' : 'عرض القائمة'}</span>
@@ -155,16 +188,16 @@ const HomePage = () => {
         ) : sheets.length > 0 ? (
           isListView ? (
             <ListView 
-    sheets={getSortedSheets()} 
-    onDelete={setSheetToDelete}
-    onEdit={setSheetToEdit}
-  />
+            sheets={getPaginatedSheets()} 
+            onDelete={setSheetToDelete}
+            onEdit={setSheetToEdit}
+          />
           ) : (
             <GridView 
-    sheets={getSortedSheets()} 
-    onDelete={setSheetToDelete}
-    onEdit={setSheetToEdit}
-  />
+            sheets={getPaginatedSheets()} 
+            onDelete={setSheetToDelete}
+            onEdit={setSheetToEdit}
+          />
           )
         ) : (
           <div className={styles.noData}>

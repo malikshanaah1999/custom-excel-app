@@ -62,7 +62,8 @@
   .headerActions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 24px;  /* Increased gap for better spacing */
+    flex-wrap: wrap;  /* Allow wrapping on smaller screens */
   }
   
   .viewToggle {
