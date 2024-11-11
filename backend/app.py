@@ -26,10 +26,11 @@ logger.addHandler(file_handler)
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # Database Configuration
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:TiKelam1999#@localhost/custom_excel_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_ENSURE_ASCII'] = False
