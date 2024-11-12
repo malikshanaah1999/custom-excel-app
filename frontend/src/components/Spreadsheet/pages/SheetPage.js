@@ -79,37 +79,36 @@ const SheetPage = () => {
       <div id="mainContent" className={styles.mainContent}>
         {/* Header */}
         <div className={styles.header}>
-          {/* Back Button */}
-          <button onClick={() => navigate('/')} className={styles.backButton}>
-            <ArrowLeft size={20} />
-            العودة للرئيسية
-          </button>
+    <button onClick={() => navigate('/')} className={styles.backButton}>
+        <ArrowLeft size={18} />
+        العودة للرئيسية
+    </button>
 
-          {/* Page Title */}
-          <h1 className={styles.pageTitle}>
-            {sheetInfo?.name || 'جدول البيانات'}
-          </h1>
+    <h1 className={styles.pageTitle}>
+        {sheetInfo?.name || 'جدول البيانات'}
+    </h1>
 
-          {/* Action Buttons */}
-          <div className={styles.actionButtons}>
-            <button
-              onClick={() => saveData(true)}
-              disabled={isSaving}
-              className={`${styles.saveButton} ${
-                isSaving ? 'disabled' : ''
-              }`}
-            >
-              {isSaving && <Loader2 size={20} className={styles.spinner} />}
-              <Save size={20} />
-              {isSaving ? 'جاري الحفظ...' : 'حفظ'}
-            </button>
+    <div className={styles.actionButtons}>
+        <button onClick={addNewRow} className={styles.addRowButton}>
+            <PlusCircle size={18} />
+            إضافة سجل
+        </button>
 
-            <GenerateButton
-              onClick={() => handleGenerate(data)}
-              isGenerating={isGenerating}
-            />
-          </div>
-        </div>
+        <button
+            onClick={() => saveData(true)}
+            disabled={isSaving}
+            className={`${styles.saveButton} ${isSaving ? 'disabled' : ''}`}
+        >
+            {isSaving ? <Loader2 size={18} className={styles.spinner} /> : <Save size={18} />}
+            {isSaving ? 'جاري الحفظ' : 'حفظ'}
+        </button>
+
+        <GenerateButton
+            onClick={() => handleGenerate(data)}
+            isGenerating={isGenerating}
+        />
+    </div>
+</div>
 
         {/* Spreadsheet Container */}
         <div className={styles.spreadsheetContainer}>
@@ -127,13 +126,7 @@ const SheetPage = () => {
           )}
         </div>
 
-        {/* Add New Row Button */}
-        <div className={styles.addRowContainer}>
-          <button onClick={addNewRow} className={styles.addRowButton}>
-            <PlusCircle size={20} color="#fff" />
-            إضافة سجل جديد
-          </button>
-        </div>
+       
       </div>
 
       {/* Delete Confirmation Modal */}

@@ -1,181 +1,208 @@
 /* src/pages/SheetPage.module.css */
 
 :root {
-    /* Define CSS variables based on COLORS */
-    --lightBlueBackground: #e6f7ff;
-    --darkText: #2d3748;
-    --primaryBlue: #4299e1;
-    --primaryBlueHover: #3182ce;
-    --inputBorder: #e2e8f0;
-    --inputFocusBorder: #3182ce;
-    --inputBackground: #fff;
-    --placeholderText: #a0aec0;
-    --spinnerColor: #4299e1;
-    --errorText: #718096;
-    --errorIcon: #cbd5e0;
-    --cardBackground: #ffffff;
-    --cardHoverBackground: #f0f4f8;
-    --cardBorder: #e2e8f0;
-    --cardShadow: rgba(0, 0, 0, 0.1);
-    --cardHoverShadow: rgba(0, 0, 0, 0.15);
-    --secondaryText: #4a5568;
-    --accentBlue: #4299e1;
-    --dangerRed: #e53e3e;
-    --dangerRedHover: #c53030;
-    --iconGray: #718096;
-    --successGreen: #48bb78;
-    --successGreenHover: #38a169;
-  }
-  
-  .sheetPage {
-    position: relative;
-    overflow: hidden;
-    direction: rtl;
-    background-color: var(--lightBlueBackground);
-    min-height: 100vh;
-  }
-  
-  .mainContent {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 32px 16px;
-    min-height: 100vh;
-    box-sizing: border-box;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-  
-  .backButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: transparent;
-    color: var(--darkText);
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: background-color 0.2s;
-  }
-  
-  .backButton:hover {
-    background-color: #e2e8f0;
-  }
-  
-  .pageTitle {
-    font-size: 28px;
-    font-weight: bold;
-    color: var(--darkText);
-    text-align: center;
-    flex-grow: 1;
-  }
-  
-  .actionButtons {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .saveButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: var(--primaryBlue);
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s;
-  }
-  
-  .saveButton:disabled,
-  .saveButton.disabled {
-    background-color: #a0aec0;
+  /* Define CSS variables based on COLORS */
+  --lightBlueBackground: #e6f7ff;
+  --darkText: #2d3748;
+  --primaryBlue: #4299e1;
+  --primaryBlueHover: #3182ce;
+  --inputBorder: #e2e8f0;
+  --inputFocusBorder: #3182ce;
+  --inputBackground: #fff;
+  --placeholderText: #a0aec0;
+  --spinnerColor: #4299e1;
+  --errorText: #718096;
+  --errorIcon: #cbd5e0;
+  --cardBackground: #ffffff;
+  --cardHoverBackground: #f0f4f8;
+  --cardBorder: #e2e8f0;
+  --cardShadow: rgba(0, 0, 0, 0.1);
+  --cardHoverShadow: rgba(0, 0, 0, 0.15);
+  --secondaryText: #4a5568;
+  --accentBlue: #4299e1;
+  --dangerRed: #e53e3e;
+  --dangerRedHover: #c53030;
+  --iconGray: #718096;
+  --successGreen: #48bb78;
+  --successGreenHover: #38a169;
+}
+
+.sheetPage {
+  position: relative;
+  overflow: hidden;
+  direction: rtl;
+  background-color: #4CAF50 !important;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.mainContent {
+  width: 98%;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: calc(100vh - 32px);
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 16px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #2E7D32;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px 12px;
+  height: 32px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+
+
+}
+
+.backButton:hover {
+  background-color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pageTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+  flex-grow: 1;
+  margin: 0;
+
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.saveButton, .generateButton, .addRowButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #2E7D32;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 110px;
+  justify-content: center;
+  height: 32px;
+}
+
+.saveButton:hover, .generateButton:hover, .addRowButton:hover {
+  background-color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.saveButton:disabled,
+.saveButton.disabled {
+    background-color: rgba(255, 255, 255, 0.5);
+    color: rgba(46, 125, 50, 0.5);
     cursor: not-allowed;
+    transform: none;
+}
+
+.spreadsheetContainer {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #FFFFFF;
+  height: calc(100vh - 95px);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.deleteRowButton {
+  position: fixed;
+  right: 16px;
+  top: 100px; /* Adjust based on your header height */
+  background-color: rgba(254, 215, 215, 0.9);
+  color: #c53030;
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.deleteRowButton:hover {
+  background-color: #feb2b2;
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+.hot-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.wtHolder {
+  position: absolute !important;
+  bottom: 0 !important;
+}
+
+.handsontable {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+/* Remove the old addRowContainer since we moved the button */
+.addRowContainer {
+  display: none;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  
-  .saveButton:hover {
-    background-color: var(--primaryBlueHover);
+  to {
+    transform: rotate(360deg);
   }
-  
-  .spreadsheetContainer {
-    position: relative;
-    overflow: hidden;
-    border-radius: 8px;
-    border: 1px solid var(--inputBorder);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    background-color: var(--cardBackground);
-  }
-  
-  .deleteRowButton {
-    position: absolute;
-    right: 10px;
-    background-color: #fed7d7;
-    color: #c53030;
-    padding: 5px;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    z-index: 1000;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    outline: none;
-    width: 24px;
-    height: 24px;
-  }
-  
-  .deleteRowButton:hover {
-    background-color: #feb2b2;
-    transform: scale(1.1);
-  }
-  
-  .addRowContainer {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-  }
-  
-  .addRowButton {
-    background-color: var(--successGreen);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    border: none;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .addRowButton:hover {
-    background-color: var(--successGreenHover);
-    transform: translateY(-1px);
-  }
-  
-  .spinner {
-    animation: spin 1s linear infinite;
-  }
-  
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  
+}

@@ -1,5 +1,3 @@
-// src/components/Spreadsheet/hooks/useHotSettings.js
-
 import { useCallback } from 'react';
 import { spreadsheetColumns } from '../config/columns';
 
@@ -16,17 +14,16 @@ const useHotSettings = ({
         columns: spreadsheetColumns,
         colHeaders: spreadsheetColumns.map(col => col.title),
         rowHeaders: true,
-        height: 'auto',
-        minRows: 5,
+        height: '100%',
         width: '100%',
         licenseKey: 'non-commercial-and-evaluation',
         stretchH: 'all',
-        className: 'custom-table rtl-table',
+        className: 'custom-table rtl-table zebra-table',
         language: 'ar-AR',
         layoutDirection: 'rtl',
-        renderAllRows: true,
+        renderAllRows: false,
         manualColumnResize: true,
-        manualRowResize: true,
+        manualRowResize: false,
         outsideClickDeselects: false,
         selectionMode: 'single',
         fillHandle: false,
@@ -34,8 +31,16 @@ const useHotSettings = ({
         filters: true,
         columnSorting: true,
         minSpareRows: 0,
-        minRows: data.length || 1,
-        
+        minRows: Math.max(20, data.length),
+        rowHeights: 28,
+        autoRowSize: false,
+        autoColumnSize: false,
+        viewportRowRenderingOffset: 20,
+        enterMoves: { row: 1, col: 0 },
+        wordWrap: false,
+        autoWrapRow: true,
+        autoWrapCol: true,
+
         contextMenu: {
             items: {
                 'delete_row': {
@@ -80,10 +85,8 @@ const useHotSettings = ({
             setHasChanges(true);
             
             changes.forEach(([row, prop, oldValue, newValue]) => {
-                // Check if change is in the "الرقم" column (index 0)
                 if (prop === 0 && newValue !== oldValue && newValue !== '') {
                     try {
-                        // Find existing row with the same "الرقم" value
                         const existingRow = data.find((r, index) => 
                             index !== row && 
                             Array.isArray(r) && 
@@ -91,29 +94,22 @@ const useHotSettings = ({
                         );
 
                         if (existingRow) {
-                            // Create new row based on existing data
                             const newRowData = [...existingRow];
-
-                            // Clear specific fields
-                            // Indices for: باركود الحبة, وحدة القياس, وحدة القياس التعبئة, التعبئة
                             const fieldsToClear = [5, 6, 7, 8];
                             fieldsToClear.forEach(index => {
                                 newRowData[index] = '';
                             });
 
-                            // Ensure row has all 17 columns
                             while (newRowData.length < 17) {
                                 newRowData.push('');
                             }
 
-                            // Update the current row with the new data
                             setData(prevData => {
                                 const updatedData = [...prevData];
-                                updatedData[row] = newRowData.slice(0, 17); // Ensure exactly 17 columns
+                                updatedData[row] = newRowData.slice(0, 17);
                                 return updatedData;
                             });
 
-                            // Show success notification
                             showNotification('تم تعبئة البيانات تلقائياً', 'success');
                         }
                     } catch (error) {
@@ -127,14 +123,11 @@ const useHotSettings = ({
         beforeChange: (changes, source) => {
             if (!changes || source !== 'edit') return;
 
-            // Validate and clean data before applying changes
             changes.forEach(change => {
                 const [, , , newValue] = change;
-                // Convert null/undefined to empty string
                 if (newValue === null || newValue === undefined) {
                     change[3] = '';
                 }
-                // Trim whitespace
                 if (typeof newValue === 'string') {
                     change[3] = newValue.trim();
                 }
@@ -152,13 +145,17 @@ const useHotSettings = ({
         cells: function(row, col) {
             const cellProperties = {};
             
-            // Make the "الرقم" column (index 0) required
             if (col === 0) {
                 cellProperties.allowEmpty = false;
+                cellProperties.className = 'row-number-cell';
+               
             }
-
+    
+            cellProperties.className = `${cellProperties.className || ''} ${row % 2 === 0 ? 'even-row' : 'odd-row'}`;
+    
             return cellProperties;
-        }
+        },
+
     }), [data, setData, setSelectedRow, setHasChanges, onDeleteRow, showNotification]);
 
     return getHotSettings;

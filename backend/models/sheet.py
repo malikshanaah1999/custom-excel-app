@@ -16,7 +16,7 @@ class Sheet(db.Model):
 
     def __init__(self, name, data=None, description=None):
         self.name = name
-        self.data = data if data is not None else [["" for _ in range(17)] for _ in range(20)]  # 20 empty rows
+        self.data = data if data is not None else [["" for _ in range(17)]]
         self.description = description
         self.record_count = len(self.data) if self.data else 0
         self.created_at = datetime.utcnow()
