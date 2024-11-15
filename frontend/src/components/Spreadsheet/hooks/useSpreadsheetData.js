@@ -35,7 +35,7 @@ const useSpreadsheetData = (showNotification) => {
                     recordCount: cleanedData.length
                 });
 
-                if (result.id) {
+                if (result.id) {//
                     setDebugInfo({
                         lastSavedId: result.id,
                         recordCount: cleanedData.length,

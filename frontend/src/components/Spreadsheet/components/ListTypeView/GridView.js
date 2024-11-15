@@ -16,7 +16,7 @@ const GridView = ({ sheets, onDelete, onEdit }) => {  // Add onEdit to props
           key={sheet.id} 
           sheet={sheet} 
           onDelete={onDelete}
-          onEdit={onEdit}  // Pass onEdit to SheetCard
+          onEdit={onEdit}  // Pass onEdit to SheetCard 
         />
       ))}
     </div>

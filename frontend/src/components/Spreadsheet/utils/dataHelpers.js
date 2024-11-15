@@ -18,7 +18,7 @@ export const isRowEmpty = (row) => {
 
 export const cleanData = (data) => {
     if (!Array.isArray(data)) return [createEmptyRow()];
-    
+    /***/
     return data
         .filter(row => row && row.some(cell => (cell ?? '').toString().trim() !== ''))
         .map(row => {

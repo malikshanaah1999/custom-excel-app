@@ -58,7 +58,7 @@
     font-weight: bold;
     color: var(--darkText);
   }
-  
+  /***/
   .headerActions {
     display: flex;
     align-items: center;

@@ -9,4 +9,4 @@ const ListViewColors = {
     dangerRed: '#e53e3e',
     dangerRedHover: '#c53030',
   };
-  export default ListViewColors;
+  export default ListViewColors;/***/

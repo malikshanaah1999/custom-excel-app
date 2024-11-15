@@ -1,5 +1,5 @@
 // src/components/Spreadsheet/hooks/useNotification.js
-// hooks are special functions that allow you to use React state and lifecycle features in functional components. 
+// hooks are special functions that allow you to use React state and lifecycle features in functional components. //
 import { useState, useCallback } from 'react';
 
 const useNotification = () => { // Custom Hook.

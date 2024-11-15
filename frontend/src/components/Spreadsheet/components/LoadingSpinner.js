@@ -1,5 +1,5 @@
 // src/components/Spreadsheet/components/LoadingSpinner.js
-
+//
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import styles from '../Stylings/LoadingSpinner.module.css';

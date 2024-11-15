@@ -1,5 +1,5 @@
 // src/components/Spreadsheet/components/ErrorBoundary.js
-
+//
 import React from 'react';
 
 class ErrorBoundary extends React.Component {

@@ -63,7 +63,7 @@
     justify-content: center; /* Center the buttons */
     align-items: center;
   }
-  
+  /***/
   .editButton {
     background-color: transparent;
     border: none;

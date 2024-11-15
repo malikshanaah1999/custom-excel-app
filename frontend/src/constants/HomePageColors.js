@@ -21,7 +21,7 @@ const COLORS = {
     accentBlue: '#4299e1',
     dangerRed: '#e53e3e',
     dangerRedHover: '#c53030',
-    iconGray: '#718096',
+    iconGray: '#718096',/***/
   };
   
   export default COLORS;

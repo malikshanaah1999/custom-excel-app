@@ -10,7 +10,7 @@ from logging.handlers import RotatingFileHandler
 import os
 from sqlalchemy.exc import IntegrityError
 
-# Configure logging
+## Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 

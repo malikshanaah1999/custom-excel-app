@@ -90,7 +90,7 @@
     background-color: var(--deleteButtonBackground);
     color: var(--deleteButtonText);
   }
-  
+
   .deleteButton:hover {
     background-color: var(--deleteButtonHover);
   }
