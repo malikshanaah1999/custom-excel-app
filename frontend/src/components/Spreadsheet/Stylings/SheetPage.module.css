@@ -197,7 +197,24 @@
 .spinner {
   animation: spin 1s linear infinite;
 }
+.optionsModal {
+  position: absolute;
+  z-index: 1000;
+}
 
+.dropdownContainer {
+  position: relative;
+}
+
+/* Add these performance optimizations */
+.spreadsheetContainer {
+  contain: content;
+  will-change: transform;
+}
+
+.htWrapper {
+  contain: content;
+}
 @keyframes spin {
   from {
     transform: rotate(0deg);

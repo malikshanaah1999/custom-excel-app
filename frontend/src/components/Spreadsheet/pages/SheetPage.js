@@ -1,11 +1,12 @@
 // src/pages/SheetPage.js
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { HotTable } from '@handsontable/react';
 import 'handsontable/dist/handsontable.full.min.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import useSpreadsheetData from '../hooks/useSpreadsheetData';
 import useNotification from '../hooks/useNotification';
+import DropdownEditor from '../../DropdownEditor';
 import useHotSettings from '../hooks/useHotSettings';
 import {
   Loader2,
@@ -20,6 +21,7 @@ import Notification from '../components/Notification';
 import GenerateButton from '../components/GenerateButton';
 import useExcelGeneration from '../hooks/useExcelGeneration';
 import styles from '../Stylings/SheetPage.module.css';
+import OptionsModal from '../../OptionsDialog';
 
 const SheetPage = () => {
   const { id } = useParams();
@@ -40,7 +42,67 @@ const SheetPage = () => {
     addNewRow,
     sheetInfo,
   } = useSpreadsheetData(showNotification, id);
+  // Prevent memory leaks
+  useEffect(() => {
+    return () => {
+      setModalState({
+        isOpen: false,
+        category: '',
+        options: [],
+        onSelect: null
+      });
+      setDropdownEditorState({
+        isOpen: false,
+        position: null
+      });
+    };
+  }, []);
+  const [dropdownEditorState, setDropdownEditorState] = useState({
+    isOpen: false,
+    options: [],
+    onSelect: null,
+    position: null
+  });
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    category: '',
+    options: [],
+    onSelect: null,
+    position: null
+  });
 
+  const showOptionsModal = useCallback(({ category, options, onSelect, position }) => {
+    const adjustedPosition = {
+        top: position.top,
+        left: position.left,
+    };
+
+    // Adjust position if it would go off screen
+    if (position.top + 300 > window.innerHeight) {
+        adjustedPosition.top = position.top - 300;
+    }
+
+    setModalState({
+        isOpen: true,
+        category,
+        options: Array.isArray(options) ? options : [],
+        onSelect,
+        position: adjustedPosition
+    });
+}, []);
+
+  const handleModalClose = useCallback(() => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+  }, []);
+
+  const handleOptionSelect = useCallback((value) => {
+    if (modalState.onSelect) {
+      modalState.onSelect(value);
+    }
+    handleModalClose();
+    setDropdownEditorState(prev => ({ ...prev, isOpen: false }));
+  }, [modalState.onSelect, handleModalClose]);
+  
   const hotSettings = useHotSettings({
     data,
     setData,
@@ -48,8 +110,17 @@ const SheetPage = () => {
     setHasChanges,
     onDeleteRow: () => setShowDeleteConfirm(true),
     showNotification,
+    showDropdownEditor: showOptionsModal
   });
-
+  const memoizedHotSettings = useMemo(() => hotSettings(), [
+    data,
+    setData,
+    setSelectedRow,
+    setHasChanges,
+    showNotification,
+    showOptionsModal,
+    hotSettings 
+  ]);
   // Handle Ctrl+S shortcut for saving
   const handleKeyDown = useCallback(
     (event) => {
@@ -61,14 +132,26 @@ const SheetPage = () => {
     [saveData]
   );
 //
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
+const handleClickOutside = useCallback((event) => {
+  if (!event.target.closest(`.${styles.dropdownContainer}`) && 
+      !event.target.closest('.dropdown-cell') &&
+      !event.target.closest('.htDropdownWrapper')) {
+      setModalState(prev => ({ ...prev, isOpen: false }));
+      setDropdownEditorState(prev => ({ ...prev, isOpen: false }));
+  }
+}, []);
 
+useEffect(() => {
+  document.addEventListener('keydown', handleKeyDown);
+  return () => document.removeEventListener('keydown', handleKeyDown);
+}, [handleKeyDown]);
+useEffect(() => {
+  if (!modalState.isOpen) return;
+  
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, [modalState.isOpen, handleClickOutside]);
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -112,8 +195,8 @@ const SheetPage = () => {
 
         {/* Spreadsheet Container */}
         <div className={styles.spreadsheetContainer}>
-          <HotTable {...hotSettings()} />
-
+        <HotTable {...memoizedHotSettings} />
+        
           {/* Delete Row Button */}
           {selectedRow !== null && data.length > 0 && (
             <button
@@ -143,6 +226,16 @@ const SheetPage = () => {
 
       {/* Notifications */}
       <Notification notification={notification} />
+
+      <OptionsModal
+        isOpen={modalState.isOpen}
+        category={modalState.category}
+        options={modalState.options}
+        onSelect={handleOptionSelect}
+        onClose={handleModalClose}
+        position={modalState.position}
+        className={styles.optionsModal}
+      />
     </div>
   );
 };

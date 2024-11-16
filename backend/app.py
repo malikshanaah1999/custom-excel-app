@@ -9,6 +9,10 @@ import traceback
 from logging.handlers import RotatingFileHandler
 import os
 from sqlalchemy.exc import IntegrityError
+from backend.models.dropdown_options import DropdownOption
+from backend.models.sheet import Sheet
+from backend.extensions import db
+
 
 ## Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -26,8 +30,7 @@ logger.addHandler(file_handler)
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
-app.wsgi_app = ProxyFix(app.wsgi_app)
+
 
 # Database Configuration
 
@@ -41,36 +44,10 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 }
 
 # Initialize SQLAlchemy
-db = SQLAlchemy(app)  # Move this before the Sheet class
-# In app.py, update the Sheet model
-class Sheet(db.Model):
-    __tablename__ = 'sheets'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)  # Add this
-    description = db.Column(db.Text)                  # Add this
-    data = db.Column(db.JSON, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Add this
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow)  # Add this
-    record_count = db.Column(db.Integer, default=0)   # Add this
-
-    def __init__(self, name, data=None, description=None):
-        self.name = name
-        self.data = data if data is not None else [["" for _ in range(17)]]
-        self.description = description
-        self.record_count = len(self.data) if self.data else 0
-        self.created_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
-        
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'data': self.data,
-            'record_count': self.record_count,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
-        }
+db.init_app(app)
+app.app_context().push()
+CORS(app, resources={r"/*": {"origins": "*"}})
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 @app.route('/')
 def index():
@@ -378,6 +355,90 @@ def update_sheet(sheet_id):
         return jsonify({
             "status": "error",
             "message": "فشل في تحديث الجدول"
+        }), 500
+
+@app.route('/api/dropdown-options/<category>', methods=['GET'])
+def get_dropdown_options(category):
+    if not category:
+        return jsonify([])
+        
+    try:
+        options = DropdownOption.query.filter_by(category=category).all()
+        return jsonify([{
+            'id': option.id,
+            'value': option.value,
+            'label': option.value
+        } for option in options])
+    except Exception as e:
+        logger.error(f"Error fetching dropdown options: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/api/dropdown-options/<category>', methods=['POST'])
+def add_dropdown_option(category):
+    try:
+        data = request.get_json()
+        value = data.get('value')
+        if not value:
+            return jsonify({
+                "status": "error",
+                "message": "Value is required"
+            }), 400
+
+        new_option = DropdownOption(category=category, value=value)
+        db.session.add(new_option)
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "option": new_option.to_dict()
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/api/dropdown-options/<int:option_id>', methods=['PUT'])
+def update_dropdown_option(option_id):
+    try:
+        option = DropdownOption.query.get_or_404(option_id)
+        data = request.get_json()
+        
+        if 'value' in data:
+            option.value = data['value']
+            option.updated_at = datetime.utcnow()
+            
+        db.session.commit()
+        return jsonify({
+            "status": "success",
+            "option": option.to_dict()
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/api/dropdown-options/<int:option_id>', methods=['DELETE'])
+def delete_dropdown_option(option_id):
+    try:
+        option = DropdownOption.query.get_or_404(option_id)
+        db.session.delete(option)
+        db.session.commit()
+        return jsonify({
+            "status": "success",
+            "message": "Option deleted successfully"
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "status": "error",
+            "message": str(e)
         }), 500
 
 @app.errorhandler(404)

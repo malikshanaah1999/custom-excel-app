@@ -1,8 +1,23 @@
-2024-11-15 10:26:08,798 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
-2024-11-15 10:26:09,504 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
-2024-11-15 10:26:09,520 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
-2024-11-15 10:26:09,536 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
-2024-11-15 10:26:18,566 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
-2024-11-15 10:26:18,581 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
-2024-11-15 10:26:18,594 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
-2024-11-15 10:26:18,609 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:124]
+2024-11-16 21:04:13,633 ERROR: Error deleting row: type object 'Sheet' has no attribute 'timestamp'
+Traceback (most recent call last):
+  File "/mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py", line 240, in delete_row
+    latest_sheet = Sheet.query.order_by(Sheet.timestamp.desc()).first()
+                                        ^^^^^^^^^^^^^^^
+AttributeError: type object 'Sheet' has no attribute 'timestamp'
+ [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:285]
+2024-11-16 21:20:33,497 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 21:20:33,573 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 21:20:33,595 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 21:20:33,606 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 21:21:07,989 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 21:21:08,015 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 21:21:08,021 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 21:21:08,026 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:20:42,314 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:20:42,328 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:20:42,340 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:20:42,348 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:28:32,308 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:28:32,350 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:28:32,363 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-16 22:28:32,373 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]

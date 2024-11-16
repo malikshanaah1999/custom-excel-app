@@ -73,3 +73,26 @@
 .ht_master .wtHolder {
     bottom: 0 !important;
 }/***/
+.htDropdownWrapper {
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: rtl;
+    cursor: pointer;
+}
+
+.dropdown-cell:hover .htDropdownWrapper {
+    background-color: #e9ecef;
+}
+
+.handsontable {
+    contain: content;
+    will-change: transform;
+}
+
+.handsontable td {
+    contain: content;
+}
