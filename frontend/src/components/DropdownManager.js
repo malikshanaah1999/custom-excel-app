@@ -1,7 +1,7 @@
 // src/components/DropdownManager.js
 import React, { useState } from 'react';
 import { useDropdownOptions } from '../hooks/useDropdownOptions';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL } from '../../../config/api';
 const DropdownManager = ({ category, onClose }) => {
     const { options, loading, error, addOption, updateOption, deleteOption } = useDropdownOptions(category);
     const [newValue, setNewValue] = useState('');

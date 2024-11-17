@@ -1,5 +1,5 @@
 // src/components/Spreadsheet/hooks/useSpreadsheetData.js
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL } from '../../../config/api';
 import { useState, useCallback, useEffect } from 'react';
 import { 
     fetchSpreadsheetData, 

@@ -1,7 +1,7 @@
 // src/components/Spreadsheet/hooks/useSheets.js
 
 import { useState, useEffect, useCallback } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL } from '../../../config/api';
 const useSheets = (showNotification) => {
     const [sheets, setSheets] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
