@@ -21,3 +21,7 @@ AttributeError: type object 'Sheet' has no attribute 'timestamp'
 2024-11-16 22:28:32,350 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
 2024-11-16 22:28:32,363 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
 2024-11-16 22:28:32,373 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-17 07:30:59,620 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-17 07:30:59,916 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-17 07:30:59,928 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
+2024-11-17 07:30:59,941 INFO: Fetching sheets with search term:  [in /mnt/c/Users/m/Desktop/web-based excel/custom-excel-app/backend/app.py:101]
