@@ -9,6 +9,7 @@ import { registerAllModules } from 'handsontable/registry';
 import DropdownEditor from '../../DropdownEditor';
 import styles from '../../DropdownEditor.module.css';
 import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
+import { API_BASE_URL } from '../config/api';
 // Register all Handsontable modules
 registerAllModules();
 // Register Arabic language

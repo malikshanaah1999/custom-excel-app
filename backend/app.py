@@ -8,13 +8,16 @@ import json
 import traceback
 from logging.handlers import RotatingFileHandler
 import os
+from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError
 from backend.models.dropdown_options import DropdownOption
 from backend.models.sheet import Sheet
 from backend.extensions import db
 
+# Load environment variables
+load_dotenv()
 
-## Configure logging
+# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -31,10 +34,18 @@ logger.addHandler(file_handler)
 # Initialize Flask app
 app = Flask(__name__)
 
-
 # Database Configuration
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://postgres:TiKelam1999#@localhost/custom_excel_db')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:TiKelam1999#@localhost/custom_excel_db'
+# Handle Render's postgres:// vs postgresql:// URL scheme
+if DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+# For production on Render
+if os.getenv('RENDER'):
+    DATABASE_URL = "postgresql://custom_excel_user:69Ncf6Uo7XjeyvTq21c73a38p0g-a.frankfurt-postgres.render.com/myexcel"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_ENSURE_ASCII'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -46,7 +57,15 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 # Initialize SQLAlchemy
 db.init_app(app)
 app.app_context().push()
-CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Configure CORS
+if os.getenv('RENDER'):
+    # In production, specify your frontend URL
+    CORS(app, resources={r"/*": {"origins": "https://your-frontend-url.onrender.com"}})
+else:
+    # In development, allow all origins
+    CORS(app, resources={r"/*": {"origins": "*"}})
+
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
 @app.route('/')
