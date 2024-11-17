@@ -131,6 +131,7 @@ const getColumnSettings = useCallback((columnIndex) => {
         editor: 'text'  // Explicitly specify text editor
     };
 }, [COLUMN_CATEGORIES, getColumnOptions, createDropdownRenderer]);
+
 const getColumnType = useCallback((index) => {
     const category = COLUMN_CATEGORIES[index];
     if (category) {
