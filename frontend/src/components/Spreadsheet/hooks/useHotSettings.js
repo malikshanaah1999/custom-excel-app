@@ -19,11 +19,11 @@ registerLanguageDictionary('ar-AR', {
     // Add other translations as needed
 });
 const defaultValues = {
-    'Product Type': 'Stockable Product',
+    'Product Type': 'Storable Product', // Changed from 'Stockable Product'
     'Can be Purchased': 'True',
     'Can be Sold': 'True',
-    'Invoicing Policy': 'Ordered quantities',
-    'ava.pos': 'True'
+    'Invoicing Policy': 'Delivered quantities', // Changed from 'Ordered quantities'
+    'pos': 'TRUE' // New default value
 };
 const lastRenderedCells = new Map(); // Cache for rendered cells
 
@@ -42,13 +42,13 @@ const useHotSettings = ({
 
     // Map column indices to their categories
     const COLUMN_CATEGORIES = {
-        3: 'category',           // category column
+        3: 'فئة المنتج',           // category column
         4: 'التصنيف',           // classification
         7: 'وحدة القياس',        // measurement unit
         9: 'مصدر المنتج'         // product source
     };
     // Add state for dropdown options
-    const categoryOptions = useDropdownOptions('category');
+    const categoryOptions = useDropdownOptions('فئة المنتج');
     const measurementUnitOptions = useDropdownOptions('وحدة القياس');
     const classificationOptions = useDropdownOptions('التصنيف');
     const sourceOptions = useDropdownOptions('مصدر المنتج');
@@ -67,7 +67,6 @@ const useHotSettings = ({
         const options = columnToOptions[columnIndex] || [];
         return options.map(opt => opt.value);
     }, [categoryOptions, measurementUnitOptions, classificationOptions, sourceOptions]);
-
 
     // Use getColumnOptions instead of dropdownOptions
 const createDropdownRenderer = useCallback((columnIndex) => {
@@ -120,7 +119,7 @@ const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
         return {
             type: 'dropdown',  // Use built-in dropdown
-            allowInvalid: true,  // Prevent invalid entries
+            allowInvalid: false,  // Prevent invalid entries
             source: getColumnOptions(columnIndex),
             editor: 'dropdown',
             autocomplete: true,
@@ -169,7 +168,7 @@ const getColumnType = useCallback((index) => {
         newRowData[18] = defaultValues['Can be Purchased'];
         newRowData[19] = defaultValues['Can be Sold'];
         newRowData[20] = defaultValues['Invoicing Policy'];
-        newRowData[21] = defaultValues['ava.pos'];
+        newRowData[21] = defaultValues['pos'];
         return newRowData;
     }, []);
     // Ensure default values are set when component mounts
@@ -289,7 +288,7 @@ const getColumnType = useCallback((index) => {
 
                             setData(prevData => {
                                 const updatedData = [...prevData];
-                                updatedData[row] = newRowData.slice(0, 22);
+                                updatedData[row] = newRowData.slice(0, 21);
                                 return updatedData;
                             });
 
@@ -388,7 +387,7 @@ const getColumnType = useCallback((index) => {
                 filledRow[18] = defaultValues['Can be Purchased'];
                 filledRow[19] = defaultValues['Can be Sold'];
                 filledRow[20] = defaultValues['Invoicing Policy'];
-                filledRow[21] = defaultValues['ava.pos'];
+                filledRow[21] = defaultValues['pos'];
                 return filledRow;
             });
         },
@@ -400,10 +399,11 @@ const getColumnType = useCallback((index) => {
                 cellProperties.className = 'row-number-cell';
             }
             
-            // Make last 5 columns read-only
+            // Make last 6 columns read-only (including new 'pos' column)
             if (col >= 17 && col <= 21) {
-                cellProperties.readOnly = true;  // Changed from false to true
+                cellProperties.readOnly = true;
             }
+            
             // Add special class for dropdown cells
             if ([3, 7, 4, 9].includes(col)) {
                 cellProperties.className = `${cellProperties.className || ''} dropdown-cell`;
