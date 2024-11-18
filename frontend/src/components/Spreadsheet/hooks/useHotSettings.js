@@ -120,6 +120,7 @@ const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
         return {
             type: 'dropdown',  // Use built-in dropdown
+            allowInvalid: true,  // Prevent invalid entries
             source: getColumnOptions(columnIndex),
             editor: 'dropdown',
             autocomplete: true,
