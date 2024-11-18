@@ -1,7 +1,7 @@
 // src/components/Spreadsheet/hooks/useSheets.js
 
 import { useState, useEffect, useCallback } from 'react';
-import { API_BASE_URL } from '../../../config/api';
+
 const useSheets = (showNotification) => {
     const [sheets, setSheets] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -11,7 +11,7 @@ const useSheets = (showNotification) => {
     const fetchSheets = useCallback(async (searchTerm = '') => {
         try {
             setIsLoading(true);
-            const response = await fetch(`${API_BASE_URL}/sheets?search=${encodeURIComponent(searchTerm)}`);
+            const response = await fetch(`http://127.0.0.1:5000/sheets?search=${encodeURIComponent(searchTerm)}`);
             const result = await response.json();
             
             if (result.status === 'success') {
@@ -36,7 +36,7 @@ const useSheets = (showNotification) => {
     const deleteSheet = useCallback(async (sheetId) => {
         try {
             setIsDeleting(true);
-            const response = await fetch(`${API_BASE_URL}/sheets/${sheetId}`, {
+            const response = await fetch(`http://127.0.0.1:5000/sheets/${sheetId}`, {
                 method: 'DELETE'
             });
             
@@ -62,7 +62,7 @@ const useSheets = (showNotification) => {
             setIsCreating(true);
             console.log('Creating sheet with data:', sheetData); // Debug log
 
-            const response = await fetch('${API_BASE_URL}/sheets', {
+            const response = await fetch('http://127.0.0.1:5000/sheets', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json'
@@ -97,7 +97,7 @@ const useSheets = (showNotification) => {
     const editSheet = useCallback(async (sheetId, updatedData) => {
         try {
           setIsEditing(true);
-          const response = await fetch(`${API_BASE_URL}/sheets/${sheetId}`, {
+          const response = await fetch(`http://127.0.0.1:5000/sheets/${sheetId}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json'

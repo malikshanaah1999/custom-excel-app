@@ -1,6 +1,6 @@
 // src/hooks/useDropdownOptions.js
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../../../config/api';
+
 export const useDropdownOptions = (category) => {
     const [options, setOptions] = useState([]);
     
@@ -10,7 +10,7 @@ export const useDropdownOptions = (category) => {
             
             try {
                 console.log('Fetching options for:', category);
-                const response = await fetch(`${API_BASE_URL}/api/dropdown-options/${encodeURIComponent(category)}`);
+                const response = await fetch(`http://localhost:5000/api/dropdown-options/${encodeURIComponent(category)}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);

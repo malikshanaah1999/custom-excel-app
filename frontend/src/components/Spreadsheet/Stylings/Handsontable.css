@@ -16,7 +16,7 @@
 
 /* Header styling */
 .zebra-table th {
-    background-color: #1B5E20 !important;
+    background-color: #008309 !important;
     color: #ffffff !important;
     font-weight: 500 !important;
     text-align: center !important;
@@ -38,7 +38,7 @@
 
 /* Simple zebra striping */
 .zebra-table tr:nth-child(even) td {
-    background-color: #f3f9f3 !important;
+    background-color: #c6f9c6 !important;
 }
 
 .zebra-table tr:nth-child(odd) td {
@@ -73,26 +73,33 @@
 .ht_master .wtHolder {
     bottom: 0 !important;
 }/***/
-.htDropdownWrapper {
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    direction: rtl;
+.handsontable .htDropdownMenu::-webkit-scrollbar {
+    width: 6px;
+}
+.handsontable .htDropdownMenu::-webkit-scrollbar-track {
+    background: #f7fafc;
+}
+
+.handsontable .htDropdownMenu::-webkit-scrollbar-thumb {
+    background: #4d90d7;
+    border-radius: 3px;
+}.handsontable .htDropdownMenu .ht-menu-item {
+    padding: 8px 12px;
     cursor: pointer;
+    color: #2d3748;
+    direction: rtl;
+    text-align: right;
+    font-size: 14px;
+}.handsontable .htDropdownMenu {
+    padding: 0;
+    direction: rtl;
+    min-width: 150px;
+    border: 1px solid #257ae9;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: white;
 }
-
-.dropdown-cell:hover .htDropdownWrapper {
-    background-color: #e9ecef;
-}
-
-.handsontable {
-    contain: content;
-    will-change: transform;
-}
-
-.handsontable td {
-    contain: content;
+.handsontable .htSelectUI .ht-option.ht-selected {
+    background-color: #edf2f7 !important;
+    font-weight: 500;
 }

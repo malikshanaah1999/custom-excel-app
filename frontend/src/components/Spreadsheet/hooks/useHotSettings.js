@@ -9,7 +9,7 @@ import { registerAllModules } from 'handsontable/registry';
 import DropdownEditor from '../../DropdownEditor';
 import styles from '../../DropdownEditor.module.css';
 import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
-import { API_BASE_URL } from '../../../config/api';
+
 // Register all Handsontable modules
 registerAllModules();
 // Register Arabic language
@@ -118,20 +118,29 @@ const createDropdownRenderer = useCallback((columnIndex) => {
 
 const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
-        const options = getColumnOptions(columnIndex);
         return {
-            type: 'dropdown',
-            source: options,
-            renderer: createDropdownRenderer(columnIndex),
-            editor: 'dropdown',  // Change this from false to 'dropdown'
-            allowInvalid: false,
+            type: 'dropdown',  // Use built-in dropdown
+            source: getColumnOptions(columnIndex),
+            editor: 'dropdown',
+            autocomplete: true,
+            className: 'htDropdown custom-dropdown',
+            dropdownMenu: {
+                style: {
+                    direction: 'rtl',
+                    
+                },
+                highlightMatch: true,
+                
+            },
+         
+            
         };
     }
     return { 
         type: 'text',
-        editor: 'text'  // Explicitly specify text editor
+        editor: 'text'
     };
-}, [COLUMN_CATEGORIES, getColumnOptions, createDropdownRenderer]);
+}, [COLUMN_CATEGORIES, getColumnOptions]);
 
 const getColumnType = useCallback((index) => {
     const category = COLUMN_CATEGORIES[index];
