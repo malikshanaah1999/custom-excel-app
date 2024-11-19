@@ -6,7 +6,7 @@ import 'handsontable/dist/handsontable.full.min.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import useSpreadsheetData from '../hooks/useSpreadsheetData';
 import useNotification from '../hooks/useNotification';
-import DropdownEditor from '../../DropdownEditor';
+import DropdownEditor from '../components/DropdownEditor';
 import useHotSettings from '../hooks/useHotSettings';
 import {
   Loader2,
@@ -21,7 +21,7 @@ import Notification from '../components/Notification';
 import GenerateButton from '../components/GenerateButton';
 import useExcelGeneration from '../hooks/useExcelGeneration';
 import styles from '../Stylings/SheetPage.module.css';
-import OptionsModal from '../../OptionsDialog';
+import OptionsModal from '../components/OptionsDialog';
 
 const SheetPage = () => {
   const { id } = useParams();

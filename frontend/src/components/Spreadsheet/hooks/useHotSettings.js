@@ -6,8 +6,6 @@ import { useDropdownOptions } from './useDropdownOptions';
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.css';
 import { registerAllModules } from 'handsontable/registry';
-import DropdownEditor from '../../DropdownEditor';
-import styles from '../../DropdownEditor.module.css';
 import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
 
 // Register all Handsontable modules

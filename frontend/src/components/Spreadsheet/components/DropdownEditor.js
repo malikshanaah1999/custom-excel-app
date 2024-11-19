@@ -1,7 +1,7 @@
 // src/components/DropdownEditor.js
 import React, { useState } from 'react';
 import { Edit3, Plus, Trash2, Search } from 'lucide-react';
-import styles from './DropdownEditor.module.css';
+import styles from '../Stylings/DropdownEditor.module.css';
 
 const DropdownEditor = ({ isOpen, onClose, options = [], onSelect, position }) => {
   if (!isOpen) return null;
