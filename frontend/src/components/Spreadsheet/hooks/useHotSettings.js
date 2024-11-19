@@ -38,6 +38,51 @@ const useHotSettings = ({
     showDropdownEditor  
 }) => {
 
+    // Add this function to handle mutual updates
+    const updateSharedNumberRows = useCallback((row, prop, value) => {
+        const currentRowNumber = data[row][0]; // Get the "الرقم" value
+        if (!currentRowNumber) return;
+
+        // Define which columns should be mutually updated
+        // These are the columns that get auto-filled
+        const mutualColumns = [
+            1,  // الاسم
+            2,  // مفرق
+            3,  // فئة المنتج
+            4,  // التصنيف
+            5,  // علامات تصنيف المنتج
+            9,  // مصدر المنتج
+            10, // الشركة المصنعة
+            11,  // Products / Variant Seller / Vendor
+            15,
+            16
+        ];
+
+        // Only proceed if the changed column is one of the mutual columns
+        if (!mutualColumns.includes(Number(prop))) return;
+
+        // Find all rows with the same "الرقم"
+        const rowsToUpdate = [];
+        data.forEach((row, index) => {
+            if (index !== Number(row) && row[0] === currentRowNumber) {
+                rowsToUpdate.push(index);
+            }
+        });
+
+        // Update all related rows
+        if (rowsToUpdate.length > 0) {
+            setData(prevData => {
+                const newData = [...prevData];
+                rowsToUpdate.forEach(rowIndex => {
+                    newData[rowIndex][prop] = value;
+                });
+                return newData;
+            });
+            
+            //showNotification('تم تحديث جميع الصفوف المرتبطة', 'success');
+        }
+    }, [data, setData, showNotification]);
+
     // Map column indices to their categories
     const COLUMN_CATEGORIES = {
         3: 'فئة المنتج',           // category column
@@ -53,7 +98,35 @@ const useHotSettings = ({
 
     
 
-   
+  // Check for empty barcode in rows with data
+  const checkEmptyBarcode = useCallback((changes) => {
+    if (!changes) return;
+
+    const barcodeColumnIndex = 12; // Index of "الباركود" column
+    
+    changes.forEach(([row, prop, oldValue, newValue]) => {
+        // Skip if we're editing the barcode column itself or default value columns
+        if (prop === barcodeColumnIndex || (prop >= 17 && prop <= 21)) return;
+
+        // Check if the current row has any content (excluding default columns and barcode)
+        const hasContent = data[row].some((cell, index) => 
+            index < 17 && 
+            index !== barcodeColumnIndex && 
+            (cell ?? '').toString().trim() !== ''
+        );
+
+        // If we're adding/editing content and the barcode is empty
+        if (hasContent && 
+            newValue && 
+            newValue.toString().trim() !== '' && 
+            (!data[row][barcodeColumnIndex] || data[row][barcodeColumnIndex].trim() === '')) {
+            showNotification(
+                `تنبيه: الصف رقم ${row + 1} يحتوي على خانة باركود فارغة`,
+                'warning'  // Using warning instead of error
+            );
+        }
+    });
+}, [data, showNotification]);
 
     const getColumnOptions = useCallback((columnIndex) => {
         const columnToOptions = {
@@ -218,9 +291,42 @@ const getColumnType = useCallback((index) => {
             ...getColumnSettings(index)
         })),
         beforeKeyDown: function(event) {
-            const selected = this.getSelected();
-            if (selected && [3, 7, 4, 9].includes(selected[0][1])) {
-                event.stopImmediatePropagation();
+            const hot = this;
+            const selected = hot.getSelected();
+            
+            if (!selected) return;
+    
+            const [currentRow, currentCol] = selected[0];
+            const lastCol = hot.countCols() - 1; // Get last column index
+    
+            // For left arrow key
+            if (event.keyCode === 37) { // Left arrow
+                if (currentCol === lastCol) {
+                    // Move to first column of the same row (not second)
+                    event.stopImmediatePropagation();
+                    event.preventDefault();
+                    hot.selectCell(currentRow, 0);
+                } else if (currentCol === 0) {
+                    // If at first column, go to last column
+                    event.stopImmediatePropagation();
+                    event.preventDefault();
+                    hot.selectCell(currentRow, lastCol);
+                }
+            }
+            
+            // For right arrow key
+            if (event.keyCode === 39) { // Right arrow
+                if (currentCol === 0) {
+                    // Move to last column of the same row (not second-to-last)
+                    event.stopImmediatePropagation();
+                    event.preventDefault();
+                    hot.selectCell(currentRow, lastCol);
+                } else if (currentCol === lastCol) {
+                    // If at last column, go to first column
+                    event.stopImmediatePropagation();
+                    event.preventDefault();
+                    hot.selectCell(currentRow, 0);
+                }
             }
         },
         minSpareRows: 0,
@@ -235,9 +341,9 @@ const getColumnType = useCallback((index) => {
         batchRender: true,
     fragmentSelection: 'cell',
     deferredUpdates: true,
-        autoWrapRow: true,
+        autoWrapRow: false,
         editResponse: true,
-        autoWrapCol: true,
+        autoWrapCol: false,
         
        
 
@@ -258,44 +364,39 @@ const getColumnType = useCallback((index) => {
 
         // Update existing afterChange handler
         afterChange: (changes, source) => {
-            if (!changes) return;
-
+            if (!changes || source === 'loadData') return;
+            // Check for empty barcode after any change
+            checkEmptyBarcode(changes);
             changes.forEach(([row, prop, oldValue, newValue]) => {
                 // Auto-fill logic for ID column
                 if (prop === 0 && newValue !== oldValue && newValue !== '') {
-                    try {
-                        const existingRow = data.find((r, index) => 
-                            index !== row && 
-                            Array.isArray(r) && 
-                            r[0] === newValue
-                        );
+                    const existingRow = data.find((r, index) => 
+                        index !== row && 
+                        Array.isArray(r) && 
+                        r[0] === newValue
+                    );
 
-                        if (existingRow) {
-                            let newRowData = [...existingRow];
-                            // Update indices for manual fields that should be cleared
-                            const manualFields = [6, 7, 8, 12];  // These indices are now correct for:
-                            // 6: التعبئة
-                            // 7: وحدة القياس
-                            // 8: قياس التعبئة
-                            // 12: الباركود
-                            manualFields.forEach(index => {
-                                newRowData[index] = '';
-                            });
-                            
-                            newRowData = ensureDefaultValues(newRowData);
+                    if (existingRow) {
+                        let newRowData = [...existingRow];
+                        // Update indices for manual fields that should be cleared
+                        const manualFields = [6, 7, 8, 12];
+                        manualFields.forEach(index => {
+                            newRowData[index] = '';
+                        });
+                        
+                        newRowData = ensureDefaultValues(newRowData);
 
-                            setData(prevData => {
-                                const updatedData = [...prevData];
-                                updatedData[row] = newRowData.slice(0, 21);
-                                return updatedData;
-                            });
+                        setData(prevData => {
+                            const updatedData = [...prevData];
+                            updatedData[row] = newRowData;
+                            return updatedData;
+                        });
 
-                            showNotification('تم تعبئة البيانات تلقائياً', 'success');
-                        }
-                    } catch (error) {
-                        console.error('Error during auto-fill:', error);
-                        showNotification('حدث خطأ أثناء تعبئة البيانات', 'error');
+                        showNotification('تم تعبئة البيانات تلقائياً', 'success');
                     }
+                } else {
+                    // Handle mutual updates for shared "الرقم" rows
+                    updateSharedNumberRows(row, prop, newValue);
                 }
 
                 // Mutual fill for وحدة القياس and قياس التعبئة
@@ -337,6 +438,8 @@ const getColumnType = useCallback((index) => {
             for (let i = changes.length - 1; i >= 0; i--) {
                 const [row, prop, oldValue, newValue] = changes[i];
 
+                
+
                     // If it's a dropdown column and the new value isn't in the source
                 if ([3, 7, 4, 9].includes(prop)) {
                     const options = getColumnOptions(prop);
@@ -349,11 +452,13 @@ const getColumnType = useCallback((index) => {
                 // Barcode uniqueness validation
                 if (prop === 12 && newValue !== oldValue) {  // Updated from 13 to 12
                     if (!isBarcodeUnique(newValue, row)) {
-                        showNotification('ل يمكنك ادخال باركود موجود مسبقا', 'error');
+                        showNotification('لا يمكنك ادخال باركود موجود مسبقا', 'error');
                         changes.splice(i, 1);
                         continue;
                     }
                 }
+
+                
 
                 // Min/Max validation based on measurement unit
                 if ((prop === 13 || prop === 14) && newValue !== oldValue) {  // Updated from 14,15 to 13,14

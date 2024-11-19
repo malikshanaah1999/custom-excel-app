@@ -9,7 +9,7 @@ export const useDropdownOptions = (category) => {
             if (!category) return;
             
             try {
-                console.log('Fetching options for:', category);
+              
                 const response = await fetch(`http://localhost:5000/api/dropdown-options/${encodeURIComponent(category)}`);
                 
                 if (!response.ok) {
@@ -17,7 +17,7 @@ export const useDropdownOptions = (category) => {
                 }
                 
                 const data = await response.json();
-                console.log('Raw API response:', data); // Debug log
+                
                 
                 if (Array.isArray(data)) {
                     const formattedOptions = data.map(option => {
@@ -33,7 +33,7 @@ export const useDropdownOptions = (category) => {
                         };
                     }).filter(Boolean); // Remove any null values
                     
-                    console.log(`Formatted options for ${category}:`, formattedOptions);
+                 
                     setOptions(formattedOptions);
                 } else {
                     console.error('Received non-array data:', data);
