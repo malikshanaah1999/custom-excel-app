@@ -267,7 +267,24 @@ const getColumnType = useCallback((index) => {
         return row[7] === 'حبة' || row[8] === 'حبة';  // Updated from 11,12 to 7,8
     }, []);
     
-
+    function directionAwareRenderer(instance, td, row, col, prop, value, cellProperties) {
+        // Use the default text renderer
+        Handsontable.renderers.TextRenderer.apply(this, arguments);
+    
+        // Function to detect if content is LTR
+        const isLTR = (value) => /^[\x00-\x7F0-9 ]*$/.test(value);
+    
+        if (value && isLTR(value)) {
+            td.style.direction = 'ltr';
+            td.style.textAlign = 'left';
+            td.style.unicodeBidi = 'isolate';
+        } else {
+            td.style.direction = 'rtl';
+            td.style.textAlign = 'right';
+            td.style.unicodeBidi = 'isolate';
+        }
+    }
+    
 
     const getHotSettings = useCallback(() => ({
         data: data,
@@ -288,8 +305,20 @@ const getColumnType = useCallback((index) => {
         fillHandle: true,
         columns: spreadsheetColumns.map((col, index) => ({
             ...col,
-            ...getColumnSettings(index)
+            ...getColumnSettings(index),
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                // Columns where you want to apply the direction-aware rendering
+                const columnsToApply = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+        
+                if (columnsToApply.includes(col)) {
+                    directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
+                } else {
+                    // Use the default renderer
+                    Handsontable.renderers.TextRenderer.apply(this, arguments);
+                }
+            }
         })),
+        
         beforeKeyDown: function(event) {
             const hot = this;
             const selected = hot.getSelected();
@@ -362,20 +391,20 @@ const getColumnType = useCallback((index) => {
         
 
 
-        // Update existing afterChange handler
-        afterChange: (changes, source) => {
+
+        afterChange: function(changes, source) {
             if (!changes || source === 'loadData') return;
             // Check for empty barcode after any change
             checkEmptyBarcode(changes);
             changes.forEach(([row, prop, oldValue, newValue]) => {
-                // Auto-fill logic for ID column
+                // Auto-fill logic for "الرقم"
                 if (prop === 0 && newValue !== oldValue && newValue !== '') {
-                    const existingRow = data.find((r, index) => 
-                        index !== row && 
-                        Array.isArray(r) && 
+                    const existingRow = data.find((r, index) =>
+                        index !== row &&
+                        Array.isArray(r) &&
                         r[0] === newValue
                     );
-
+        
                     if (existingRow) {
                         let newRowData = [...existingRow];
                         // Update indices for manual fields that should be cleared
@@ -383,29 +412,38 @@ const getColumnType = useCallback((index) => {
                         manualFields.forEach(index => {
                             newRowData[index] = '';
                         });
-                        
+        
                         newRowData = ensureDefaultValues(newRowData);
-
+        
                         setData(prevData => {
                             const updatedData = [...prevData];
                             updatedData[row] = newRowData;
                             return updatedData;
                         });
-
+        
                         showNotification('تم تعبئة البيانات تلقائياً', 'success');
+        
+                        // Move cursor to "التعبئة" column (column index 6)
+                        setTimeout(() => {
+                            this.selectCell(row, 6);
+                        }, 0);
                     }
                 } else {
                     // Handle mutual updates for shared "الرقم" rows
                     updateSharedNumberRows(row, prop, newValue);
                 }
-
-                // Mutual fill for وحدة القياس and قياس التعبئة
-                if ((prop === 7 || prop === 8) && newValue !== oldValue) {  // Updated from 11,12 to 7,8
+        
+                // Mutual fill for "وحدة القياس" and "قياس التعبئة"
+                if ((prop === 7 || prop === 8) && newValue !== oldValue) {
                     setData(prevData => {
                         const updatedData = [...prevData];
-                        if (newValue !== 'حبة' && updatedData[row][7] !== 'حبة' && updatedData[row][8] !== 'حبة') {
-                            updatedData[row][13] = ''; // Clear Min (updated from 14)
-                            updatedData[row][14] = ''; // Clear Max (updated from 15)
+                        if (
+                            newValue !== 'حبة' &&
+                            updatedData[row][7] !== 'حبة' &&
+                            updatedData[row][8] !== 'حبة'
+                        ) {
+                            updatedData[row][13] = ''; // Clear Min
+                            updatedData[row][14] = ''; // Clear Max
                         }
                         if (prop === 7) {
                             updatedData[row][8] = newValue;
@@ -414,10 +452,15 @@ const getColumnType = useCallback((index) => {
                         }
                         return updatedData;
                     });
+        
+                    // Move cursor to "الباركود" column (column index 12)
+                    setTimeout(() => {
+                        this.selectCell(row, 12);
+                    }, 0);
                 }
-
+        
                 // Mutual fill for category and POS Cat
-                if ((prop === 3 || prop === 15) && newValue !== oldValue) {  // Updated from 5,6 to 3,15
+                if ((prop === 3 || prop === 15) && newValue !== oldValue) {
                     setData(prevData => {
                         const updatedData = [...prevData];
                         if (prop === 3) {
@@ -430,6 +473,7 @@ const getColumnType = useCallback((index) => {
                 }
             });
         },
+        
        
 
         beforeChange: (changes) => {
@@ -513,6 +557,8 @@ const getColumnType = useCallback((index) => {
             }
             
             cellProperties.className = `${cellProperties.className || ''} ${row % 2 === 0 ? 'even-row' : 'odd-row'}`;
+
+            
             return cellProperties;
         },
         
