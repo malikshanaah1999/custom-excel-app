@@ -2,7 +2,7 @@
 
 export const spreadsheetColumns = [
     { data: 0, type: 'text', title: 'الرقم', width: 50 },
-    { data: 1, type: 'text', title: 'الاسم', width: 90 },
+    { data: 1, type: 'text', title: 'الاسم', width: 130 },
     { data: 2, type: 'text', title: 'مفرق', width: 45 },
     { data: 3, type: 'text', title: 'فئة المنتج', width: 110 }, // Updated from 'category'
     { data: 4, type: 'text', title: 'التصنيف', width: 100 },

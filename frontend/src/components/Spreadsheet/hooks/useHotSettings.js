@@ -395,127 +395,131 @@ const getColumnType = useCallback((index) => {
     }
     
     // Update afterChange to handle category changes
-const afterChange = useCallback((changes, source) => {
-    if (!changes || source === 'loadData') return;
-            // Check for empty barcode after any change
-            checkEmptyBarcode(changes);
-            changes.forEach(([row, prop, oldValue, newValue]) => {
-                // Auto-fill logic for "الرقم"
-                if (prop === 0 && newValue !== oldValue && newValue !== '') {
-                    const existingRow = data.find((r, index) =>
-                        index !== row &&
-                        Array.isArray(r) &&
-                        r[0] === newValue
-                    );
-        
-                    if (existingRow) {
-                        let newRowData = [...existingRow];
-                        // Update indices for manual fields that should be cleared
-                        const manualFields = [6, 7, 8, 12];
-                        manualFields.forEach(index => {
-                            newRowData[index] = '';
-                        });
-        
-                        newRowData = ensureDefaultValues(newRowData);
-        
-                        setData(prevData => {
-                            const updatedData = [...prevData];
-                            updatedData[row] = newRowData;
-                            return updatedData;
-                        });
-        
-                        showNotification('تم تعبئة البيانات تلقائياً', 'success');
-        
-                        // Move cursor to "التعبئة" column (column index 6)
-                        setTimeout(() => {
-                            this.selectCell(row, 6);
-                        }, 0);
-                    }
-                } else {
-                    // Handle mutual updates for shared "الرقم" rows
-                    updateSharedNumberRows(row, prop, newValue);
-                }
-        
-                // Mutual fill for "وحدة القياس" and "قياس التعبئة"
-                if ((prop === 7 || prop === 8) && newValue !== oldValue) {
+    const afterChange = useCallback(function (changes, source) {
+        if (!changes || source === 'loadData') return;
+    
+        // Store reference to Handsontable instance
+        const instance = this;
+    
+        // Check for empty barcode after any change
+        checkEmptyBarcode(changes);
+    
+        changes.forEach(([row, prop, oldValue, newValue]) => {
+            // Auto-fill logic for "الرقم"
+            if (prop === 0 && newValue !== oldValue && newValue !== '') {
+                const existingRow = data.find((r, index) =>
+                    index !== row &&
+                    Array.isArray(r) &&
+                    r[0] === newValue
+                );
+    
+                if (existingRow) {
+                    let newRowData = [...existingRow];
+                    // Update indices for manual fields that should be cleared
+                    const manualFields = [6, 7, 8, 12];
+                    manualFields.forEach(index => {
+                        newRowData[index] = '';
+                    });
+    
+                    newRowData = ensureDefaultValues(newRowData);
+    
                     setData(prevData => {
                         const updatedData = [...prevData];
-                        if (
-                            newValue !== 'حبة' &&
-                            updatedData[row][7] !== 'حبة' &&
-                            updatedData[row][8] !== 'حبة'
-                        ) {
-                            updatedData[row][13] = ''; // Clear Min
-                            updatedData[row][14] = ''; // Clear Max
-                        }
-                        if (prop === 7) {
-                            updatedData[row][8] = newValue;
-                        } else {
-                            updatedData[row][7] = newValue;
-                        }
+                        updatedData[row] = newRowData;
                         return updatedData;
                     });
-        
-                    // Move cursor to "الباركود" column (column index 12)
+    
+                    showNotification('تم تعبئة البيانات تلقائياً', 'success');
+    
+                    // Move cursor to "التعبئة" column (column index 6)
                     setTimeout(() => {
-                        this.selectCell(row, 12);
+                        instance.selectCell(row, 6);
                     }, 0);
                 }
-        
-                // Mutual fill for category and POS Cat
-                if ((prop === 3 || prop === 15) && newValue !== oldValue) {
+            } else {
+                // Handle mutual updates for shared "الرقم" rows
+                updateSharedNumberRows(row, prop, newValue);
+            }
+    
+            // Mutual fill for "وحدة القياس" and "قياس التعبئة"
+            if ((prop === 7 || prop === 8) && newValue !== oldValue) {
+                setData(prevData => {
+                    const updatedData = [...prevData];
+                    if (
+                        newValue !== 'حبة' &&
+                        updatedData[row][7] !== 'حبة' &&
+                        updatedData[row][8] !== 'حبة'
+                    ) {
+                        updatedData[row][13] = ''; // Clear Min
+                        updatedData[row][14] = ''; // Clear Max
+                    }
+                    if (prop === 7) {
+                        updatedData[row][8] = newValue;
+                    } else {
+                        updatedData[row][7] = newValue;
+                    }
+                    return updatedData;
+                });
+    
+                // Move cursor to "الباركود" column (column index 12)
+                setTimeout(() => {
+                    instance.selectCell(row, 12);
+                }, 0);
+            }
+    
+            // Mutual fill for category and POS Cat
+            if ((prop === 3 || prop === 15) && newValue !== oldValue) {
+                setData(prevData => {
+                    const updatedData = [...prevData];
+                    if (prop === 3) {
+                        updatedData[row][15] = newValue;
+                    } else {
+                        updatedData[row][3] = newValue;
+                    }
+                    return updatedData;
+                });
+            }
+    
+            if (row === undefined || !data?.[row]) return;
+    
+            // When "فئة المنتج" changes
+            if (prop === 3) {
+                setData(prevData => {
+                    const updatedData = [...prevData];
+                    if (updatedData[row]) {
+                        updatedData[row][4] = ''; // Clear التصنيف value
+                        updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
+                    }
+                    return updatedData;
+                });
+    
+                if (instance) {
+                    const validClassificationOptions = CATEGORY_CLASSIFICATIONS[newValue] || CATEGORY_CLASSIFICATIONS['default'];
+                    const validTagOptions = PRODUCT_TAG_CLASSIFICATIONS[newValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
+    
+                    instance.setCellMeta(row, 4, 'source', validClassificationOptions);
+                    instance.setCellMeta(row, 5, 'source', validTagOptions);
+                    instance.render();
+                }
+            }
+    
+            // When "التصنيف" changes
+            if (prop === 4 && newValue) {
+                const categoryValue = data[row][3];
+                const validOptions = CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default'];
+    
+                // If selected value is not valid for current category, clear it
+                if (!validOptions.includes(newValue)) {
                     setData(prevData => {
                         const updatedData = [...prevData];
-                        if (prop === 3) {
-                            updatedData[row][15] = newValue;
-                        } else {
-                            updatedData[row][3] = newValue;
-                        }
+                        updatedData[row][4] = '';
                         return updatedData;
                     });
                 }
-                if (row === undefined || !data?.[row]) return;
-
-                // When فئة المنتج changes, clear التصنيف
-                // When فئة المنتج changes
-                if (prop === 3) { // فئة المنتج column changes
-                    const instance = this;
-                    
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        if (updatedData[row]) {
-                            updatedData[row][4] = ''; // Clear التصنيف value
-                            updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
-                        }
-                        return updatedData;
-                    });
-                
-                    if (instance) {
-                        const validClassificationOptions = CATEGORY_CLASSIFICATIONS[newValue] || CATEGORY_CLASSIFICATIONS['default'];
-                        const validTagOptions = PRODUCT_TAG_CLASSIFICATIONS[newValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
-                        
-                        instance.setCellMeta(row, 4, 'source', validClassificationOptions);
-                        instance.setCellMeta(row, 5, 'source', validTagOptions);
-                        instance.render();
-                    }
-                }
-                // When التصنيف changes
-                if (prop === 4 && newValue) {
-                    const categoryValue = data[row][3];
-                    const validOptions = CATEGORY_CLASSIFICATIONS[categoryValue] || 
-                                    CATEGORY_CLASSIFICATIONS['default'];
-                    
-                    // If selected value is not valid for current category, clear it
-                    if (!validOptions.includes(newValue)) {
-                        setData(prevData => {
-                            const updatedData = [...prevData];
-                            updatedData[row][4] = '';
-                            return updatedData;
-                        });
-                    }
-                }
-            });
-}, [setData, getColumnOptions]);
+            }
+        });
+    }, [data, setData, checkEmptyBarcode, ensureDefaultValues, showNotification, updateSharedNumberRows]);
+    
 
     const getHotSettings = useCallback(() => ({
         data: data,
