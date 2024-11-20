@@ -35,7 +35,8 @@ const useHotSettings = ({
     setHasChanges,
     onDeleteRow,
     showNotification,
-    showDropdownEditor  
+    showDropdownEditor,
+    
 }) => {
 
     // Add this function to handle mutual updates
@@ -122,7 +123,7 @@ const useHotSettings = ({
             (!data[row][barcodeColumnIndex] || data[row][barcodeColumnIndex].trim() === '')) {
             showNotification(
                 `تنبيه: الصف رقم ${row + 1} يحتوي على خانة باركود فارغة`,
-                'warning'  // Using warning instead of error
+                'info'  // Using warning instead of error
             );
         }
     });
@@ -276,27 +277,30 @@ const getColumnType = useCallback((index) => {
     
         if (value && isLTR(value)) {
             td.style.direction = 'ltr';
-            td.style.textAlign = 'left';
-            td.style.unicodeBidi = 'isolate';
         } else {
             td.style.direction = 'rtl';
-            td.style.textAlign = 'right';
-            td.style.unicodeBidi = 'isolate';
         }
+    
+        // Center the text within the cell
+        td.style.textAlign = 'center';
+        td.style.unicodeBidi = 'isolate';
     }
+    
     
 
     const getHotSettings = useCallback(() => ({
         data: data,
         colHeaders: spreadsheetColumns.map(col => col.title),
         rowHeaders: true,
+        rowHeaderWidth: 25,
         height: '100%',
-        width: '100%',
+        width: '99%',
         licenseKey: 'non-commercial-and-evaluation',
         stretchH: 'all',
         className: 'custom-table rtl-table zebra-table',
         language: 'ar-AR',
         layoutDirection: 'rtl',
+        viewportColumnRenderingOffset: 10,
         renderAllRows: false,
         manualColumnResize: true,
         manualRowResize: true,
@@ -306,19 +310,25 @@ const getColumnType = useCallback((index) => {
         columns: spreadsheetColumns.map((col, index) => ({
             ...col,
             ...getColumnSettings(index),
+            // Hide the last 5 columns while maintaining the direction-aware rendering
+            ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
             renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                // Columns where you want to apply the direction-aware rendering
-                const columnsToApply = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                // Define visible columns that need direction-aware rendering
+                const columnsToApply = Array.from({ length: 17 }, (_, i) => i); // Columns 0-16
         
                 if (columnsToApply.includes(col)) {
                     directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
                 } else {
-                    // Use the default renderer
+                    // Use default renderer for hidden columns
                     Handsontable.renderers.TextRenderer.apply(this, arguments);
                 }
             }
         })),
-        
+        // Hide last 5 columns
+        hiddenColumns: {
+            columns: [17, 18, 19, 20, 21],
+            indicators: false
+        },
         beforeKeyDown: function(event) {
             const hot = this;
             const selected = hot.getSelected();
@@ -557,6 +567,8 @@ const getColumnType = useCallback((index) => {
             }
             
             cellProperties.className = `${cellProperties.className || ''} ${row % 2 === 0 ? 'even-row' : 'odd-row'}`;
+
+
 
             
             return cellProperties;

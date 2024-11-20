@@ -7,7 +7,7 @@ const useNotification = () => { // Custom Hook.
 
     const showNotification = useCallback((message, type = 'success') => {
         setNotification({ message, type });
-        setTimeout(() => setNotification(null), 3000);
+        setTimeout(() => setNotification(null), 6000);
     }, []);
 
     return { notification, showNotification };

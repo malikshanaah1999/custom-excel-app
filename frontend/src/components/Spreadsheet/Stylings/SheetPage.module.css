@@ -27,21 +27,20 @@
   --successGreenHover: #38a169;
 }
 
+
 .sheetPage {
-  position: relative;
-  overflow: hidden;
-  direction: rtl;
-  background-color: #4CAF50 !important;
-  min-height: 100vh;
+  width: 100vw;
   padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+  background-color: #3c3c3c !important;
 }
 
 .mainContent {
-  width: 98%;
-  margin: 0 auto;
-  padding: 16px;
-  min-height: calc(100vh - 32px);
-  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  height: 100%;
 }
 
 .header {
@@ -208,8 +207,11 @@
 
 /* Add these performance optimizations */
 .spreadsheetContainer {
-  contain: content;
-  will-change: transform;
+  width: 100vw;  /* Full viewport width */
+  height: calc(100vh - 95px);  /* Full viewport height minus header */
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 .htWrapper {

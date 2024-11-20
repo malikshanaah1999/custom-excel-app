@@ -110,7 +110,7 @@ const SheetPage = () => {
     setHasChanges,
     onDeleteRow: () => setShowDeleteConfirm(true),
     showNotification,
-    showDropdownEditor: showOptionsModal
+    showDropdownEditor: showOptionsModal,
   });
   const memoizedHotSettings = useMemo(() => hotSettings(), [
     data,
@@ -121,16 +121,32 @@ const SheetPage = () => {
     showOptionsModal,
     hotSettings 
   ]);
-  // Handle Ctrl+S shortcut for saving
-  const handleKeyDown = useCallback(
-    (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+  // Handle keydown events for shortcuts
+const handleKeyDown = useCallback(
+  (event) => {
+    // Handle Ctrl+S shortcut for saving
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+      event.preventDefault();
+      saveData(true);
+    }
+
+    // Handle "+" key press to add a new row
+    // Check if no modifier keys are pressed (Ctrl, Alt, Meta)
+    if (!event.ctrlKey && !event.altKey && !event.metaKey) {
+      // Detect "+" key press
+      if (
+        event.key === '+' ||                // Standard "+" key
+        (event.shiftKey && event.key === '=') || // Shift + "=" produces "+" on some keyboards
+        event.keyCode === 107               // Numpad "+" key
+      ) {
         event.preventDefault();
-        saveData(true);
+        addNewRow();
       }
-    },
-    [saveData]
-  );
+    }
+  },
+  [saveData, addNewRow]
+);
+
 //
 
 const handleClickOutside = useCallback((event) => {
@@ -174,7 +190,7 @@ useEffect(() => {
     <div className={styles.actionButtons}>
         <button onClick={addNewRow} className={styles.addRowButton}>
             <PlusCircle size={18} />
-            إضافة سجل
+            إضافة حقل جديد
         </button>
 
         <button
