@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import { spreadsheetColumns } from '../config/columns';
 import { createEmptyRow } from '../utils/dataHelpers';
@@ -7,7 +7,75 @@ import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.css';
 import { registerAllModules } from 'handsontable/registry';
 import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
+// Add this new import for category mappings
+export const CATEGORY_CLASSIFICATIONS = {
+    'All / ماركت': [
+        'زيوت', 'ارز', 'سكر', 'ملح', 'سمن', 'طحين', 'سردين', 'تونة',
+        'حليب مجفف', 'طحينة', 'حلاوة', 'معكرونة', 'نودلز', 'عصائر',
+        'مشروبات ساخنة', 'مشروبات غازية', 'مياه معدنية', 'مشروبات طاقة',
+        'شاي', 'قهوة', 'اسبرسو', 'مخللات', 'كاتشاب', 'ميونيز',
+        'رانش/صوص', 'شيبس', 'حبوب كورنفلكس', 'ايس كريم', 'مربى',
+        'عسل', 'علكة', 'سكاكر', 'دخان', 'بقوليات مبكت', 'صلصة بندورة',
+        'معلبات', 'اغئية قابلة للدهن', 'تحضير حلويات', 'فواكة معلبة',
+        'خليط كيك', 'طعام اطفال', 'فواكة مجففة', 'ويفر', 'بسكوت',
+        'شوكولاتة', 'كراكر', 'sugar free', 'gluten free',
+        'fitness bars food', 'مكسرات', 'زيتون'
+    ],
+    'All / مفرزات': [
+        'اسماك مفرزة', 'اغذية بحرية مفرزة', 'خضار مفرزة', 'برجر مفرز',
+        'عجائن مفرزة', 'بوريكس', 'دجاج بقسماط مفرز', 'فواكة مفرزة',
+        'فطائى مفرزة', 'بطاطا  مفرزة', 'كبة', 'اطعمة مفرزة'
+    ],
+    
+    'default': ['test 1', 'test 2', 'test 3', 'test 4', 'test 5']
+};
+export const PRODUCT_TAG_CLASSIFICATIONS = {
+    'All / ماركت': [
+    'زيت ذرة', 'زيت شمس', 'جرانولا', 'زيت زيتون', 'ارز حبة طويلة',
+    'ارز حبة قصيرة', 'ارز حبة مدور', 'ارز مطحون', 'سكر ابيض',
+    'سكر بني', 'سكر مطحون', 'ملح ابيض', 'ملح خشن', 'ملح نكهات',
+    'ملح زهري', 'سمن نباتي', 'سمن حيواني', 'سمن بلدي', 'سمن حلوب',
+    'طحين ابيض', 'طحين بلدي', 'طحين فري جلوتين', 'طحين كيك', 'حلو',
+    'حار', 'ذرة حلو', 'ذرة حار', 'قليل السم', 'كامل الدسم', 'سادة',
+    'شوكولاتة', 'فانيلا', 'حلاوة مكسرات', 'حلاوة شعر', 'حلاوة دهن',
+    'معكرونة سباجيتي', 'معكرونة كوع', 'معكرونة ماسورة', 'معكرونة اصابع',
+    'معكرونة دبوكي', 'اندومي', 'ليمون', 'برتقال', 'مانجا', 'فيمتو',
+    'تانك', 'الزهراء', 'نسكافية', 'مبيض', 'شوكو', 'نسكافية جولد',
+    'كابتشينو', 'كوكا كولا', 'سبرايت', 'فانتا', 'بيبسي', 'ميرندا',
+    'سفن اب', 'سما', 'ماتركس', 'تشات كولا', 'عبواة', 'قاروة', 'كاسات',
+    'XL', 'هايبي', 'هوبي', 'بلو', 'ريد بول', 'باور هورس', 'شاي عادي',
+    'نكهات', 'حلل', 'شقراء', 'نص بنص', 'محروقة', 'خليجية', 'كبسولات',
+    'حبوب اسبرسو', 'خيار', 'زيتون حب', 'زيتون بدون نوى', 'باذنجان',
+    'فلفل', 'كلاسيك', 'باربكيو', 'صويا صوص', 'سيزر', 'ليز', 'دوريتوز',
+    'ماستر شيبس', 'بيوجليز', 'برينجلز', 'بطاطا طبيعي', 'نستلي',
+    'كونفلكس الديك', 'سيريال', 'حبات', 'علب', 'تين', 'فراولة', 'مشمش',
+    'صدر', 'طبيعي', 'ملكات', 'اوربت', 'سهم', 'ستيميرول', 'جوم',
+    'ملبس', 'مصاص', 'نوجا', 'سجائر', 'سجائر الكترونية', 'معسل', 'تمباك',
+    'ايكوس', 'عدس حب', 'بوشار', 'لوبيا', 'برغل', 'عدس مجروش',
+    'صلصة بندورة', 'ذرة', 'فاصوليا بيضاء', 'فاصوليا حمراء', 'بازيلا',
+    'ورق عنب', 'لحوم معلبة', 'حمص حب', 'حمص مسلوق', 'حمص مطحون',
+    'فول مدمس', 'شوربة سريعة التحضير', 'زينة الحلويات', 'زبدة فول سوداني',
+    'زبدة فستق حلي', 'زبدة البندق', 'قشطة حلويات', 'حليب مبخر',
+    'حليب مكثف', 'باكينج باورد', 'فانيلا سائل', 'اناناس مقطع',
+    'اناناس شرائح', 'سلطة فواكة', 'كرز', 'بلاك بري', 'بلو بري',
+    'كيك', 'موس', 'بان كيك', 'خليط عواة', 'دونات', 'طعام اطفال',
+    'حليب اطفال', 'كيوي', 'جارينا', 'علي بابا', 'ماري', 'ليدي فنجر',
+    'الواح', 'بار', 'دايت', 'دارك', 'مملح', 'نكهات', 'بيجلا', 'بزر بطيخ',
+    'بزر شمس', 'فسق عبيد', 'كاجو', 'فستق حلبي'
+],
 
+    'All / مفرزات': [
+    'سمك بكلا', 'سمك فيله', 'سمك سلمون', 'جمبري اسود', 'جمبري احمر',
+    'بازيلا مع جزر', 'بازيلا', 'خضار', 'بروكلي', 'فول صويا',
+    'بيف برجر', 'تشكن برجر', 'عجينة سمبوسك', 'باف بيستري', 'عجينة بقلاوة',
+    'جبنة', 'لحمة', 'بطاطا', 'سكالوب', 'كرسبي', 'اجنحة دجاج', 'نبوت',
+    'ناجتس', 'مانجا', 'فراولة', 'بلاك بري', 'بلوبري', 'كيوي', 'بيتزا',
+    'اقراص زعتر', 'ستيك', 'اصابع', 'ودجيز', 'كيري', 'سمايل', 'كبة لحمة',
+    'كبة رز', 'كبة دجاج', 'كبة طازجة', 'كباب', 'ششبرك', 'مفتول'
+],
+
+    'default': ['test 1', 'test 2', 'test 3', 'test 4', 'test 5']
+};
 // Register all Handsontable modules
 registerAllModules();
 // Register Arabic language
@@ -38,7 +106,9 @@ const useHotSettings = ({
     showDropdownEditor,
     
 }) => {
-
+    // Add refs for rendered cell caching
+    const lastRenderedValue = useRef(null);
+    const lastRenderedCell = useRef(null);
     // Add this function to handle mutual updates
     const updateSharedNumberRows = useCallback((row, prop, value) => {
         const currentRowNumber = data[row][0]; // Get the "الرقم" value
@@ -88,6 +158,7 @@ const useHotSettings = ({
     const COLUMN_CATEGORIES = {
         3: 'فئة المنتج',           // category column
         4: 'التصنيف',           // classification
+        5: 'علامات تصنيف المنتج',  // Add this line
         7: 'وحدة القياس',        // measurement unit
         9: 'مصدر المنتج'         // product source
     };
@@ -129,26 +200,41 @@ const useHotSettings = ({
     });
 }, [data, showNotification]);
 
-    const getColumnOptions = useCallback((columnIndex) => {
-        const columnToOptions = {
-            3: categoryOptions,
-            7: measurementUnitOptions,
-            4: classificationOptions,
-            9: sourceOptions
-        };
-        const options = columnToOptions[columnIndex] || [];
-        return options.map(opt => opt.value);
-    }, [categoryOptions, measurementUnitOptions, classificationOptions, sourceOptions]);
-
-    // Use getColumnOptions instead of dropdownOptions
-const createDropdownRenderer = useCallback((columnIndex) => {
-    let lastRenderedValue = null;
-    let lastRenderedCell = null;
-
-    return function customDropdownRenderer(instance, td, row, col, prop, value, cellProperties) {
-        if (value === lastRenderedValue && td === lastRenderedCell) {
-            return td;
+const getColumnOptions = useCallback((columnIndex, row) => {
+    // Handle both التصنيف and علامات تصنيف المنتج columns
+    if (columnIndex === 4 || columnIndex === 5) {
+        if (row === undefined || !data?.[row]) {
+            return CATEGORY_CLASSIFICATIONS['default'];
         }
+        
+        const categoryValue = data[row][3];
+        if (!categoryValue) return CATEGORY_CLASSIFICATIONS['default'];
+
+        if (columnIndex === 4) {
+            return CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default'];
+        } else { // columnIndex === 5
+            return PRODUCT_TAG_CLASSIFICATIONS[categoryValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
+        }
+    }
+
+    const columnToOptions = {
+        3: categoryOptions,  // فئة المنتج
+        7: measurementUnitOptions,
+        9: sourceOptions
+    };
+
+    if (columnToOptions[columnIndex]) {
+        return columnToOptions[columnIndex].map(opt => opt.value);
+    }
+
+    return [];
+}, [data, categoryOptions, measurementUnitOptions, sourceOptions]);
+
+
+const createDropdownRenderer = useCallback((columnIndex) => {
+    return function(instance, td, row, col, prop, value, cellProperties) {
+        // Add safety check
+        if (!td) return td;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'htDropdownWrapper';
@@ -158,7 +244,10 @@ const createDropdownRenderer = useCallback((columnIndex) => {
             e.preventDefault();
             e.stopPropagation();
             
-            const options = getColumnOptions(columnIndex);
+            // Add safety check for row
+            if (row === undefined) return;
+            
+            const options = getColumnOptions(columnIndex, row);
             const rect = td.getBoundingClientRect();
             
             instance.deselectCell();
@@ -167,7 +256,9 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                 category: COLUMN_CATEGORIES[columnIndex],
                 options,
                 onSelect: (newValue) => {
-                    instance.setDataAtCell(row, col, newValue);
+                    // Explicitly set the cell value and trigger a re-render
+                    instance.setDataAtCell(row, col, newValue, 'edit');
+                    instance.render();
                 },
                 position: {
                     top: rect.bottom + window.scrollY,
@@ -179,33 +270,49 @@ const createDropdownRenderer = useCallback((columnIndex) => {
         Handsontable.dom.empty(td);
         td.appendChild(wrapper);
         
-        lastRenderedValue = value;
-        lastRenderedCell = td;
-        
         return td;
     };
 }, [getColumnOptions, showDropdownEditor]);
 
+const validateClassification = useCallback((row, value, columnIndex) => {
+    const categoryValue = data[row][3];
+    if (!categoryValue) return false;
+    
+    if (columnIndex === 4) {
+        const validOptions = CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default'];
+        return validOptions.includes(value);
+    } else if (columnIndex === 5) {
+        const validOptions = PRODUCT_TAG_CLASSIFICATIONS[categoryValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
+        return validOptions.includes(value);
+    }
+    return false;
+}, [data]);
 
 const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
         return {
-            type: 'dropdown',  // Use built-in dropdown
-            allowInvalid: false,  // Prevent invalid entries
-            source: getColumnOptions(columnIndex),
-            editor: 'dropdown',
-            autocomplete: true,
-            className: 'htDropdown custom-dropdown',
-            dropdownMenu: {
-                style: {
-                    direction: 'rtl',
-                    
-                },
-                highlightMatch: true,
-                
+            type: 'dropdown',
+            allowInvalid: false,
+            source: function(query, callback) {
+                const row = this.row;
+                const instance = this.instance;
+
+                if (columnIndex === 4) {  // For "التصنيف" column
+                    const categoryValue = instance.getDataAtCell(row, 3);
+                    const options = categoryValue ? 
+                        (CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default']) : 
+                        CATEGORY_CLASSIFICATIONS['default'];
+                    callback(options);
+                } else {
+                    callback(getColumnOptions(columnIndex, row));
+                }
             },
-         
-            
+            editor: 'dropdown',
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                td.style.direction = 'rtl';
+                td.style.textAlign = 'center';
+            },
         };
     }
     return { 
@@ -213,6 +320,7 @@ const getColumnSettings = useCallback((columnIndex) => {
         editor: 'text'
     };
 }, [COLUMN_CATEGORIES, getColumnOptions]);
+
 
 const getColumnType = useCallback((index) => {
     const category = COLUMN_CATEGORIES[index];
@@ -286,7 +394,128 @@ const getColumnType = useCallback((index) => {
         td.style.unicodeBidi = 'isolate';
     }
     
-    
+    // Update afterChange to handle category changes
+const afterChange = useCallback((changes, source) => {
+    if (!changes || source === 'loadData') return;
+            // Check for empty barcode after any change
+            checkEmptyBarcode(changes);
+            changes.forEach(([row, prop, oldValue, newValue]) => {
+                // Auto-fill logic for "الرقم"
+                if (prop === 0 && newValue !== oldValue && newValue !== '') {
+                    const existingRow = data.find((r, index) =>
+                        index !== row &&
+                        Array.isArray(r) &&
+                        r[0] === newValue
+                    );
+        
+                    if (existingRow) {
+                        let newRowData = [...existingRow];
+                        // Update indices for manual fields that should be cleared
+                        const manualFields = [6, 7, 8, 12];
+                        manualFields.forEach(index => {
+                            newRowData[index] = '';
+                        });
+        
+                        newRowData = ensureDefaultValues(newRowData);
+        
+                        setData(prevData => {
+                            const updatedData = [...prevData];
+                            updatedData[row] = newRowData;
+                            return updatedData;
+                        });
+        
+                        showNotification('تم تعبئة البيانات تلقائياً', 'success');
+        
+                        // Move cursor to "التعبئة" column (column index 6)
+                        setTimeout(() => {
+                            this.selectCell(row, 6);
+                        }, 0);
+                    }
+                } else {
+                    // Handle mutual updates for shared "الرقم" rows
+                    updateSharedNumberRows(row, prop, newValue);
+                }
+        
+                // Mutual fill for "وحدة القياس" and "قياس التعبئة"
+                if ((prop === 7 || prop === 8) && newValue !== oldValue) {
+                    setData(prevData => {
+                        const updatedData = [...prevData];
+                        if (
+                            newValue !== 'حبة' &&
+                            updatedData[row][7] !== 'حبة' &&
+                            updatedData[row][8] !== 'حبة'
+                        ) {
+                            updatedData[row][13] = ''; // Clear Min
+                            updatedData[row][14] = ''; // Clear Max
+                        }
+                        if (prop === 7) {
+                            updatedData[row][8] = newValue;
+                        } else {
+                            updatedData[row][7] = newValue;
+                        }
+                        return updatedData;
+                    });
+        
+                    // Move cursor to "الباركود" column (column index 12)
+                    setTimeout(() => {
+                        this.selectCell(row, 12);
+                    }, 0);
+                }
+        
+                // Mutual fill for category and POS Cat
+                if ((prop === 3 || prop === 15) && newValue !== oldValue) {
+                    setData(prevData => {
+                        const updatedData = [...prevData];
+                        if (prop === 3) {
+                            updatedData[row][15] = newValue;
+                        } else {
+                            updatedData[row][3] = newValue;
+                        }
+                        return updatedData;
+                    });
+                }
+                if (row === undefined || !data?.[row]) return;
+
+                // When فئة المنتج changes, clear التصنيف
+                // When فئة المنتج changes
+                if (prop === 3) { // فئة المنتج column changes
+                    const instance = this;
+                    
+                    setData(prevData => {
+                        const updatedData = [...prevData];
+                        if (updatedData[row]) {
+                            updatedData[row][4] = ''; // Clear التصنيف value
+                            updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
+                        }
+                        return updatedData;
+                    });
+                
+                    if (instance) {
+                        const validClassificationOptions = CATEGORY_CLASSIFICATIONS[newValue] || CATEGORY_CLASSIFICATIONS['default'];
+                        const validTagOptions = PRODUCT_TAG_CLASSIFICATIONS[newValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
+                        
+                        instance.setCellMeta(row, 4, 'source', validClassificationOptions);
+                        instance.setCellMeta(row, 5, 'source', validTagOptions);
+                        instance.render();
+                    }
+                }
+                // When التصنيف changes
+                if (prop === 4 && newValue) {
+                    const categoryValue = data[row][3];
+                    const validOptions = CATEGORY_CLASSIFICATIONS[categoryValue] || 
+                                    CATEGORY_CLASSIFICATIONS['default'];
+                    
+                    // If selected value is not valid for current category, clear it
+                    if (!validOptions.includes(newValue)) {
+                        setData(prevData => {
+                            const updatedData = [...prevData];
+                            updatedData[row][4] = '';
+                            return updatedData;
+                        });
+                    }
+                }
+            });
+}, [setData, getColumnOptions]);
 
     const getHotSettings = useCallback(() => ({
         data: data,
@@ -402,87 +631,7 @@ const getColumnType = useCallback((index) => {
 
 
 
-        afterChange: function(changes, source) {
-            if (!changes || source === 'loadData') return;
-            // Check for empty barcode after any change
-            checkEmptyBarcode(changes);
-            changes.forEach(([row, prop, oldValue, newValue]) => {
-                // Auto-fill logic for "الرقم"
-                if (prop === 0 && newValue !== oldValue && newValue !== '') {
-                    const existingRow = data.find((r, index) =>
-                        index !== row &&
-                        Array.isArray(r) &&
-                        r[0] === newValue
-                    );
-        
-                    if (existingRow) {
-                        let newRowData = [...existingRow];
-                        // Update indices for manual fields that should be cleared
-                        const manualFields = [6, 7, 8, 12];
-                        manualFields.forEach(index => {
-                            newRowData[index] = '';
-                        });
-        
-                        newRowData = ensureDefaultValues(newRowData);
-        
-                        setData(prevData => {
-                            const updatedData = [...prevData];
-                            updatedData[row] = newRowData;
-                            return updatedData;
-                        });
-        
-                        showNotification('تم تعبئة البيانات تلقائياً', 'success');
-        
-                        // Move cursor to "التعبئة" column (column index 6)
-                        setTimeout(() => {
-                            this.selectCell(row, 6);
-                        }, 0);
-                    }
-                } else {
-                    // Handle mutual updates for shared "الرقم" rows
-                    updateSharedNumberRows(row, prop, newValue);
-                }
-        
-                // Mutual fill for "وحدة القياس" and "قياس التعبئة"
-                if ((prop === 7 || prop === 8) && newValue !== oldValue) {
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        if (
-                            newValue !== 'حبة' &&
-                            updatedData[row][7] !== 'حبة' &&
-                            updatedData[row][8] !== 'حبة'
-                        ) {
-                            updatedData[row][13] = ''; // Clear Min
-                            updatedData[row][14] = ''; // Clear Max
-                        }
-                        if (prop === 7) {
-                            updatedData[row][8] = newValue;
-                        } else {
-                            updatedData[row][7] = newValue;
-                        }
-                        return updatedData;
-                    });
-        
-                    // Move cursor to "الباركود" column (column index 12)
-                    setTimeout(() => {
-                        this.selectCell(row, 12);
-                    }, 0);
-                }
-        
-                // Mutual fill for category and POS Cat
-                if ((prop === 3 || prop === 15) && newValue !== oldValue) {
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        if (prop === 3) {
-                            updatedData[row][15] = newValue;
-                        } else {
-                            updatedData[row][3] = newValue;
-                        }
-                        return updatedData;
-                    });
-                }
-            });
-        },
+        afterChange,
         
        
 
@@ -492,11 +641,10 @@ const getColumnType = useCallback((index) => {
             for (let i = changes.length - 1; i >= 0; i--) {
                 const [row, prop, oldValue, newValue] = changes[i];
 
-                
-
                     // If it's a dropdown column and the new value isn't in the source
-                if ([3, 7, 4, 9].includes(prop)) {
-                    const options = getColumnOptions(prop);
+                // If it's a dropdown column and the new value isn't in the source
+                if ([3, 7, 4, 5, 9].includes(prop)) {  // Added 5 to the list
+                    const options = getColumnOptions(prop, row);
                     if (newValue && !options.includes(newValue)) {
                         changes.splice(i, 1);
                         continue;
@@ -512,7 +660,12 @@ const getColumnType = useCallback((index) => {
                     }
                 }
 
-                
+                if ((prop === 4 || prop === 5) && newValue) {
+                    if (!validateClassification(row, newValue, prop)) {
+                        changes.splice(i, 1);
+                        continue;
+                    }
+                }
 
                 // Min/Max validation based on measurement unit
                 if ((prop === 13 || prop === 14) && newValue !== oldValue) {  // Updated from 14,15 to 13,14
