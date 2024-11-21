@@ -1,7 +1,7 @@
 # backend/models/sheet.py
 #
 from datetime import datetime
-from backend.extensions import db
+from ..extensions import db
 
 class Sheet(db.Model):
     __tablename__ = 'sheets'

@@ -1,6 +1,6 @@
 # backend/models/dropdown_options.py
 from datetime import datetime
-from backend.extensions import db
+from ..extensions import db
 
 class DropdownOption(db.Model):
     __tablename__ = 'dropdown_options'
