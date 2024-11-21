@@ -62,7 +62,7 @@ const useSheets = (showNotification) => {
             setIsCreating(true);
             console.log('Creating sheet with data:', sheetData); // Debug log
 
-            const response = await fetch('${API_BASE_URL}/sheets', {
+            const response = await fetch(`${API_BASE_URL}/sheets`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json'
