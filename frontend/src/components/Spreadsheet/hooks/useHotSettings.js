@@ -164,6 +164,7 @@ const useHotSettings = ({
     };
     // Add state for dropdown options
     const categoryOptions = useDropdownOptions('فئة المنتج');
+    console.log('Category Options:', categoryOptions);
     const measurementUnitOptions = useDropdownOptions('وحدة القياس');
     const classificationOptions = useDropdownOptions('التصنيف');
     const sourceOptions = useDropdownOptions('مصدر المنتج');
@@ -201,7 +202,7 @@ const useHotSettings = ({
 }, [data, showNotification]);
 
 const getColumnOptions = useCallback((columnIndex, row) => {
-    // Handle both التصنيف and علامات تصنيف المنتج columns
+    let options = [];
     if (columnIndex === 4 || columnIndex === 5) {
         if (row === undefined || !data?.[row]) {
             return CATEGORY_CLASSIFICATIONS['default'];
@@ -215,24 +216,28 @@ const getColumnOptions = useCallback((columnIndex, row) => {
         } else { // columnIndex === 5
             return PRODUCT_TAG_CLASSIFICATIONS[categoryValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
         }
+    } else {
+        const columnToOptions = {
+            3: categoryOptions,  // فئة المنتج
+            7: measurementUnitOptions,
+            9: sourceOptions
+        };
+
+        if (columnToOptions[columnIndex]) {
+            options = columnToOptions[columnIndex].map(opt => opt.value);
+        }
     }
 
-    const columnToOptions = {
-        3: categoryOptions,  // فئة المنتج
-        7: measurementUnitOptions,
-        9: sourceOptions
-    };
-
-    if (columnToOptions[columnIndex]) {
-        return columnToOptions[columnIndex].map(opt => opt.value);
-    }
-
-    return [];
+    console.log(`Options for column ${columnIndex}, row ${row}:`, options);
+    return options;
 }, [data, categoryOptions, measurementUnitOptions, sourceOptions]);
+
 
 
 const createDropdownRenderer = useCallback((columnIndex) => {
     return function(instance, td, row, col, prop, value, cellProperties) {
+        console.log(`Dropdown renderer called for column index: ${columnIndex}, row: ${row}, col: ${col}`);
+
         // Add safety check
         if (!td) return td;
 
@@ -241,6 +246,7 @@ const createDropdownRenderer = useCallback((columnIndex) => {
         wrapper.textContent = value || '-- اختر --';
         
         wrapper.addEventListener('click', (e) => {
+            console.log(`Dropdown cell clicked at row: ${row}, column: ${col}`);
             e.preventDefault();
             e.stopPropagation();
             
