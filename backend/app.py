@@ -44,24 +44,22 @@ app = Flask(__name__)
 
 
 # Database Configuration
-# Near the top of the file, after imports:
+# Database Configuration
 database_url = os.environ.get('DATABASE_URL', 'postgresql://custom_excel_user:69Ncf6Uo7XjeyvTq10tWEat7SSXNgQs5@dpg-cssok43tq21c73a38p0g-a/myexcel')
 
-# Fix any potential postgres:// in the URL
+# Replace postgres:// with postgresql:// if necessary
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# Update the database configuration section
-app.config.update(
-    SQLALCHEMY_DATABASE_URI=database_url,
-    SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    JSON_ENSURE_ASCII=False,
-    SQLALCHEMY_ENGINE_OPTIONS={
-        'pool_size': 5,  # Reduced pool size for free tier
-        'pool_timeout': 30,
-        'pool_recycle': 1800,
-    }
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JSON_ENSURE_ASCII'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 5,
+    'pool_timeout': 30,
+    'pool_recycle': 1800,
+}
+
 
 # Initialize the database connection
 db.init_app(app)
