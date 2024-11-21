@@ -11,6 +11,7 @@ import os
 from sqlalchemy.exc import IntegrityError
 import os
 import urllib.parse
+import unicodedata
 if os.environ.get('ENVIRONMENT') == 'production':
     # Render (production) imports
     from models.dropdown_options import DropdownOption
@@ -416,14 +417,16 @@ def update_sheet(sheet_id):
 
 @app.route('/api/dropdown-options/<path:category>', methods=['GET'])
 def get_dropdown_options(category):
-    decoded_category = urllib.parse.unquote(category)
-    logger.debug(f"Received category: '{decoded_category}'")
+    decoded_category = urllib.parse.unquote(category).strip()
+    decoded_category = unicodedata.normalize('NFC', decoded_category)  # Normalize the string
+    logger.debug(f"Received category: '{decoded_category}'")  # Log the received category
+
     if not decoded_category:
         return jsonify([])
 
     try:
-        options = DropdownOption.query.filter_by(category=decoded_category.strip()).all()
-        logger.debug(f"Retrieved options: {options}")
+        options = DropdownOption.query.filter_by(category=decoded_category).all()
+        logger.debug(f"Retrieved options: {options}")  # Log the retrieved options
         return jsonify([{
             'id': option.id,
             'value': option.value,
