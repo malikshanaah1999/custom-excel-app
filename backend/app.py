@@ -475,13 +475,11 @@ def init_db():
         except Exception as e:
             logger.error(f"Error creating database tables: {str(e)}\n{traceback.format_exc()}")
             raise
-
+# At the bottom of app.py
 if __name__ == '__main__':
-    # Initialize database
-    init_db()
-    
-    # Start Flask application
-    # In development, use localhost
-    # In production (Render), it will use the host and port provided by the platform
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    if os.environ.get('INIT_DB') == 'true':
+        with app.app_context():
+            init_db()
+            # Also run your seed script
+            from seed import seed_dropdown_options
+            seed_dropdown_options()
