@@ -10,7 +10,7 @@ from logging.handlers import RotatingFileHandler
 import os
 from sqlalchemy.exc import IntegrityError
 import os
-
+import urllib.parse
 if os.environ.get('ENVIRONMENT') == 'production':
     # Render (production) imports
     from models.dropdown_options import DropdownOption
@@ -414,13 +414,16 @@ def update_sheet(sheet_id):
             "message": "فشل في تحديث الجدول"
         }), 500
 
-@app.route('/api/dropdown-options/<category>', methods=['GET'])
+@app.route('/api/dropdown-options/<path:category>', methods=['GET'])
 def get_dropdown_options(category):
-    if not category:
+    decoded_category = urllib.parse.unquote(category)
+    logger.debug(f"Received category: '{decoded_category}'")
+    if not decoded_category:
         return jsonify([])
-        
+
     try:
-        options = DropdownOption.query.filter_by(category=category).all()
+        options = DropdownOption.query.filter_by(category=decoded_category.strip()).all()
+        logger.debug(f"Retrieved options: {options}")
         return jsonify([{
             'id': option.id,
             'value': option.value,

@@ -1,6 +1,7 @@
 // src/hooks/useDropdownOptions.js
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../../config/api';
+
 export const useDropdownOptions = (category) => {
     const [options, setOptions] = useState([]);
     
@@ -9,7 +10,6 @@ export const useDropdownOptions = (category) => {
             if (!category) return;
             
             try {
-              
                 const response = await fetch(`${API_BASE_URL}/api/dropdown-options/${encodeURIComponent(category)}`);
                 
                 if (!response.ok) {
@@ -17,7 +17,7 @@ export const useDropdownOptions = (category) => {
                 }
                 
                 const data = await response.json();
-                
+                console.log('Fetched options:', data); // <-- Add this line
                 
                 if (Array.isArray(data)) {
                     const formattedOptions = data.map(option => {
@@ -33,7 +33,6 @@ export const useDropdownOptions = (category) => {
                         };
                     }).filter(Boolean); // Remove any null values
                     
-                 
                     setOptions(formattedOptions);
                 } else {
                     console.error('Received non-array data:', data);
