@@ -481,4 +481,7 @@ if __name__ == '__main__':
     init_db()
     
     # Start Flask application
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    # In development, use localhost
+    # In production (Render), it will use the host and port provided by the platform
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)

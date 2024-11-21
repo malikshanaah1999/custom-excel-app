@@ -1,5 +1,5 @@
 // src/components/Spreadsheet/hooks/useSpreadsheetData.js
-
+import { API_BASE_URL } from '../config/api';
 import { useState, useCallback, useEffect } from 'react';
 import { 
     fetchSpreadsheetData, 
@@ -22,7 +22,7 @@ const useSpreadsheetData = (showNotification) => {
     const fetchData = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`http://127.0.0.1:5000/data/${id}`);
+            const response = await fetch(`${API_BASE_URL}/data/${id}`);
             const result = await response.json();
             
             if (response.ok && result.status === 'success') {
@@ -63,7 +63,7 @@ const useSpreadsheetData = (showNotification) => {
         setIsSaving(true);
         try {
             const cleanedData = cleanData(data);
-            const response = await fetch(`http://127.0.0.1:5000/save/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/save/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: cleanedData }),
@@ -130,7 +130,7 @@ const deleteRow = useCallback(async (rowIndex) => {
         // If it's the last row with data, handle both UI and backend
         if (data.length === 1 && !isCurrentRowEmpty) {
             try {
-                const response = await fetch(`http://127.0.0.1:5000/delete-row/${rowIndex}`, {
+                const response = await fetch(`${API_BASE_URL}/delete-row/${rowIndex}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -156,7 +156,7 @@ const deleteRow = useCallback(async (rowIndex) => {
 
         // Handle regular deletion with backend sync
         try {
-            const response = await fetch(`http://127.0.0.1:5000/delete-row/${rowIndex}`, {
+            const response = await fetch(`${API_BASE_URL}/delete-row/${rowIndex}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'

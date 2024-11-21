@@ -1,6 +1,6 @@
 // src/components/Spreadsheet/utils/apiHelpers.js
 
-const API_BASE_URL = 'http://127.0.0.1:5000';
+import { API_BASE_URL } from '../../../config/api';
 
 export const fetchSpreadsheetData = async () => {
     const response = await fetch(`${API_BASE_URL}/data`);

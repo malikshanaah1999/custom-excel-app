@@ -1,8 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';  // Adjust path based on file structure
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:5000', // Backend server URL
+    baseURL: API_BASE_URL,  // Use environment variable
 });
 
 export default api;
-/***/
