@@ -9,9 +9,18 @@ import traceback
 from logging.handlers import RotatingFileHandler
 import os
 from sqlalchemy.exc import IntegrityError
-from backend.models.dropdown_options import DropdownOption
-from backend.models.sheet import Sheet
-from backend.extensions import db
+import os
+
+if os.environ.get('ENVIRONMENT') == 'production':
+    # Render (production) imports
+    from models.dropdown_options import DropdownOption
+    from models.sheet import Sheet
+    from extensions import db
+else:
+    # Local development imports
+    from backend.models.dropdown_options import DropdownOption
+    from backend.models.sheet import Sheet
+    from backend.extensions import db
 
 
 ## Configure logging
