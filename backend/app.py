@@ -60,6 +60,61 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 1800,
 }
 
+# After database configuration and before app routes
+@app.before_request
+def log_request_info():
+    logger.debug('Database URL: %s', app.config['SQLALCHEMY_DATABASE_URI'])
+    try:
+        # Test database connection
+        with app.app_context():
+            db.session.execute('SELECT 1')
+            logger.info('Database connection successful')
+    except Exception as e:
+        logger.error('Database connection failed: %s', str(e))
+        logger.error('Full error: %s', traceback.format_exc())
+
+# Also modify your get_sheets route to add more logging
+@app.route('/sheets', methods=['GET'])
+def get_sheets():
+    try:
+        search_term = request.args.get('search', '')
+        logger.info(f"Fetching sheets with search term: {search_term}")
+        
+        # Add debug logging
+        logger.debug('Testing database connection...')
+        db.session.execute('SELECT 1')
+        logger.debug('Database connection successful')
+        
+        query = Sheet.query
+        logger.debug('Created query object')
+
+        if search_term:
+            query = query.filter(Sheet.name.ilike(f'%{search_term}%'))
+            logger.debug('Added search filter')
+
+        sheets = query.order_by(Sheet.updated_at.desc()).all()
+        logger.debug(f'Retrieved {len(sheets)} sheets')
+        
+        return jsonify({
+            "status": "success",
+            "sheets": [{
+                "id": sheet.id,
+                "name": sheet.name,
+                "description": sheet.description,
+                "record_count": sheet.record_count,
+                "created_at": sheet.created_at.isoformat() if sheet.created_at else None,
+                "updated_at": sheet.updated_at.isoformat() if sheet.updated_at else None
+            } for sheet in sheets] if sheets else []
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching sheets: {str(e)}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        return jsonify({
+            "status": "error",
+            "message": "خطأ في جلب البيانات",
+            "debug_info": str(e)  # Add this in development, remove in production
+        }), 500
 
 # Initialize the database connection
 db.init_app(app)
