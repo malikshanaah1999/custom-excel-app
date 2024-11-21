@@ -42,6 +42,7 @@ const SheetPage = () => {
     addNewRow,
     sheetInfo,
   } = useSpreadsheetData(showNotification, id);
+
   // Prevent memory leaks
   useEffect(() => {
     return () => {
@@ -57,6 +58,7 @@ const SheetPage = () => {
       });
     };
   }, []);
+
   const [dropdownEditorState, setDropdownEditorState] = useState({
     isOpen: false,
     options: [],
@@ -73,23 +75,23 @@ const SheetPage = () => {
 
   const showOptionsModal = useCallback(({ category, options, onSelect, position }) => {
     const adjustedPosition = {
-        top: position.top,
-        left: position.left,
+      top: position.top,
+      left: position.left,
     };
 
     // Adjust position if it would go off screen
     if (position.top + 300 > window.innerHeight) {
-        adjustedPosition.top = position.top - 300;
+      adjustedPosition.top = position.top - 300;
     }
 
     setModalState({
-        isOpen: true,
-        category,
-        options: Array.isArray(options) ? options : [],
-        onSelect,
-        position: adjustedPosition
+      isOpen: true,
+      category,
+      options: Array.isArray(options) ? options : [],
+      onSelect,
+      position: adjustedPosition
     });
-}, []);
+  }, []);
 
   const handleModalClose = useCallback(() => {
     setModalState(prev => ({ ...prev, isOpen: false }));
@@ -102,7 +104,7 @@ const SheetPage = () => {
     handleModalClose();
     setDropdownEditorState(prev => ({ ...prev, isOpen: false }));
   }, [modalState.onSelect, handleModalClose]);
-  
+
   const hotSettings = useHotSettings({
     data,
     setData,
@@ -112,6 +114,7 @@ const SheetPage = () => {
     showNotification,
     showDropdownEditor: showOptionsModal,
   });
+
   const memoizedHotSettings = useMemo(() => hotSettings(), [
     data,
     setData,
@@ -119,113 +122,111 @@ const SheetPage = () => {
     setHasChanges,
     showNotification,
     showOptionsModal,
-    hotSettings 
+    hotSettings
   ]);
+
   // Handle keydown events for shortcuts
-const handleKeyDown = useCallback(
-  (event) => {
-    // Handle Ctrl+S shortcut for saving
-    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-      event.preventDefault();
-      saveData(true);
-    }
-
-    // Handle "+" key press to add a new row
-    // Check if no modifier keys are pressed (Ctrl, Alt, Meta)
-    if (!event.ctrlKey && !event.altKey && !event.metaKey) {
-      // Detect "+" key press
-      if (
-        event.key === '+' ||                // Standard "+" key
-        (event.shiftKey && event.key === '=') || // Shift + "=" produces "+" on some keyboards
-        event.keyCode === 107               // Numpad "+" key
-      ) {
+  const handleKeyDown = useCallback(
+    (event) => {
+      // Handle Ctrl+S shortcut for saving
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
-        addNewRow();
+        saveData(true);
       }
-    }
-  },
-  [saveData, addNewRow]
-);
 
-//
+      // Handle "+" key press to add a new row
+      // Check if no modifier keys are pressed (Ctrl, Alt, Meta)
+      if (!event.ctrlKey && !event.altKey && !event.metaKey) {
+        // Detect "+" key press
+        if (
+          event.key === '+' ||                // Standard "+" key
+          (event.shiftKey && event.key === '=') || // Shift + "=" produces "+" on some keyboards
+          event.keyCode === 107               // Numpad "+" key
+        ) {
+          event.preventDefault();
+          addNewRow();
+        }
+      }
+    },
+    [saveData, addNewRow]
+  );
 
-const handleClickOutside = useCallback((event) => {
-  if (!event.target.closest(`.${styles.dropdownContainer}`) && 
-      !event.target.closest('.dropdown-cell') &&
-      !event.target.closest('.htDropdownWrapper')) {
+  const handleClickOutside = useCallback((event) => {
+    if (!event.target.closest(`.${styles.dropdownContainer}`) &&
+        !event.target.closest('.dropdown-cell') &&
+        !event.target.closest('.htDropdownWrapper')) {
       setModalState(prev => ({ ...prev, isOpen: false }));
       setDropdownEditorState(prev => ({ ...prev, isOpen: false }));
-  }
-}, []);
+    }
+  }, []);
 
-useEffect(() => {
-  document.addEventListener('keydown', handleKeyDown);
-  return () => document.removeEventListener('keydown', handleKeyDown);
-}, [handleKeyDown]);
-useEffect(() => {
-  if (!modalState.isOpen) return;
-  
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => document.removeEventListener('mousedown', handleClickOutside);
-}, [modalState.isOpen, handleClickOutside]);
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  useEffect(() => {
+    if (!modalState.isOpen) return;
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [modalState.isOpen, handleClickOutside]);
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
   return (
     <div className={styles.sheetPage}>
-      {/* Main Content Container */}
-      <div id="mainContent" className={styles.mainContent}>
-        {/* Header */}
-        <div className={styles.header}>
-    <button onClick={() => navigate('/')} className={styles.backButton}>
-        <ArrowLeft size={18} />
-        العودة للرئيسية
-    </button>
-
-    <h1 className={styles.pageTitle}>
-        {sheetInfo?.name || 'جدول البيانات'}
-    </h1>
-
-    <div className={styles.actionButtons}>
-        <button onClick={addNewRow} className={styles.addRowButton}>
-            <PlusCircle size={18} />
-            إضافة حقل جديد
+      {/* Header */}
+      <div className={styles.header}>
+        <button onClick={() => navigate('/')} className={styles.backButton}>
+          <ArrowLeft size={18} />
+          <span className={styles.backButtonText}>العودة للرئيسية</span>
         </button>
 
-        <button
+        <h1 className={styles.pageTitle}>
+          {sheetInfo?.name || 'جدول البيانات'}
+        </h1>
+
+        <div className={styles.actionButtons}>
+          <button onClick={addNewRow} className={styles.addRowButton} title="إضافة حقل جديد">
+            <PlusCircle size={18} />
+            <span className={styles.buttonText}>إضافة حقل جديد</span>
+          </button>
+
+          <button
             onClick={() => saveData(true)}
             disabled={isSaving}
-            className={`${styles.saveButton} ${isSaving ? 'disabled' : ''}`}
-        >
+            className={`${styles.saveButton} ${isSaving ? styles.disabled : ''}`}
+            title="حفظ البيانات (Ctrl+S)"
+          >
             {isSaving ? <Loader2 size={18} className={styles.spinner} /> : <Save size={18} />}
-            {isSaving ? 'جاري الحفظ' : 'حفظ'}
-        </button>
+            <span className={styles.buttonText}>{isSaving ? 'جاري الحفظ' : 'حفظ'}</span>
+          </button>
 
-        <GenerateButton
+          <GenerateButton
             onClick={() => handleGenerate(data)}
             isGenerating={isGenerating}
-        />
-    </div>
-</div>
-
-        {/* Spreadsheet Container */}
-        <div className={styles.spreadsheetContainer}>
-        <HotTable {...memoizedHotSettings} />
-        
-          {/* Delete Row Button */}
-          {selectedRow !== null && data.length > 0 && (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className={styles.deleteRowButton}
-              style={{ top: `${43 + selectedRow * 23}px` }}
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
+          />
         </div>
+      </div>
 
-       
+      {/* Spreadsheet Container */}
+      <div className={styles.spreadsheetContainer}>
+        <HotTable {...memoizedHotSettings} />
+
+        {/* Delete Row Button */}
+        {selectedRow !== null && data.length > 0 && (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className={styles.deleteRowButton}
+            style={{ top: `${43 + selectedRow * 24}px` }}
+            title="حذف الصف المحدد"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}
