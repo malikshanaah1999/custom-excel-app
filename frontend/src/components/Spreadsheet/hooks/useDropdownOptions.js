@@ -1,6 +1,6 @@
 // src/hooks/useDropdownOptions.js
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL } from '../../../config/api';
 export const useDropdownOptions = (category) => {
     const [options, setOptions] = useState([]);
     
