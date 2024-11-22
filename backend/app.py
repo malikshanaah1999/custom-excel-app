@@ -417,43 +417,57 @@ def update_sheet(sheet_id):
 
 @app.route('/api/dropdown-options/<path:category>', methods=['GET'])
 def get_dropdown_options(category):
-    logger.info(f"Raw category: {category}")
-    logger.info(f"Raw category type: {type(category)}")
+    logger.info(f"Raw category: {[ord(c) for c in category]}")  # Log character codes
     
     try:
-        # Normalize and decode category
-        decoded_category = urllib.parse.unquote(category)
-        normalized_category = unicodedata.normalize('NFC', decoded_category)
+        # Get a sample from database for comparison
+        sample = db.session.query(DropdownOption.category).first()
+        if sample:
+            logger.info(f"Sample from DB: {[ord(c) for c in sample.category]}")
         
-        logger.info(f"Decoded category: {decoded_category}")
-        logger.info(f"Normalized category: {normalized_category}")
+        # Try different normalizations
+        normalizations = {
+            'NFC': unicodedata.normalize('NFC', category),
+            'NFKC': unicodedata.normalize('NFKC', category),
+            'NFD': unicodedata.normalize('NFD', category),
+            'NFKD': unicodedata.normalize('NFKD', category)
+        }
         
-        # Log what's in the database for comparison
-        existing_categories = db.session.query(DropdownOption.category).distinct().all()
-        logger.info(f"Existing categories in DB: {existing_categories}")
+        for name, normalized in normalizations.items():
+            options = DropdownOption.query.filter_by(category=normalized).all()
+            if options:
+                logger.info(f"Found match with {name} normalization")
+                result = [{
+                    'id': option.id,
+                    'value': option.value,
+                    'label': option.value
+                } for option in options]
+                return jsonify(result)
         
-        options = DropdownOption.query.filter_by(category=normalized_category).all()
-        logger.info(f"Found {len(options)} options")
+        # If no matches found, try raw query
+        query = text("SELECT * FROM dropdown_options WHERE category = :cat")
+        raw_results = db.session.execute(query, {'cat': category}).fetchall()
+        logger.info(f"Raw query found {len(raw_results)} results")
         
-        result = [{
-            'id': option.id,
-            'value': option.value,
-            'label': option.value
-        } for option in options]
+        # If still no results, log more details
+        logger.warning(f"No results found. Category details:")
+        logger.warning(f"- Length: {len(category)}")
+        logger.warning(f"- Bytes: {category.encode('utf-8')}")
         
-        return jsonify(result)
+        # Query all categories for comparison
+        all_cats = db.session.query(DropdownOption.category).distinct().all()
+        logger.info("All categories in DB:")
+        for cat in all_cats:
+            logger.info(f"- {cat[0]}: {[ord(c) for c in cat[0]]}")
+        
+        return jsonify([])
         
     except Exception as e:
         logger.error(f"Error in get_dropdown_options: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({
             "status": "error",
-            "message": str(e),
-            "debug": {
-                "raw_category": category,
-                "decoded": decoded_category if 'decoded_category' in locals() else None,
-                "normalized": normalized_category if 'normalized_category' in locals() else None
-            }
+            "message": str(e)
         }), 500
 
 @app.route('/api/dropdown-options/<category>', methods=['POST'])
