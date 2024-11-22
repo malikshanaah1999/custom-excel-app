@@ -7,52 +7,53 @@ export const useDropdownOptions = (category) => {
     
     useEffect(() => {
         const fetchOptions = async () => {
-            if (!category) {
-                console.log('No category provided');
-                return;
-            }
+            if (!category) return;
             
             try {
-                const url = `${API_BASE_URL}/api/dropdown-options/${encodeURIComponent(category)}`;
-                console.log('Fetching options from:', url);
+                // Normalize the category name and encode properly
+                const normalizedCategory = category.normalize('NFC');
+                const encodedCategory = encodeURIComponent(normalizedCategory);
+                const url = `${API_BASE_URL}/api/dropdown-options/${encodedCategory}`;
                 
+                console.log('Category:', {
+                    original: category,
+                    normalized: normalizedCategory,
+                    encoded: encodedCategory,
+                    url: url
+                });
+
                 const response = await fetch(url);
-                console.log('Response status:', response.status);
                 
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response not OK:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: errorText
+                    });
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Raw data received:', data);
+                console.log('Response data:', data);
                 
                 if (Array.isArray(data)) {
-                    const formattedOptions = data.map(option => {
-                        if (!option || !option.value) {
-                            console.warn('Invalid option:', option);
-                            return null;
-                        }
-                        const formatted = {
+                    const formattedOptions = data
+                        .filter(option => option && option.value)
+                        .map(option => ({
                             id: option.id,
-                            value: option.value,
-                            label: option.value
-                        };
-                        console.log('Formatted option:', formatted);
-                        return formatted;
-                    }).filter(Boolean);
+                            value: option.value.normalize('NFC'), // Normalize the value
+                            label: option.value.normalize('NFC')  // Normalize the label
+                        }));
                     
-                    console.log('Setting options:', formattedOptions);
+                    console.log('Formatted options:', formattedOptions);
                     setOptions(formattedOptions);
                 } else {
-                    console.error('Received non-array data:', data);
+                    console.warn('Data is not an array:', data);
                     setOptions([]);
                 }
             } catch (error) {
-                console.error('Failed to fetch options:', error);
-                console.error('Error details:', {
-                    message: error.message,
-                    stack: error.stack
-                });
+                console.error('Fetch error:', error);
                 setOptions([]);
             }
         };
@@ -60,6 +61,5 @@ export const useDropdownOptions = (category) => {
         fetchOptions();
     }, [category]);
     
-    console.log('Current options for category:', category, options);
     return options;
 };

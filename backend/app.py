@@ -417,18 +417,23 @@ def update_sheet(sheet_id):
 
 @app.route('/api/dropdown-options/<path:category>', methods=['GET'])
 def get_dropdown_options(category):
-    decoded_category = urllib.parse.unquote(category)
-    logger.debug(f"Received raw category: '{category}'")
-    logger.debug(f"Decoded category: '{decoded_category}'")
-
-    if not decoded_category:
-        logger.warning("Empty category received")
-        return jsonify([])
-        
+    logger.info(f"Raw category: {category}")
+    logger.info(f"Raw category type: {type(category)}")
+    
     try:
-        logger.debug(f"Querying database for category: '{decoded_category}'")
-        options = DropdownOption.query.filter_by(category=decoded_category).all()
-        logger.debug(f"Found {len(options)} options")
+        # Normalize and decode category
+        decoded_category = urllib.parse.unquote(category)
+        normalized_category = unicodedata.normalize('NFC', decoded_category)
+        
+        logger.info(f"Decoded category: {decoded_category}")
+        logger.info(f"Normalized category: {normalized_category}")
+        
+        # Log what's in the database for comparison
+        existing_categories = db.session.query(DropdownOption.category).distinct().all()
+        logger.info(f"Existing categories in DB: {existing_categories}")
+        
+        options = DropdownOption.query.filter_by(category=normalized_category).all()
+        logger.info(f"Found {len(options)} options")
         
         result = [{
             'id': option.id,
@@ -436,17 +441,18 @@ def get_dropdown_options(category):
             'label': option.value
         } for option in options]
         
-        logger.debug(f"Returning options: {result}")
         return jsonify(result)
+        
     except Exception as e:
-        logger.error(f"Error fetching dropdown options: {str(e)}")
-        logger.error(f"Full traceback: {traceback.format_exc()}")
+        logger.error(f"Error in get_dropdown_options: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({
             "status": "error",
             "message": str(e),
             "debug": {
-                "category": decoded_category,
-                "raw_category": category
+                "raw_category": category,
+                "decoded": decoded_category if 'decoded_category' in locals() else None,
+                "normalized": normalized_category if 'normalized_category' in locals() else None
             }
         }), 500
 
