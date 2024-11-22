@@ -416,61 +416,53 @@ def update_sheet(sheet_id):
             "message": "فشل في تحديث الجدول"
         }), 500
 
-@app.route('/api/dropdown-options/<path:category>', methods=['GET'])
+@app.route('/api/dropdown-options/<category>', methods=['GET'])
 def get_dropdown_options(category):
-    logger.info(f"Raw category: {[ord(c) for c in category]}")  # Log character codes
-    
     try:
-        # First try direct query to check our data
+        logger.info(f"Received request for category: {category}")
+        
+        # First try direct query
         options = DropdownOption.query.filter_by(category=category).all()
+        logger.info(f"Direct query found {len(options)} results")
         
         if options:
-            logger.info(f"Found {len(options)} options with direct query")
             result = [{
                 'id': option.id,
                 'value': option.value,
                 'label': option.value
             } for option in options]
             return jsonify(result)
-            
-        # If no results, try with raw SQL
-        query = text("SELECT * FROM dropdown_options WHERE category = :cat")
-        raw_results = db.session.execute(query, {'cat': category}).fetchall()
-        logger.info(f"Raw SQL query found {len(raw_results)} results")
         
-        if raw_results:
-            result = [{
-                'id': row.id,
-                'value': row.value,
-                'label': row.value
-            } for row in raw_results]
-            return jsonify(result)
-            
-     
-        logger.info(f"Category details:")
-        logger.info(f"- Received category: '{category}'")
-        logger.info(f"- Length: {len(category)}")
-        logger.info(f"- Character codes: {[ord(c) for c in category]}")
+        # If no results, try raw SQL
+        conn = db.engine.connect()
+        result = conn.execute(
+            "SELECT * FROM dropdown_options WHERE category = %s",
+            [category]
+        )
+        rows = result.fetchall()
+        logger.info(f"Raw SQL found {len(rows)} results")
         
-        # Query some sample categories from DB
-        sample_categories = db.session.query(DropdownOption.category).distinct().limit(5).all()
-        logger.info("Sample categories in DB:")
-        for cat in sample_categories:
-            logger.info(f"- '{cat[0]}' chars: {[ord(c) for c in cat[0]]}")
-        
+        if rows:
+            return jsonify([{
+                'id': row[0],
+                'value': row[2],
+                'label': row[2]
+            } for row in rows])
+
+        # Log diagnostic info
+        logger.warning(f"No results found for category: {category}")
+        logger.warning(f"All categories in DB:")
+        all_cats = db.session.query(DropdownOption.category).distinct().all()
+        for cat in all_cats:
+            logger.warning(f"- {cat[0]}")
+
         return jsonify([])
-        
     except Exception as e:
-        logger.error(f"Error in get_dropdown_options: {str(e)}")
-        logger.error(traceback.format_exc())
+        logger.error(f"Error in dropdown_options: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             "status": "error",
-            "message": str(e),
-            "debug": {
-                "category": category,
-                "length": len(category) if category else 0,
-                "chars": [ord(c) for c in category] if category else []
-            }
+            "message": str(e)
         }), 500
 
 @app.route('/api/dropdown-options/<category>', methods=['POST'])
