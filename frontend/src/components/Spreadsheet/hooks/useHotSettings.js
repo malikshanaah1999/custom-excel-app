@@ -220,9 +220,8 @@ const useHotSettings = ({
 
 const getColumnOptions = useCallback((columnIndex, row) => {
     if (columnIndex === 3) {  // فئة المنتج column
-        return PRODUCT_CATEGORIES;  // Use hardcoded options
+        return PRODUCT_CATEGORIES;
     } else if (columnIndex === 4 || columnIndex === 5) {
-        // Rest of your existing code for these columns
         if (row === undefined || !data?.[row]) {
             return CATEGORY_CLASSIFICATIONS['default'];
         }
@@ -232,23 +231,19 @@ const getColumnOptions = useCallback((columnIndex, row) => {
 
         if (columnIndex === 4) {
             return CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default'];
-        } else { // columnIndex === 5
+        } else {
             return PRODUCT_TAG_CLASSIFICATIONS[categoryValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
         }
     } else {
-        // For other dropdown columns, use the API
         const columnToOptions = {
             7: measurementUnitOptions,
             9: sourceOptions
         };
 
-        if (columnToOptions[columnIndex]) {
-            options = columnToOptions[columnIndex].map(opt => opt.value);
-        }
+        return columnToOptions[columnIndex] ? 
+            columnToOptions[columnIndex].map(opt => opt.value) : 
+            [];
     }
-
-    console.log(`Options for column ${columnIndex}, row ${row}:`, options);
-    return options;
 }, [data, measurementUnitOptions, sourceOptions]);
 
 
