@@ -7,6 +7,23 @@ import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.css';
 import { registerAllModules } from 'handsontable/registry';
 import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
+const PRODUCT_CATEGORIES = [
+    'All / بهار',
+    'All / خضار طازجة',
+    'All / ديلي',
+    'All / فواكه طازجة',
+    'All / ماركت',
+    'All / مبردات',
+    'All / مخبز',
+    'All / مستهلكات',
+    'All / مسمكة',
+    'All / معلبات',
+    'All / مفرزات',
+    'All / ملحمة طازج',
+    'All / ملحمة مبرد',
+    'All / ملحمة مجمد',
+    'All / منظفات'
+];
 // Add this new import for category mappings
 export const CATEGORY_CLASSIFICATIONS = {
     'All / ماركت': [
@@ -202,8 +219,10 @@ const useHotSettings = ({
 }, [data, showNotification]);
 
 const getColumnOptions = useCallback((columnIndex, row) => {
-    let options = [];
-    if (columnIndex === 4 || columnIndex === 5) {
+    if (columnIndex === 3) {  // فئة المنتج column
+        return PRODUCT_CATEGORIES;  // Use hardcoded options
+    } else if (columnIndex === 4 || columnIndex === 5) {
+        // Rest of your existing code for these columns
         if (row === undefined || !data?.[row]) {
             return CATEGORY_CLASSIFICATIONS['default'];
         }
@@ -217,8 +236,8 @@ const getColumnOptions = useCallback((columnIndex, row) => {
             return PRODUCT_TAG_CLASSIFICATIONS[categoryValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
         }
     } else {
+        // For other dropdown columns, use the API
         const columnToOptions = {
-            3: categoryOptions,  // فئة المنتج
             7: measurementUnitOptions,
             9: sourceOptions
         };
@@ -230,7 +249,7 @@ const getColumnOptions = useCallback((columnIndex, row) => {
 
     console.log(`Options for column ${columnIndex}, row ${row}:`, options);
     return options;
-}, [data, categoryOptions, measurementUnitOptions, sourceOptions]);
+}, [data, measurementUnitOptions, sourceOptions]);
 
 
 
