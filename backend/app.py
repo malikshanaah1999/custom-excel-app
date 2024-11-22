@@ -417,26 +417,37 @@ def update_sheet(sheet_id):
 
 @app.route('/api/dropdown-options/<path:category>', methods=['GET'])
 def get_dropdown_options(category):
-    decoded_category = urllib.parse.unquote(category).strip()
-    decoded_category = unicodedata.normalize('NFC', decoded_category)  # Normalize the string
-    logger.debug(f"Received category: '{decoded_category}'")  # Log the received category
+    decoded_category = urllib.parse.unquote(category)
+    logger.debug(f"Received raw category: '{category}'")
+    logger.debug(f"Decoded category: '{decoded_category}'")
 
     if not decoded_category:
+        logger.warning("Empty category received")
         return jsonify([])
-
+        
     try:
+        logger.debug(f"Querying database for category: '{decoded_category}'")
         options = DropdownOption.query.filter_by(category=decoded_category).all()
-        logger.debug(f"Retrieved options: {options}")  # Log the retrieved options
-        return jsonify([{
+        logger.debug(f"Found {len(options)} options")
+        
+        result = [{
             'id': option.id,
             'value': option.value,
             'label': option.value
-        } for option in options])
+        } for option in options]
+        
+        logger.debug(f"Returning options: {result}")
+        return jsonify(result)
     except Exception as e:
         logger.error(f"Error fetching dropdown options: {str(e)}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         return jsonify({
             "status": "error",
-            "message": str(e)
+            "message": str(e),
+            "debug": {
+                "category": decoded_category,
+                "raw_category": category
+            }
         }), 500
 
 @app.route('/api/dropdown-options/<category>', methods=['POST'])

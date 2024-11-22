@@ -7,32 +7,41 @@ export const useDropdownOptions = (category) => {
     
     useEffect(() => {
         const fetchOptions = async () => {
-            if (!category) return;
+            if (!category) {
+                console.log('No category provided');
+                return;
+            }
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/dropdown-options/${encodeURIComponent(category)}`);
+                const url = `${API_BASE_URL}/api/dropdown-options/${encodeURIComponent(category)}`;
+                console.log('Fetching options from:', url);
+                
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Fetched options:', data); // <-- Add this line
+                console.log('Raw data received:', data);
                 
                 if (Array.isArray(data)) {
                     const formattedOptions = data.map(option => {
-                        // Ensure we're accessing the correct properties
                         if (!option || !option.value) {
                             console.warn('Invalid option:', option);
                             return null;
                         }
-                        return {
+                        const formatted = {
                             id: option.id,
                             value: option.value,
                             label: option.value
                         };
-                    }).filter(Boolean); // Remove any null values
+                        console.log('Formatted option:', formatted);
+                        return formatted;
+                    }).filter(Boolean);
                     
+                    console.log('Setting options:', formattedOptions);
                     setOptions(formattedOptions);
                 } else {
                     console.error('Received non-array data:', data);
@@ -40,6 +49,10 @@ export const useDropdownOptions = (category) => {
                 }
             } catch (error) {
                 console.error('Failed to fetch options:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack
+                });
                 setOptions([]);
             }
         };
@@ -47,5 +60,6 @@ export const useDropdownOptions = (category) => {
         fetchOptions();
     }, [category]);
     
+    console.log('Current options for category:', category, options);
     return options;
 };
