@@ -446,7 +446,7 @@ def get_dropdown_options(category):
             } for row in raw_results]
             return jsonify(result)
             
-        # Log debugging info
+     
         logger.info(f"Category details:")
         logger.info(f"- Received category: '{category}'")
         logger.info(f"- Length: {len(category)}")
