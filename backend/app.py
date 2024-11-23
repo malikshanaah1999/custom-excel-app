@@ -14,14 +14,24 @@ import urllib.parse
 import unicodedata
 from sqlalchemy import text
 if os.environ.get('ENVIRONMENT') == 'production':
-    # Render (production) imports
-    from models.dropdown_options import DropdownOption
-    from models.sheet import Sheet
+    from models import (
+        ProductCategory,
+        Classification,
+        ProductClassificationTag,
+        MeasurementUnit,
+        ProductSource,
+        Sheet
+    )
     from extensions import db
 else:
-    # Local development imports
-    from backend.models.dropdown_options import DropdownOption
-    from backend.models.sheet import Sheet
+    from backend.models import (
+        ProductCategory,
+        Classification,
+        ProductClassificationTag,
+        MeasurementUnit,
+        ProductSource,
+        Sheet
+    )
     from backend.extensions import db
 
 
@@ -47,8 +57,7 @@ app = Flask(__name__)
 
 # Database Configuration
 # Database Configuration
-database_url = os.environ.get('DATABASE_URL', 'postgresql://custom_excel_user:69Ncf6Uo7XjeyvTq10tWEat7SSXNgQs5@dpg-cssok43tq21c73a38p0g-a/myexcel')
-
+database_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:TiKelam1999#@localhost:5432/custom_excel_db')
 # Replace postgres:// with postgresql:// if necessary
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -97,6 +106,14 @@ app.app_context().push()
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
+CATEGORY_MAPPING = {
+    'فئة المنتج': {'model': ProductCategory, 'parent': None},
+    'التصنيف': {'model': Classification, 'parent': ProductCategory},
+    'علامات تصنيف المنتج': {'model': ProductClassificationTag, 'parent': ProductCategory},
+    'وحدة القياس': {'model': MeasurementUnit, 'parent': None},
+    'مصدر المنتج': {'model': ProductSource, 'parent': None},
+}
+
 @app.route('/')
 def index():
     """Root endpoint to verify API is running"""
@@ -106,6 +123,77 @@ def index():
         "version": "1.0"
     })
 
+
+
+@app.route('/test/db')
+def test_db():
+    try:
+        # Test basic connection
+        db.session.execute('SELECT 1')
+        
+        # Test categories
+        categories = ProductCategory.query.all()
+        categories_list = [{"id": c.id, "name": c.name} for c in categories]
+        
+        # Test classifications
+        classifications = Classification.query.join(ProductCategory).filter(
+            ProductCategory.name == 'All / ماركت'
+        ).all()
+        classifications_list = [{"id": c.id, "name": c.name} for c in classifications]
+        
+        return jsonify({
+            "status": "success",
+            "database_url": app.config['SQLALCHEMY_DATABASE_URI'],
+            "categories_count": len(categories_list),
+            "classifications_count": len(classifications_list),
+            "sample_categories": categories_list[:5],
+            "sample_classifications": classifications_list[:5]
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
+
+# Test specific dropdown endpoint
+@app.route('/test/dropdown/<category>')
+def test_dropdown(category):
+    try:
+        logger.info(f"Testing dropdown for category: {category}")
+        category_info = CATEGORY_MAPPING.get(category)
+        
+        if not category_info:
+            return jsonify({'error': f'Invalid category: {category}'})
+        
+        model = category_info['model']
+        parent_model = category_info['parent']
+        
+        # Get parent category from query params if it exists
+        parent_category = request.args.get('parent_category')
+        
+        if parent_model and parent_category:
+            parent = parent_model.query.filter_by(name=parent_category).first()
+            if parent:
+                options = model.query.filter_by(category_id=parent.id).all()
+            else:
+                options = []
+        else:
+            options = model.query.all()
+        
+        return jsonify({
+            "status": "success",
+            "category": category,
+            "parent_category": parent_category,
+            "count": len(options),
+            "options": [{"id": opt.id, "name": opt.name} for opt in options]
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
 @app.route('/save/<int:sheet_id>', methods=['POST'])
 def save_data(sheet_id):
     try:
@@ -419,44 +507,41 @@ def update_sheet(sheet_id):
 @app.route('/api/dropdown-options/<category>', methods=['GET'])
 def get_dropdown_options(category):
     try:
-        logger.info(f"Received request for category: {category}")
+        logger.info(f"Fetching options for category: {category}")
+        category_info = CATEGORY_MAPPING.get(category)
         
-        # First try direct query
-        options = DropdownOption.query.filter_by(category=category).all()
-        logger.info(f"Direct query found {len(options)} results")
+        if not category_info:
+            logger.warning(f"Category not found in mapping: {category}")
+            return jsonify({'error': 'Invalid category'}), 400
         
-        if options:
-            result = [{
-                'id': option.id,
-                'value': option.value,
-                'label': option.value
-            } for option in options]
-            return jsonify(result)
-        
-        # If no results, try raw SQL
-        conn = db.engine.connect()
-        result = conn.execute(
-            "SELECT * FROM dropdown_options WHERE category = %s",
-            [category]
-        )
-        rows = result.fetchall()
-        logger.info(f"Raw SQL found {len(rows)} results")
-        
-        if rows:
-            return jsonify([{
-                'id': row[0],
-                'value': row[2],
-                'label': row[2]
-            } for row in rows])
+        model = category_info['model']
+        parent_model = category_info['parent']
 
-        # Log diagnostic info
-        logger.warning(f"No results found for category: {category}")
-        logger.warning(f"All categories in DB:")
-        all_cats = db.session.query(DropdownOption.category).distinct().all()
-        for cat in all_cats:
-            logger.warning(f"- {cat[0]}")
-
-        return jsonify([])
+        if parent_model:
+            parent_category = request.args.get('parent_category')
+            logger.info(f"Parent category provided: {parent_category}")
+            
+            if not parent_category:
+                return jsonify([])
+                
+            parent = parent_model.query.filter_by(name=parent_category).first()
+            if not parent:
+                logger.warning(f"Parent not found: {parent_category}")
+                return jsonify([])
+            
+            logger.info(f"Found parent ID: {parent.id}")
+            if category == 'التصنيف':
+                options = Classification.query.filter_by(category_id=parent.id).order_by(Classification.name).all()
+            elif category == 'علامات تصنيف المنتج':
+                options = ProductClassificationTag.query.filter_by(category_id=parent.id).order_by(ProductClassificationTag.name).all()
+        else:
+            options = model.query.order_by(model.name).all()
+        
+        result = [{'id': opt.id, 'value': opt.name} for opt in options]
+        logger.info(f"Found {len(result)} options. First 5: {result[:5]}")
+        
+        return jsonify(result)
+        
     except Exception as e:
         logger.error(f"Error in dropdown_options: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")

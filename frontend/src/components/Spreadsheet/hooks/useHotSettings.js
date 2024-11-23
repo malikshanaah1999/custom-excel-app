@@ -7,92 +7,10 @@ import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.css';
 import { registerAllModules } from 'handsontable/registry';
 import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
-const PRODUCT_CATEGORIES = [
-    'All / بهار',
-    'All / خضار طازجة',
-    'All / ديلي',
-    'All / فواكه طازجة',
-    'All / ماركت',
-    'All / مبردات',
-    'All / مخبز',
-    'All / مستهلكات',
-    'All / مسمكة',
-    'All / معلبات',
-    'All / مفرزات',
-    'All / ملحمة طازج',
-    'All / ملحمة مبرد',
-    'All / ملحمة مجمد',
-    'All / منظفات'
-];
-// Add this new import for category mappings
-export const CATEGORY_CLASSIFICATIONS = {
-    'All / ماركت': [
-        'زيوت', 'ارز', 'سكر', 'ملح', 'سمن', 'طحين', 'سردين', 'تونة',
-        'حليب مجفف', 'طحينة', 'حلاوة', 'معكرونة', 'نودلز', 'عصائر',
-        'مشروبات ساخنة', 'مشروبات غازية', 'مياه معدنية', 'مشروبات طاقة',
-        'شاي', 'قهوة', 'اسبرسو', 'مخللات', 'كاتشاب', 'ميونيز',
-        'رانش/صوص', 'شيبس', 'حبوب كورنفلكس', 'ايس كريم', 'مربى',
-        'عسل', 'علكة', 'سكاكر', 'دخان', 'بقوليات مبكت', 'صلصة بندورة',
-        'معلبات', 'اغئية قابلة للدهن', 'تحضير حلويات', 'فواكة معلبة',
-        'خليط كيك', 'طعام اطفال', 'فواكة مجففة', 'ويفر', 'بسكوت',
-        'شوكولاتة', 'كراكر', 'sugar free', 'gluten free',
-        'fitness bars food', 'مكسرات', 'زيتون'
-    ],
-    'All / مفرزات': [
-        'اسماك مفرزة', 'اغذية بحرية مفرزة', 'خضار مفرزة', 'برجر مفرز',
-        'عجائن مفرزة', 'بوريكس', 'دجاج بقسماط مفرز', 'فواكة مفرزة',
-        'فطائى مفرزة', 'بطاطا  مفرزة', 'كبة', 'اطعمة مفرزة'
-    ],
-    
-    'default': ['test 1', 'test 2', 'test 3', 'test 4', 'test 5']
-};
-export const PRODUCT_TAG_CLASSIFICATIONS = {
-    'All / ماركت': [
-    'زيت ذرة', 'زيت شمس', 'جرانولا', 'زيت زيتون', 'ارز حبة طويلة',
-    'ارز حبة قصيرة', 'ارز حبة مدور', 'ارز مطحون', 'سكر ابيض',
-    'سكر بني', 'سكر مطحون', 'ملح ابيض', 'ملح خشن', 'ملح نكهات',
-    'ملح زهري', 'سمن نباتي', 'سمن حيواني', 'سمن بلدي', 'سمن حلوب',
-    'طحين ابيض', 'طحين بلدي', 'طحين فري جلوتين', 'طحين كيك', 'حلو',
-    'حار', 'ذرة حلو', 'ذرة حار', 'قليل السم', 'كامل الدسم', 'سادة',
-    'شوكولاتة', 'فانيلا', 'حلاوة مكسرات', 'حلاوة شعر', 'حلاوة دهن',
-    'معكرونة سباجيتي', 'معكرونة كوع', 'معكرونة ماسورة', 'معكرونة اصابع',
-    'معكرونة دبوكي', 'اندومي', 'ليمون', 'برتقال', 'مانجا', 'فيمتو',
-    'تانك', 'الزهراء', 'نسكافية', 'مبيض', 'شوكو', 'نسكافية جولد',
-    'كابتشينو', 'كوكا كولا', 'سبرايت', 'فانتا', 'بيبسي', 'ميرندا',
-    'سفن اب', 'سما', 'ماتركس', 'تشات كولا', 'عبواة', 'قاروة', 'كاسات',
-    'XL', 'هايبي', 'هوبي', 'بلو', 'ريد بول', 'باور هورس', 'شاي عادي',
-    'نكهات', 'حلل', 'شقراء', 'نص بنص', 'محروقة', 'خليجية', 'كبسولات',
-    'حبوب اسبرسو', 'خيار', 'زيتون حب', 'زيتون بدون نوى', 'باذنجان',
-    'فلفل', 'كلاسيك', 'باربكيو', 'صويا صوص', 'سيزر', 'ليز', 'دوريتوز',
-    'ماستر شيبس', 'بيوجليز', 'برينجلز', 'بطاطا طبيعي', 'نستلي',
-    'كونفلكس الديك', 'سيريال', 'حبات', 'علب', 'تين', 'فراولة', 'مشمش',
-    'صدر', 'طبيعي', 'ملكات', 'اوربت', 'سهم', 'ستيميرول', 'جوم',
-    'ملبس', 'مصاص', 'نوجا', 'سجائر', 'سجائر الكترونية', 'معسل', 'تمباك',
-    'ايكوس', 'عدس حب', 'بوشار', 'لوبيا', 'برغل', 'عدس مجروش',
-    'صلصة بندورة', 'ذرة', 'فاصوليا بيضاء', 'فاصوليا حمراء', 'بازيلا',
-    'ورق عنب', 'لحوم معلبة', 'حمص حب', 'حمص مسلوق', 'حمص مطحون',
-    'فول مدمس', 'شوربة سريعة التحضير', 'زينة الحلويات', 'زبدة فول سوداني',
-    'زبدة فستق حلي', 'زبدة البندق', 'قشطة حلويات', 'حليب مبخر',
-    'حليب مكثف', 'باكينج باورد', 'فانيلا سائل', 'اناناس مقطع',
-    'اناناس شرائح', 'سلطة فواكة', 'كرز', 'بلاك بري', 'بلو بري',
-    'كيك', 'موس', 'بان كيك', 'خليط عواة', 'دونات', 'طعام اطفال',
-    'حليب اطفال', 'كيوي', 'جارينا', 'علي بابا', 'ماري', 'ليدي فنجر',
-    'الواح', 'بار', 'دايت', 'دارك', 'مملح', 'نكهات', 'بيجلا', 'بزر بطيخ',
-    'بزر شمس', 'فسق عبيد', 'كاجو', 'فستق حلبي'
-],
+import { API_BASE_URL } from '../../../config/api';
 
-    'All / مفرزات': [
-    'سمك بكلا', 'سمك فيله', 'سمك سلمون', 'جمبري اسود', 'جمبري احمر',
-    'بازيلا مع جزر', 'بازيلا', 'خضار', 'بروكلي', 'فول صويا',
-    'بيف برجر', 'تشكن برجر', 'عجينة سمبوسك', 'باف بيستري', 'عجينة بقلاوة',
-    'جبنة', 'لحمة', 'بطاطا', 'سكالوب', 'كرسبي', 'اجنحة دجاج', 'نبوت',
-    'ناجتس', 'مانجا', 'فراولة', 'بلاك بري', 'بلوبري', 'كيوي', 'بيتزا',
-    'اقراص زعتر', 'ستيك', 'اصابع', 'ودجيز', 'كيري', 'سمايل', 'كبة لحمة',
-    'كبة رز', 'كبة دجاج', 'كبة طازجة', 'كباب', 'ششبرك', 'مفتول'
-],
 
-    'default': ['test 1', 'test 2', 'test 3', 'test 4', 'test 5']
-};
+
 // Register all Handsontable modules
 registerAllModules();
 // Register Arabic language
@@ -123,6 +41,65 @@ const useHotSettings = ({
     showDropdownEditor,
     
 }) => {
+
+ // Initialize dropdown options at top level
+ const categoryOptionsHook = useDropdownOptions('فئة المنتج');
+ const categoryOptions = categoryOptionsHook.options || [];
+ const { options: measurementUnitOptions } = useDropdownOptions('وحدة القياس');
+ const { options: sourceOptions } = useDropdownOptions('مصدر المنتج');
+
+ // State for dependent options
+ const [classificationOptions, setClassificationOptions] = useState({});
+ const [tagOptions, setTagOptions] = useState({});
+
+ console.log('Initial category options:', categoryOptions);
+ console.log('Initial measurement options:', measurementUnitOptions);
+ console.log('Initial source options:', sourceOptions);
+
+// Update fetchDependentOptions
+const fetchDependentOptions = useCallback(async (categoryValue) => {
+    if (!categoryValue) return;
+    
+    try {
+        console.log('Fetching options for category:', categoryValue); // Debug log
+        
+        // Fetch classifications
+        const classResponse = await fetch(
+            `${API_BASE_URL}/api/dropdown-options/التصنيف?parent_category=${encodeURIComponent(categoryValue)}`
+        );
+        const classData = await classResponse.json();
+        console.log('Classifications received:', classData); // Debug log
+
+        // Fetch tags
+        const tagResponse = await fetch(
+            `${API_BASE_URL}/api/dropdown-options/علامات تصنيف المنتج?parent_category=${encodeURIComponent(categoryValue)}`
+        );
+        const tagData = await tagResponse.json();
+        console.log('Tags received:', tagData); // Debug log
+
+        setClassificationOptions(prev => ({
+            ...prev,
+            [categoryValue]: classData
+        }));
+
+        setTagOptions(prev => ({
+            ...prev,
+            [categoryValue]: tagData
+        }));
+    } catch (error) {
+        console.error('Error fetching dependent options:', error);
+        showNotification('خطأ في تحميل الخيارات', 'error');
+    }
+}, [showNotification]);
+// Effect to fetch dependent options when needed
+useEffect(() => {
+    data?.forEach(row => {
+        const categoryValue = row[3];
+        if (categoryValue && (!classificationOptions[categoryValue] || !tagOptions[categoryValue])) {
+            fetchDependentOptions(categoryValue);
+        }
+    });
+}, [data, fetchDependentOptions]);
     // Add refs for rendered cell caching
     const lastRenderedValue = useRef(null);
     const lastRenderedCell = useRef(null);
@@ -179,12 +156,7 @@ const useHotSettings = ({
         7: 'وحدة القياس',        // measurement unit
         9: 'مصدر المنتج'         // product source
     };
-    // Add state for dropdown options
-    const categoryOptions = useDropdownOptions('فئة المنتج');
-    console.log('Category Options:', categoryOptions);
-    const measurementUnitOptions = useDropdownOptions('وحدة القياس');
-    const classificationOptions = useDropdownOptions('التصنيف');
-    const sourceOptions = useDropdownOptions('مصدر المنتج');
+
 
     
 
@@ -218,65 +190,86 @@ const useHotSettings = ({
     });
 }, [data, showNotification]);
 
+// Update getColumnOptions
 const getColumnOptions = useCallback((columnIndex, row) => {
+    console.log(`Getting options for column ${columnIndex}, row ${row}`);
+    
     if (columnIndex === 3) {  // فئة المنتج column
-        return PRODUCT_CATEGORIES;
-    } else if (columnIndex === 4 || columnIndex === 5) {
-        if (row === undefined || !data?.[row]) {
-            return CATEGORY_CLASSIFICATIONS['default'];
-        }
-        
-        const categoryValue = data[row][3];
-        if (!categoryValue) return CATEGORY_CLASSIFICATIONS['default'];
-
-        if (columnIndex === 4) {
-            return CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default'];
-        } else {
-            return PRODUCT_TAG_CLASSIFICATIONS[categoryValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
-        }
+        console.log('Returning category options:', categoryOptions?.map(opt => opt.value));
+        return categoryOptions?.map(opt => opt.value) || [];
+    } else if (columnIndex === 4) {  // التصنيف column
+        const categoryValue = data?.[row]?.[3];
+        console.log('Getting classifications for category:', categoryValue);
+        const options = categoryValue ? 
+            (classificationOptions[categoryValue]?.map(opt => opt.value) || []) : 
+            [];
+        console.log('Classifications found:', options);
+        return options;
+    } else if (columnIndex === 5) {  // علامات تصنيف المنتج column
+        const categoryValue = data?.[row]?.[3];
+        console.log('Getting tags for category:', categoryValue);
+        const options = categoryValue ? 
+            (tagOptions[categoryValue]?.map(opt => opt.value) || []) : 
+            [];
+        console.log('Tags found:', options);
+        return options;
     } else {
         const columnToOptions = {
-            7: measurementUnitOptions,
-            9: sourceOptions
+            7: measurementUnitOptions,  // وحدة القياس
+            9: sourceOptions           // مصدر المنتج
         };
 
-        return columnToOptions[columnIndex] ? 
+        const options = columnToOptions[columnIndex] ? 
             columnToOptions[columnIndex].map(opt => opt.value) : 
             [];
+        console.log(`Options for column ${columnIndex}:`, options);
+        return options;
     }
-}, [data, measurementUnitOptions, sourceOptions]);
+}, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
+
+
+
 
 
 
 const createDropdownRenderer = useCallback((columnIndex) => {
     return function(instance, td, row, col, prop, value, cellProperties) {
-        console.log(`Dropdown renderer called for column index: ${columnIndex}, row: ${row}, col: ${col}`);
-
-        // Add safety check
         if (!td) return td;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'htDropdownWrapper';
         wrapper.textContent = value || '-- اختر --';
         
-        wrapper.addEventListener('click', (e) => {
-            console.log(`Dropdown cell clicked at row: ${row}, column: ${col}`);
+        wrapper.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
             
-            // Add safety check for row
             if (row === undefined) return;
             
-            const options = getColumnOptions(columnIndex, row);
+            let options;
+            if (columnIndex === 4 || columnIndex === 5) {
+                const categoryValue = data[row][3];
+                console.log('Selected category:', categoryValue);
+                if (!categoryValue) {
+                    showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
+                    return;
+                }
+                options = await getColumnOptions(columnIndex, row);
+                console.log('Dependent options:', options);
+            } else {
+                options = await getColumnOptions(columnIndex, row);
+                console.log('Independent options:', options);
+            }
+        
             const rect = td.getBoundingClientRect();
-            
             instance.deselectCell();
             
+            console.log('Showing dropdown with options:', options);
             showDropdownEditor({
                 category: COLUMN_CATEGORIES[columnIndex],
                 options,
                 onSelect: (newValue) => {
-                    // Explicitly set the cell value and trigger a re-render
+                    console.log('Selected value:', newValue);
                     instance.setDataAtCell(row, col, newValue, 'edit');
                     instance.render();
                 },
@@ -292,22 +285,24 @@ const createDropdownRenderer = useCallback((columnIndex) => {
         
         return td;
     };
-}, [getColumnOptions, showDropdownEditor]);
+}, [getColumnOptions, showDropdownEditor, data]);
 
+// Update validateClassification
 const validateClassification = useCallback((row, value, columnIndex) => {
     const categoryValue = data[row][3];
     if (!categoryValue) return false;
     
     if (columnIndex === 4) {
-        const validOptions = CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default'];
+        const validOptions = classificationOptions[categoryValue]?.map(opt => opt.value) || [];
         return validOptions.includes(value);
     } else if (columnIndex === 5) {
-        const validOptions = PRODUCT_TAG_CLASSIFICATIONS[categoryValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
+        const validOptions = tagOptions[categoryValue]?.map(opt => opt.value) || [];
         return validOptions.includes(value);
     }
     return false;
-}, [data]);
+}, [data, classificationOptions, tagOptions]);
 
+// Update getColumnSettings
 const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
         return {
@@ -315,17 +310,7 @@ const getColumnSettings = useCallback((columnIndex) => {
             allowInvalid: false,
             source: function(query, callback) {
                 const row = this.row;
-                const instance = this.instance;
-
-                if (columnIndex === 4) {  // For "التصنيف" column
-                    const categoryValue = instance.getDataAtCell(row, 3);
-                    const options = categoryValue ? 
-                        (CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default']) : 
-                        CATEGORY_CLASSIFICATIONS['default'];
-                    callback(options);
-                } else {
-                    callback(getColumnOptions(columnIndex, row));
-                }
+                callback(getColumnOptions(columnIndex, row));
             },
             editor: 'dropdown',
             renderer: function(instance, td, row, col, prop, value, cellProperties) {
@@ -339,7 +324,7 @@ const getColumnSettings = useCallback((columnIndex) => {
         type: 'text',
         editor: 'text'
     };
-}, [COLUMN_CATEGORIES, getColumnOptions]);
+}, [getColumnOptions]);
 
 
 const getColumnType = useCallback((index) => {
@@ -502,43 +487,36 @@ const getColumnType = useCallback((index) => {
     
             if (row === undefined || !data?.[row]) return;
     
-            // When "فئة المنتج" changes
-            if (prop === 3) {
+            // When فئة المنتج changes
+            if (prop === 3 && newValue !== oldValue) {
+                // Fetch new options for dependent dropdowns
+                fetchDependentOptions(newValue);
+
+                // Clear dependent fields
                 setData(prevData => {
                     const updatedData = [...prevData];
                     if (updatedData[row]) {
-                        updatedData[row][4] = ''; // Clear التصنيف value
-                        updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
+                        updatedData[row][4] = ''; // Clear التصنيف
+                        updatedData[row][5] = ''; // Clear علامات تصنيف المنتج
                     }
                     return updatedData;
                 });
-    
-                if (instance) {
-                    const validClassificationOptions = CATEGORY_CLASSIFICATIONS[newValue] || CATEGORY_CLASSIFICATIONS['default'];
-                    const validTagOptions = PRODUCT_TAG_CLASSIFICATIONS[newValue] || PRODUCT_TAG_CLASSIFICATIONS['default'];
-    
-                    instance.setCellMeta(row, 4, 'source', validClassificationOptions);
-                    instance.setCellMeta(row, 5, 'source', validTagOptions);
-                    instance.render();
-                }
             }
     
             // When "التصنيف" changes
-            if (prop === 4 && newValue) {
-                const categoryValue = data[row][3];
-                const validOptions = CATEGORY_CLASSIFICATIONS[categoryValue] || CATEGORY_CLASSIFICATIONS['default'];
-    
-                // If selected value is not valid for current category, clear it
-                if (!validOptions.includes(newValue)) {
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        updatedData[row][4] = '';
-                        return updatedData;
-                    });
-                }
+            if (prop === 3 && newValue !== oldValue) {
+                fetchDependentOptions(newValue);
+                setData(prevData => {
+                    const updatedData = [...prevData];
+                    if (updatedData[row]) {
+                        updatedData[row][4] = ''; // Clear classification
+                        updatedData[row][5] = ''; // Clear tags
+                    }
+                    return updatedData;
+                });
             }
         });
-    }, [data, setData, checkEmptyBarcode, ensureDefaultValues, showNotification, updateSharedNumberRows]);
+    }, [data, setData, fetchDependentOptions, checkEmptyBarcode, ensureDefaultValues, showNotification, updateSharedNumberRows]);
     
 
     const getHotSettings = useCallback(() => ({
