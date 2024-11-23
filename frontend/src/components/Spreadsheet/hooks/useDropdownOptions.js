@@ -16,13 +16,11 @@ export const useDropdownOptions = (category, parentCategory = null) => {
             
             try {
                 let url = `${API_BASE_URL}/api/dropdown-options/${encodeURIComponent(category)}`;
-                console.log('Fetching URL11111111111111111111111111111111111111111111111111111111111111111111111111111:', url); // Debug log
 
                 if (parentCategory) {
                     url += `?parent_category=${encodeURIComponent(parentCategory)}`;
                 }
 
-                console.log('Fetching URL:', url); // Debug log
                 const response = await fetch(url);
                 
                 if (!response.ok) {
@@ -31,7 +29,6 @@ export const useDropdownOptions = (category, parentCategory = null) => {
                 }
                 
                 const data = await response.json();
-                console.log('Raw API Response:', data); // Debug log
 
                 if (Array.isArray(data)) {
                     const formattedOptions = data.map(option => ({
@@ -40,7 +37,6 @@ export const useDropdownOptions = (category, parentCategory = null) => {
                         label: option.value
                     }));
                     
-                    console.log('Formatted options for', category, ':', formattedOptions);
                     setOptions(formattedOptions);
                 } else {
                     console.warn('Received unexpected data format:', data);

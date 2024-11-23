@@ -52,30 +52,28 @@ const useHotSettings = ({
  const [classificationOptions, setClassificationOptions] = useState({});
  const [tagOptions, setTagOptions] = useState({});
 
- console.log('Initial category options:', categoryOptions);
- console.log('Initial measurement options:', measurementUnitOptions);
- console.log('Initial source options:', sourceOptions);
+
 
 // Update fetchDependentOptions
 const fetchDependentOptions = useCallback(async (categoryValue) => {
     if (!categoryValue) return;
     
     try {
-        console.log('Fetching options for category:', categoryValue); // Debug log
+
         
         // Fetch classifications
         const classResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/التصنيف?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const classData = await classResponse.json();
-        console.log('Classifications received:', classData); // Debug log
+   
 
         // Fetch tags
         const tagResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/علامات تصنيف المنتج?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const tagData = await tagResponse.json();
-        console.log('Tags received:', tagData); // Debug log
+      
 
         setClassificationOptions(prev => ({
             ...prev,
@@ -192,26 +190,20 @@ useEffect(() => {
 
 // Update getColumnOptions
 const getColumnOptions = useCallback((columnIndex, row) => {
-    console.log(`Getting options for column ${columnIndex}, row ${row}`);
     
     if (columnIndex === 3) {  // فئة المنتج column
-        console.log('Returning category options:', categoryOptions?.map(opt => opt.value));
         return categoryOptions?.map(opt => opt.value) || [];
     } else if (columnIndex === 4) {  // التصنيف column
         const categoryValue = data?.[row]?.[3];
-        console.log('Getting classifications for category:', categoryValue);
         const options = categoryValue ? 
             (classificationOptions[categoryValue]?.map(opt => opt.value) || []) : 
             [];
-        console.log('Classifications found:', options);
         return options;
     } else if (columnIndex === 5) {  // علامات تصنيف المنتج column
         const categoryValue = data?.[row]?.[3];
-        console.log('Getting tags for category:', categoryValue);
         const options = categoryValue ? 
             (tagOptions[categoryValue]?.map(opt => opt.value) || []) : 
             [];
-        console.log('Tags found:', options);
         return options;
     } else {
         const columnToOptions = {
@@ -222,7 +214,6 @@ const getColumnOptions = useCallback((columnIndex, row) => {
         const options = columnToOptions[columnIndex] ? 
             columnToOptions[columnIndex].map(opt => opt.value) : 
             [];
-        console.log(`Options for column ${columnIndex}:`, options);
         return options;
     }
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
@@ -249,27 +240,22 @@ const createDropdownRenderer = useCallback((columnIndex) => {
             let options;
             if (columnIndex === 4 || columnIndex === 5) {
                 const categoryValue = data[row][3];
-                console.log('Selected category:', categoryValue);
                 if (!categoryValue) {
                     showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
                     return;
                 }
                 options = await getColumnOptions(columnIndex, row);
-                console.log('Dependent options:', options);
             } else {
                 options = await getColumnOptions(columnIndex, row);
-                console.log('Independent options:', options);
             }
         
             const rect = td.getBoundingClientRect();
             instance.deselectCell();
             
-            console.log('Showing dropdown with options:', options);
             showDropdownEditor({
                 category: COLUMN_CATEGORIES[columnIndex],
                 options,
                 onSelect: (newValue) => {
-                    console.log('Selected value:', newValue);
                     instance.setDataAtCell(row, col, newValue, 'edit');
                     instance.render();
                 },
