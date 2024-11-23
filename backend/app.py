@@ -13,6 +13,7 @@ import os
 import urllib.parse
 import unicodedata
 from sqlalchemy import text
+from urllib.parse import unquote
 if os.environ.get('ENVIRONMENT') == 'production':
     from models import (
         ProductCategory,
@@ -122,7 +123,36 @@ def index():
         "version": "1.0"
     })
 
-
+@app.route('/test/db-status')
+def test_db_status():
+    try:
+        # Test connection
+        db.session.execute('SELECT 1')
+        
+        # Get table counts
+        stats = {
+            'product_categories': db.session.query(ProductCategory).count(),
+            'classifications': db.session.query(Classification).count(),
+            'product_tags': db.session.query(ProductClassificationTag).count(),
+            'measurement_units': db.session.query(MeasurementUnit).count(),
+            'product_sources': db.session.query(ProductSource).count()
+        }
+        
+        # Get sample data
+        sample_category = db.session.query(ProductCategory).first()
+        
+        return jsonify({
+            "status": "success",
+            "database_connected": True,
+            "table_counts": stats,
+            "sample_category": sample_category.name if sample_category else None
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
 
 @app.route('/test/db')
 def test_db():
@@ -507,7 +537,6 @@ def update_sheet(sheet_id):
             "status": "error",
             "message": "فشل في تحديث الجدول"
         }), 500
-
 @app.route('/api/dropdown-options/<category>', methods=['GET'])
 def get_dropdown_options(category):
     category = unquote(category)
@@ -521,32 +550,40 @@ def get_dropdown_options(category):
         
         model = category_info['model']
         parent_model = category_info['parent']
+        
+        # Add debug logging
+        logger.info(f"Using model: {model.__name__}")
+        
+        try:
+            # Test database connection
+            db.session.execute('SELECT 1')
+            logger.info("Database connection is alive")
+        except Exception as e:
+            logger.error(f"Database connection error: {str(e)}")
+            return jsonify({"status": "error", "message": "Database connection error"}), 500
 
         if parent_model:
             parent_category = request.args.get('parent_category')
-            logger.info(f"Parent category provided: {parent_category}")
-            
-            if not parent_category:
-                return jsonify([])
+            if parent_category:
+                parent_category = unquote(parent_category)
+                logger.info(f"Looking up parent category: {parent_category}")
                 
-            parent = parent_model.query.filter_by(name=parent_category).first()
-            if not parent:
-                logger.warning(f"Parent not found: {parent_category}")
-                return jsonify([])
-            
-            logger.info(f"Found parent ID: {parent.id}")
-            if category == 'التصنيف':
-                options = Classification.query.filter_by(category_id=parent.id).order_by(Classification.name).all()
-            elif category == 'علامات تصنيف المنتج':
-                options = ProductClassificationTag.query.filter_by(category_id=parent.id).order_by(ProductClassificationTag.name).all()
+                parent = parent_model.query.filter_by(name=parent_category).first()
+                if parent:
+                    logger.info(f"Found parent with ID: {parent.id}")
+                    options = model.query.filter_by(category_id=parent.id).all()
+                else:
+                    logger.warning(f"Parent category not found: {parent_category}")
+                    options = []
+            else:
+                options = []
         else:
-            options = model.query.order_by(model.name).all()
+            options = model.query.all()
         
         result = [{'id': opt.id, 'value': opt.name} for opt in options]
-        logger.info(f"Found {len(result)} options. First 5: {result[:5]}")
-        
+        logger.info(f"Returning {len(result)} options")
         return jsonify(result)
-        
+
     except Exception as e:
         logger.error(f"Error in dropdown_options: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
