@@ -57,8 +57,7 @@ app = Flask(__name__)
 
 # Database Configuration
 # Database Configuration
-database_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:TiKelam1999#@localhost:5432/custom_excel_db')
-# Replace postgres:// with postgresql:// if necessary
+database_url = os.environ.get('DATABASE_URL', 'postgresql://custom_excel_user:69Ncf6Uo7XjeyvTq10tWEat7SSXNgQs5@dpg-cssok43tq21c73a38p0g-a/myexcel')# Replace postgres:// with postgresql:// if necessary
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -170,7 +169,12 @@ def test_dropdown(category):
         parent_model = category_info['parent']
         
         # Get parent category from query params if it exists
+        logger.info(f"Received category: {category}")
         parent_category = request.args.get('parent_category')
+        if parent_category:
+            parent_category = unquote(parent_category)
+            logger.info(f"Received parent_category: {parent_category}")
+
         
         if parent_model and parent_category:
             parent = parent_model.query.filter_by(name=parent_category).first()
@@ -506,6 +510,7 @@ def update_sheet(sheet_id):
 
 @app.route('/api/dropdown-options/<category>', methods=['GET'])
 def get_dropdown_options(category):
+    category = unquote(category)
     try:
         logger.info(f"Fetching options for category: {category}")
         category_info = CATEGORY_MAPPING.get(category)
