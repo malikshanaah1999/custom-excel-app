@@ -375,7 +375,7 @@ const getColumnSettings = useCallback((columnIndex) => {
                 const row = this.row;
                 callback(getColumnOptions(columnIndex, row));
             },
-            editor: false, // Disable default editor
+            editor: true, // Disable default editor
             renderer: createDropdownRenderer(columnIndex)
         };
     }
