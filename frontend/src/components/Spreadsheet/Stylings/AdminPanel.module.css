@@ -1,0 +1,68 @@
+
+.adminPanel {
+  min-height: 100vh;
+  background-color: #f0f9ff;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: #f7fafc;
+  transform: translateY(-1px);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  background-color: white;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tabButton {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  color: #4a5568;
+}
+
+.tabButton:hover {
+  background-color: #f7fafc;
+}
+
+.tabButton.active {
+  background-color: #2E7D32;
+  color: white;
+}
+
+.content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 500px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

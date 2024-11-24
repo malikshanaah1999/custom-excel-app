@@ -200,3 +200,20 @@
   align-items: center;
   gap: 16px;
 }
+.adminButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #2E7D32;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.adminButton:hover {
+  background-color: #1B5E20;
+  transform: translateY(-1px);
+}

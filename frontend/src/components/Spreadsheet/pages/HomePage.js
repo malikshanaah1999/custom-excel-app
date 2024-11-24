@@ -1,6 +1,6 @@
 // src/pages/HomePage.js
 
-import React, { useState, useEffect, useCallback } from 'react';  
+import React, { useState, useEffect, useCallback, useNavigate } from 'react';  
 import { Plus, Loader2, FileX, List, Grid } from 'lucide-react';
 import useSheets from '../hooks/useSheets';
 import useNotification from '../hooks/useNotification';
@@ -14,6 +14,7 @@ import Pagination from '../components/Pagination';
 import COLORS from '../../../constants/HomePageColors';
 import styles from '../Stylings/HomePage.module.css';
 import SortDropdown from '../components/SortDropdown'; 
+import { Settings } from 'lucide-react';
 const HomePage = () => {
   const { notification, showNotification } = useNotification();
   const {
@@ -27,6 +28,7 @@ const HomePage = () => {
     deleteSheet,
     editSheet,
   } = useSheets(showNotification);
+  const navigate = useNavigate();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -130,6 +132,16 @@ const handlePageChange = (newPage) => {
         <div className={styles.header}>
           <h1 className={styles.title}>الجداول</h1>
           <div className={styles.headerActions}>
+
+            <button
+                  onClick={() => navigate('/admin')}
+                  className={styles.adminButton}
+                  title="لوحة التحكم"
+            >
+                  <Settings size={20} />
+                  <span>لوحة التحكم</span>
+            </button>
+
           <Pagination
             currentPage={currentPage}
             totalPages={getTotalPages()}
