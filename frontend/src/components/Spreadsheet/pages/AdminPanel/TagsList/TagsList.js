@@ -1,5 +1,7 @@
 // src/components/Spreadsheet/pages/AdminPanel/TagsList/TagsList.js
+
 import React, { useState } from 'react';
+import PropTypes from 'prop-types'; // Import PropTypes
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import styles from './TagsList.module.css';
 import AddEditModal from '../components/AddEditModal';
@@ -8,7 +10,7 @@ import { API_BASE_URL } from '../../../../../config/api';
 
 const TagsList = ({ 
   categoryId, 
-  tags,
+  tags, 
   isLoading, 
   onRefresh, 
   showNotification 
@@ -111,19 +113,21 @@ const TagsList = ({
         <button
           onClick={() => setShowAddModal(true)}
           className={styles.addButton}
+          aria-label="Add New Tag"
         >
           <Plus size={18} />
-          إضافة علامة جديدة
+          <span>إضافة علامة جديدة</span>
         </button>
       </div>
 
       <div className={styles.listContainer}>
         {isLoading ? (
-          <div className={styles.emptyState}>
-            جاري التحميل...
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+            <span>جارٍ التحميل...</span>
           </div>
         ) : tags.length === 0 ? (
-          <div className={styles.emptyState}>
+          <div className={styles.noData}>
             لا توجد علامات مضافة لهذه الفئة
           </div>
         ) : (
@@ -136,6 +140,7 @@ const TagsList = ({
                     onClick={() => setEditingTag(tag)}
                     className={styles.editButton}
                     title="تعديل"
+                    aria-label={`Edit tag ${tag.name}`}
                   >
                     <Edit2 size={16} />
                   </button>
@@ -143,6 +148,7 @@ const TagsList = ({
                     onClick={() => setTagToDelete(tag)}
                     className={styles.deleteButton}
                     title="حذف"
+                    aria-label={`Delete tag ${tag.name}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -177,6 +183,19 @@ const TagsList = ({
       />
     </div>
   );
+};
+
+TagsList.propTypes = {
+  categoryId: PropTypes.number.isRequired,
+  tags: PropTypes.array.isRequired,
+  isLoading: PropTypes.bool,
+  onRefresh: PropTypes.func.isRequired,
+  showNotification: PropTypes.func.isRequired,
+};
+
+TagsList.defaultProps = {
+  tags: [],
+  isLoading: false,
 };
 
 export default TagsList;
