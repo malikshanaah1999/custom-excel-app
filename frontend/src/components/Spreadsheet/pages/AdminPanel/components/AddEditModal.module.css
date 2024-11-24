@@ -1,0 +1,124 @@
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modalContent {
+    background-color: white;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    direction: rtl;
+  }
+  
+  .closeButton {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #718096;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+  
+  .closeButton:hover {
+    background-color: #f7fafc;
+    color: #2d3748;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
+    margin-bottom: 24px;
+    color: #2d3748;
+    text-align: center;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .label {
+    font-size: 14px;
+    color: #4a5568;
+  }
+  
+  .required {
+    color: #e53e3e;
+  }
+  
+  .input {
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+  }
+  
+  .input:focus {
+    outline: none;
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  }
+  
+  .input.error {
+    border-color: #e53e3e;
+  }
+  
+  .errorMessage {
+    color: #e53e3e;
+    font-size: 14px;
+  }
+  
+  .buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  
+  .cancelButton,
+  .submitButton {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .cancelButton {
+    background-color: #edf2f7;
+    color: #4a5568;
+    border: none;
+  }
+  
+  .cancelButton:hover {
+    background-color: #e2e8f0;
+  }
+  
+  .submitButton {
+    background-color: #2E7D32;
+    color: white;
+    border: none;
+  }
+  
+  .submitButton:hover {
+    background-color: #1B5E20;
+  }

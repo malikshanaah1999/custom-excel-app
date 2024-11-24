@@ -1,26 +1,41 @@
-// src/components/Spreadsheet/pages/AdminPanel/CategoryManager/AddEditCategoryModal.js
+// src/components/Spreadsheet/pages/AdminPanel/CategoryManager/AddEditModal.js
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import styles from './AddEditCategoryModal.module.css';
+import styles from './AddEditModal.module.css';
 
-const AddEditCategoryModal = ({ isOpen, onClose, onSubmit, category }) => {
+const AddEditModal = ({ 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  item, 
+  title,
+  itemType,
+  validateName = async () => true, 
+}) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (category) {
-      setName(category.name);
+    if (item) {
+      setName(item.name);
     } else {
       setName('');
     }
     setError('');
-  }, [category, isOpen]);
+  }, [item, isOpen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!name.trim()) {
-      setError('اسم الفئة مطلوب');
+      setError(`اسم ${itemType} مطلوب`);
+      return;
+    }
+
+    // Add validation before submit
+    const isValid = await validateName(name.trim());
+    if (!isValid) {
+      setError(`${itemType} موجود مسبقاً`);
       return;
     }
 
@@ -36,14 +51,12 @@ const AddEditCategoryModal = ({ isOpen, onClose, onSubmit, category }) => {
           <X size={20} />
         </button>
 
-        <h2 className={styles.modalTitle}>
-          {category ? 'تعديل فئة' : 'إضافة فئة جديدة'}
-        </h2>
+        <h2 className={styles.modalTitle}>{title}</h2>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="name" className={styles.label}>
-              اسم الفئة <span className={styles.required}>*</span>
+              الاسم <span className={styles.required}>*</span>
             </label>
             <input
               id="name"
@@ -54,7 +67,7 @@ const AddEditCategoryModal = ({ isOpen, onClose, onSubmit, category }) => {
                 setError('');
               }}
               className={`${styles.input} ${error ? styles.error : ''}`}
-              placeholder="أدخل اسم الفئة"
+              placeholder={`أدخل اسم ${itemType}`}
               autoFocus
             />
             {error && <span className={styles.errorMessage}>{error}</span>}
@@ -65,7 +78,7 @@ const AddEditCategoryModal = ({ isOpen, onClose, onSubmit, category }) => {
               إلغاء
             </button>
             <button type="submit" className={styles.submitButton}>
-              {category ? 'حفظ التغييرات' : 'إضافة'}
+              {item ? 'حفظ التغييرات' : 'إضافة'}
             </button>
           </div>
         </form>
@@ -74,4 +87,4 @@ const AddEditCategoryModal = ({ isOpen, onClose, onSubmit, category }) => {
   );
 };
 
-export default AddEditCategoryModal;
+export default AddEditModal;

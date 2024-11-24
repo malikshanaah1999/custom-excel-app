@@ -2,44 +2,51 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import styles from '../../Stylings/AdminPanel.module.css';
-import CategoryManager from './CategoryManager';
-import ClassificationManager from './ClassificationManager';
-import TagManager from './TagManager';
-import MeasurementManager from './MeasurementManager';
-import SourceManager from './SourceManager';
+import CategoryManager from './CategoryManager/CategoryManager';
+import ClassificationsList from './ClassificationsList/ClassificationsList';
+import TagsList from './TagsList/TagsList';
+import styles from './AdminPanel.module.css';
+import useNotification from '../../hooks/useNotification';
+import Notification from '../../components/Notification';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('categories');
-
-  const tabs = [
-    { id: 'categories', label: 'فئات المنتجات' },
-    { id: 'classifications', label: 'التصنيفات' },
-    { id: 'tags', label: 'علامات التصنيف' },
-    { id: 'measurements', label: 'وحدات القياس' },
-    { id: 'sources', label: 'مصادر المنتجات' }
-  ];
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [activeTab, setActiveTab] = useState('category');
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 'categories':
-        return <CategoryManager />;
-      case 'classifications':
-        return <ClassificationManager />;
-      case 'tags':
-        return <TagManager />;
-      case 'measurements':
-        return <MeasurementManager />;
-      case 'sources':
-        return <SourceManager />;
-      default:
-        return null;
+    if (!selectedCategory) {
+      return <CategoryManager onSelectCategory={setSelectedCategory} />;
     }
+
+    return (
+      <>
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'classification' ? styles.active : ''}`}
+            onClick={() => setActiveTab('classification')}
+          >
+            التصنيفات
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'tag' ? styles.active : ''}`}
+            onClick={() => setActiveTab('tag')}
+          >
+            علامات التصنيف
+          </button>
+        </div>
+
+        {activeTab === 'classification' ? (
+          <ClassificationsList categoryId={selectedCategory.id} />
+        ) : (
+          <TagsList categoryId={selectedCategory.id} />
+        )}
+      </>
+    );
   };
 
   return (
-    <div className={styles.adminPanel}>
+    <div className={styles.adminPage}>
       <header className={styles.header}>
         <button 
           onClick={() => navigate('/')} 
@@ -50,18 +57,6 @@ const AdminPanel = () => {
         </button>
         <h1>لوحة التحكم</h1>
       </header>
-
-      <nav className={styles.tabs}>
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`${styles.tabButton} ${activeTab === tab.id ? styles.active : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
 
       <main className={styles.content}>
         {renderContent()}

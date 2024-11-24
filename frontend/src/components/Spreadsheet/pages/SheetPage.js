@@ -8,6 +8,7 @@ import useSpreadsheetData from '../hooks/useSpreadsheetData';
 import useNotification from '../hooks/useNotification';
 import DropdownEditor from '../components/DropdownEditor';
 import useHotSettings from '../hooks/useHotSettings';
+import { useDropdownOptions } from '../hooks/useDropdownOptions';
 import {
   Loader2,
   Trash2,
@@ -22,6 +23,7 @@ import GenerateButton from '../components/GenerateButton';
 import useExcelGeneration from '../hooks/useExcelGeneration';
 import styles from '../Stylings/SheetPage.module.css';
 import OptionsModal from '../components/OptionsDialog';
+import { RefreshCw } from 'lucide-react';
 
 const SheetPage = () => {
   const { id } = useParams();
@@ -42,6 +44,32 @@ const SheetPage = () => {
     addNewRow,
     sheetInfo,
   } = useSpreadsheetData(showNotification, id);
+  const { 
+    refreshOptions: refreshCategories,
+    options: categoryOptions 
+  } = useDropdownOptions('فئة المنتج');
+
+  const { 
+    refreshOptions: refreshMeasurements,
+    options: measurementOptions 
+  } = useDropdownOptions('وحدة القياس');
+
+  const { 
+    refreshOptions: refreshSources,
+    options: sourceOptions 
+  } = useDropdownOptions('مصدر المنتج');
+
+  const refreshAllDropdowns = useCallback(() => {
+    refreshCategories();
+    refreshMeasurements();
+    refreshSources();
+  }, [refreshCategories, refreshMeasurements, refreshSources]);
+
+  useEffect(() => {
+    // Auto refresh every 30 seconds
+    const interval = setInterval(refreshAllDropdowns, 30000);
+    return () => clearInterval(interval);
+  }, [refreshAllDropdowns]);
 
   // Prevent memory leaks
   useEffect(() => {
@@ -159,7 +187,11 @@ const SheetPage = () => {
       setDropdownEditorState(prev => ({ ...prev, isOpen: false }));
     }
   }, []);
-
+  useEffect(() => {
+    // Refresh dropdowns every 30 seconds
+    const interval = setInterval(refreshAllDropdowns, 30000);
+    return () => clearInterval(interval);
+  }, [refreshAllDropdowns]);
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -190,6 +222,14 @@ const SheetPage = () => {
         </h1>
 
         <div className={styles.actionButtons}>
+            <button
+              onClick={refreshAllDropdowns}
+              className={styles.refreshButton}
+              title="تحديث القوائم المنسدلة"
+          >
+              <RefreshCw size={18} />
+              <span className={styles.buttonText}>تحديث القوائم</span>
+          </button>
           <button onClick={addNewRow} className={styles.addRowButton} title="إضافة حقل جديد">
             <PlusCircle size={18} />
             <span className={styles.buttonText}>إضافة حقل جديد</span>

@@ -213,7 +213,28 @@
   margin: 0;
   overflow: hidden;
 }
+.refreshButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #2E7D32;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 110px;
+  justify-content: center;
+  height: 32px;
+}
 
+.refreshButton:hover {
+  background-color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 .htWrapper {
   contain: content;
 }

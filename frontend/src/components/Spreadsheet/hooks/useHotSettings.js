@@ -35,6 +35,7 @@ const useHotSettings = ({
     data,
     setData,
     setSelectedRow,
+    selectedRow,
     setHasChanges,
     onDeleteRow,
     showNotification,
@@ -43,16 +44,39 @@ const useHotSettings = ({
 }) => {
 
  // Initialize dropdown options at top level
- const categoryOptionsHook = useDropdownOptions('فئة المنتج');
+ const { 
+    options: categoryOptionsHook, 
+    refreshOptions: refreshCategories 
+} = useDropdownOptions('فئة المنتج');
+
+ 
  const categoryOptions = categoryOptionsHook.options || [];
- const { options: measurementUnitOptions } = useDropdownOptions('وحدة القياس');
- const { options: sourceOptions } = useDropdownOptions('مصدر المنتج');
+
+
+ const { 
+    options: measurementUnitOptions,
+    refreshOptions: refreshMeasurementUnits
+} = useDropdownOptions('وحدة القياس');
+ const { 
+    options: sourceOptions,
+    refreshOptions: refreshSources
+} = useDropdownOptions('مصدر المنتج');
 
  // State for dependent options
  const [classificationOptions, setClassificationOptions] = useState({});
  const [tagOptions, setTagOptions] = useState({});
 
-
+// Add function to refresh all dropdowns
+const refreshAllDropdowns = useCallback(() => {
+    refreshCategories();
+    refreshMeasurementUnits();
+    refreshSources();
+    // This will trigger a re-fetch of classifications and tags
+    // for the current category
+    if (data[selectedRow]?.[3]) {
+        fetchDependentOptions(data[selectedRow][3]);
+    }
+}, [refreshCategories, refreshMeasurementUnits, refreshSources, data, selectedRow]);
 
 // Update fetchDependentOptions
 const fetchDependentOptions = useCallback(async (categoryValue) => {
@@ -90,6 +114,11 @@ const fetchDependentOptions = useCallback(async (categoryValue) => {
     }
 }, [showNotification]);
 // Effect to fetch dependent options when needed
+// Add to useEffect to refresh periodically
+useEffect(() => {
+    const interval = setInterval(refreshAllDropdowns, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+}, [refreshAllDropdowns]);
 useEffect(() => {
     data?.forEach(row => {
         const categoryValue = row[3];

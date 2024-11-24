@@ -656,6 +656,253 @@ def delete_dropdown_option(option_id):
             "status": "error",
             "message": str(e)
         }), 500
+    
+# backend/app.py
+
+@app.route('/admin/categories/<int:category_id>/classifications', methods=['GET'])
+def get_category_classifications(category_id):
+    try:
+        classifications = Classification.query.filter_by(category_id=category_id).all()
+        return jsonify([{
+            'id': c.id,
+            'name': c.name
+        } for c in classifications])
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/categories/<int:category_id>/classifications', methods=['POST'])
+def add_classification(category_id):
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Name is required'
+            }), 400
+
+        classification = Classification(
+            name=name,
+            category_id=category_id
+        )
+        db.session.add(classification)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'id': classification.id,
+            'name': classification.name
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/categories/<int:category_id>/tags', methods=['GET'])
+def get_category_tags(category_id):
+    try:
+        tags = ProductClassificationTag.query.filter_by(category_id=category_id).all()
+        return jsonify([{
+            'id': t.id,
+            'name': t.name
+        } for t in tags])
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/categories/<int:category_id>/tags', methods=['POST'])
+def add_tag(category_id):
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Name is required'
+            }), 400
+
+        tag = ProductClassificationTag(
+            name=name,
+            category_id=category_id
+        )
+        db.session.add(tag)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'id': tag.id,
+            'name': tag.name
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+    
+# backend/app.py
+# Add these endpoints for classifications and tags
+
+# Classifications endpoints
+@app.route('/admin/classifications/<int:classification_id>', methods=['PUT'])
+def update_classification(classification_id):
+    try:
+        classification = Classification.query.get_or_404(classification_id)
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'اسم التصنيف مطلوب'
+            }), 400
+
+        # Check if name already exists in the same category
+        existing = Classification.query.filter(
+            Classification.name == name,
+            Classification.category_id == classification.category_id,
+            Classification.id != classification_id
+        ).first()
+        
+        if existing:
+            return jsonify({
+                'status': 'error',
+                'message': 'يوجد تصنيف بنفس الاسم'
+            }), 409
+
+        classification.name = name
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم تحديث التصنيف بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating classification: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في تحديث التصنيف'
+        }), 500
+
+@app.route('/admin/classifications/<int:classification_id>', methods=['DELETE'])
+def delete_classification(classification_id):
+    try:
+        classification = Classification.query.get_or_404(classification_id)
+        
+        # Check if classification is being used in any sheets
+        sheet_usage = Sheet.query.filter(
+            Sheet.data.cast(String).like(f'%{classification.name}%')
+        ).first()
+        
+        if sheet_usage:
+            return jsonify({
+                'status': 'error',
+                'message': 'لا يمكن حذف التصنيف لأنه مستخدم في بعض الجداول'
+            }), 400
+
+        db.session.delete(classification)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم حذف التصنيف بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting classification: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في حذف التصنيف'
+        }), 500
+
+# Tags endpoints
+@app.route('/admin/tags/<int:tag_id>', methods=['PUT'])
+def update_tag(tag_id):
+    try:
+        tag = ProductClassificationTag.query.get_or_404(tag_id)
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'اسم العلامة مطلوب'
+            }), 400
+
+        # Check if name already exists in the same category
+        existing = ProductClassificationTag.query.filter(
+            ProductClassificationTag.name == name,
+            ProductClassificationTag.category_id == tag.category_id,
+            ProductClassificationTag.id != tag_id
+        ).first()
+        
+        if existing:
+            return jsonify({
+                'status': 'error',
+                'message': 'توجد علامة بنفس الاسم'
+            }), 409
+
+        tag.name = name
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم تحديث العلامة بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating tag: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في تحديث العلامة'
+        }), 500
+
+@app.route('/admin/tags/<int:tag_id>', methods=['DELETE'])
+def delete_tag(tag_id):
+    try:
+        tag = ProductClassificationTag.query.get_or_404(tag_id)
+        
+        # Check if tag is being used in any sheets
+        sheet_usage = Sheet.query.filter(
+            Sheet.data.cast(String).like(f'%{tag.name}%')
+        ).first()
+        
+        if sheet_usage:
+            return jsonify({
+                'status': 'error',
+                'message': 'لا يمكن حذف العلامة لأنها مستخدمة في بعض الجداول'
+            }), 400
+
+        db.session.delete(tag)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم حذف العلامة بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting tag: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في حذف العلامة'
+        }), 500
 # backend/app.py
 # Add these new routes
 
