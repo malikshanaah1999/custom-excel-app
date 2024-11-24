@@ -392,18 +392,17 @@ const getColumnSettings = useCallback((columnIndex) => {
             source: function(query, callback) {
                 const row = this.row;
                 const options = getColumnOptions(columnIndex, row);
-                console.log(`Options for column ${columnIndex}:`, options);
                 callback(options);
             },
-            editor: 'dropdown',  // Keep the default dropdown editor for all columns
-            renderer: createDropdownRenderer(columnIndex)  // Use our custom renderer
+            editor: 'dropdown',  // Use built-in dropdown editor
+            renderer: Handsontable.renderers.AutocompleteRenderer  // Use built-in renderer
         };
     }
     return { 
         type: 'text',
         editor: 'text'
     };
-}, [getColumnOptions, createDropdownRenderer]);
+}, [getColumnOptions]);
 
 
 const getColumnType = useCallback((index) => {
@@ -614,21 +613,22 @@ const getColumnType = useCallback((index) => {
         selectionMode: 'single',
         fillHandle: true,
         columns: spreadsheetColumns.map((col, index) => ({
-    ...col,
-    type: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
-    editor: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
-    ...getColumnSettings(index),
-    ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
-    renderer: [3, 4, 5, 7, 9].includes(index) ? 
-        createDropdownRenderer(index) : 
-        function(instance, td, row, col, prop, value, cellProperties) {
-            if (Array.from({ length: 17 }, (_, i) => i).includes(col)) {
-                directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
-            } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
+            ...col,
+            ...getColumnSettings(index),
+            // Hide the last 5 columns while maintaining the direction-aware rendering
+            ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                // Define visible columns that need direction-aware rendering
+                const columnsToApply = Array.from({ length: 17 }, (_, i) => i); // Columns 0-16
+        
+                if (columnsToApply.includes(col)) {
+                    directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
+                } else {
+                    // Use default renderer for hidden columns
+                    Handsontable.renderers.TextRenderer.apply(this, arguments);
+                }
             }
-        }
-})),
+        })),
         // Hide last 5 columns
         hiddenColumns: {
             columns: [17, 18, 19, 20, 21],
