@@ -1,4 +1,5 @@
 // src/components/Spreadsheet/pages/AdminPanel/CategoryManager/CategoryManager.js
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../../../../../config/api';
@@ -12,86 +13,93 @@ import styles from './CategoryManager.module.css';
 import MeasurementsList from '../MeasurementsList/MeasurementsList';
 import SourcesList from '../SourcesList/SourcesList';
 
-const CategoryManager = () => {
-    const [categories, setCategories] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [editingCategory, setEditingCategory] = useState(null);
-    const [categoryToDelete, setCategoryToDelete] = useState(null);
-    const { notification, showNotification } = useNotification();
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [activeTab, setActiveTab] = useState('category');
-    const [classifications, setClassifications] = useState([]);
-    const [tags, setTags] = useState([]);
-    const [isLoadingClassifications, setIsLoadingClassifications] = useState(false);
+const CategoryManager = ({
+  onSelectCategory, // New Prop
+  selectedCategory,  // New Prop
+}) => {
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const { notification, showNotification } = useNotification();
+  const [activeTab, setActiveTab] = useState('category');
+  const [classifications, setClassifications] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [isLoadingClassifications, setIsLoadingClassifications] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
   // Fetch classifications for selected category
   const fetchClassifications = async () => {
     if (!selectedCategory) return;
 
     setIsLoadingClassifications(true);
     try {
-        const response = await fetch(
-            `${API_BASE_URL}/admin/categories/${selectedCategory.id}/classifications`
-        );
+      const response = await fetch(
+        `${API_BASE_URL}/admin/categories/${selectedCategory.id}/classifications`
+      );
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch classifications');
-        }
+      if (!response.ok) {
+        throw new Error('Failed to fetch classifications');
+      }
 
-        const data = await response.json();
-        setClassifications(data);
+      const data = await response.json();
+      setClassifications(data);
     } catch (error) {
-        console.error('Error fetching classifications:', error);
-        showNotification('فشل في جلب التصنيفات', 'error');
-        setClassifications([]);
+      console.error('Error fetching classifications:', error);
+      showNotification('فشل في جلب التصنيفات', 'error');
+      setClassifications([]);
     } finally {
-        setIsLoadingClassifications(false);
+      setIsLoadingClassifications(false);
     }
-};
-const refreshAllDropdowns = useCallback(() => {
-  fetchCategories();
-  if (selectedCategory) {
-    fetchClassifications();
-    fetchTags();
-  }
-}, [selectedCategory]);
-// Fetch tags for selected category
-const fetchTags = async () => {
+  };
+
+  const refreshAllDropdowns = useCallback(() => {
+    fetchCategories();
+    if (selectedCategory) {
+      fetchClassifications();
+      fetchTags();
+    }
+  }, [selectedCategory]);
+
+  // Fetch tags for selected category
+  const fetchTags = async () => {
     if (!selectedCategory) return;
 
     setIsLoadingTags(true);
     try {
-        const response = await fetch(
-            `${API_BASE_URL}/admin/categories/${selectedCategory.id}/tags`
-        );
+      const response = await fetch(
+        `${API_BASE_URL}/admin/categories/${selectedCategory.id}/tags`
+      );
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch tags');
-        }
+      if (!response.ok) {
+        throw new Error('Failed to fetch tags');
+      }
 
-        const data = await response.json();
-        setTags(data);
+      const data = await response.json();
+      setTags(data);
     } catch (error) {
-        console.error('Error fetching tags:', error);
-        showNotification('فشل في جلب العلامات', 'error');
-        setTags([]);
+      console.error('Error fetching tags:', error);
+      showNotification('فشل في جلب العلامات', 'error');
+      setTags([]);
     } finally {
-        setIsLoadingTags(false);
+      setIsLoadingTags(false);
     }
-};
-// Fetch both classifications and tags when category changes
-useEffect(() => {
+  };
+
+  // Fetch both classifications and tags when category changes
+  useEffect(() => {
     if (selectedCategory) {
-        fetchClassifications();
-        fetchTags();
+      fetchClassifications();
+      fetchTags();
     }
-}, [selectedCategory]);
+  }, [selectedCategory]);
+
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
@@ -109,6 +117,7 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
+
   const handleDeleteClassification = async (id) => {
     try {
       // First check if classification is in use
@@ -134,6 +143,7 @@ useEffect(() => {
       showNotification('فشل في حذف التصنيف', 'error');
     }
   };
+
   const handleAddTag = async (data) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/categories/${selectedCategory.id}/tags`, {
@@ -197,8 +207,9 @@ useEffect(() => {
       showNotification('فشل في حذف العلامة', 'error');
     }
   };
-   // Add fetch for related data
-   const fetchRelatedData = async (categoryId) => {
+
+  // Add fetch for related data
+  const fetchRelatedData = async (categoryId) => {
     try {
       const [classificationsRes, tagsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/admin/categories/${categoryId}/classifications`),
@@ -280,10 +291,13 @@ useEffect(() => {
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    fetchRelatedData(category.id);
+    if (onSelectCategory) {
+      onSelectCategory(category);
+    }
   };
+
   const handleAddClassification = async (data) => {
     try {
       const response = await fetch(`${API_BASE_URL}/admin/categories/${selectedCategory.id}/classifications`, {
@@ -330,135 +344,81 @@ useEffect(() => {
           <button
             onClick={() => setShowAddModal(true)}
             className={styles.addButton}
+            aria-label="Add New Category"
           >
             <Plus size={20} />
-            إضافة فئة جديدة
+            <span className={styles.buttonText}>إضافة فئة جديدة</span>
           </button>
-  
+
           <div className={styles.searchContainer}>
-            <Search size={20} className={styles.searchIcon} />
+            <Search size={20} className={styles.searchIcon} aria-hidden="true" />
             <input
-            type="text"
-            placeholder="البحث عن فئة..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
-          />
+              type="text"
+              placeholder="البحث عن فئة..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={styles.searchInput}
+              aria-label="Search Categories"
+            />
           </div>
         </div>
-  
-        <div className={styles.categoriesList}>
-        {filteredCategories.map((category) => (
-            <div key={category.id} className={styles.categoryItem}>
-              <span>{category.name}</span>
-              <div className={styles.actions}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingCategory(category);
-                  }}
-                  className={styles.editButton}
-                  title="تعديل"
-                >
-                  <Edit2 size={18} />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCategoryToDelete(category);
-                  }}
-                  className={styles.deleteButton}
-                  title="حذف"
-                >
-                  <Trash2 size={18} />
-                </button>
+
+        <nav className={styles.categoriesList} aria-label="Categories List">
+          {isLoading ? (
+            <div className={styles.loading}>
+              <div className={styles.spinner}></div>
+              <span>جارٍ التحميل...</span>
+            </div>
+          ) : filteredCategories.length > 0 ? (
+            filteredCategories.map((category) => (
+              <div
+                key={category.id}
+                className={`${styles.categoryItem} ${
+                  selectedCategory?.id === category.id ? styles.selected : ''
+                }`}
+                onClick={() => handleCategorySelect(category)}
+                role="button"
+                tabIndex={0}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') handleCategorySelect(category);
+                }}
+                aria-pressed={selectedCategory?.id === category.id}
+              >
+                <span className={styles.categoryName}>{category.name}</span>
+                <div className={styles.actions}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingCategory(category);
+                    }}
+                    className={styles.editButton}
+                    title="تعديل"
+                    aria-label={`Edit category ${category.name}`}
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCategoryToDelete(category);
+                    }}
+                    className={styles.deleteButton}
+                    title="حذف"
+                    aria-label={`Delete category ${category.name}`}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className={styles.noData}>
+              لا توجد فئات متاحة
             </div>
-          ))}
-        </div>
-      </div>
-  
-      {/* Content area for details */}
-      <div className={styles.content}>
-        {selectedCategory ? (
-          <>
-            {/* Tabs for classifications and tags */}
-            <div className={styles.tabs}>
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "classification" ? styles.active : ""
-                }`}
-                onClick={() => setActiveTab("classification")}
-              >
-                التصنيفات
-              </button>
-
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "tag" ? styles.active : ""
-                }`}
-                onClick={() => setActiveTab("tag")}
-              >
-                علامات التصنيف
-              </button>
-              <button
-                className={`${styles.tab} ${activeTab === "measurement" ? styles.active : ""}`}
-                onClick={() => setActiveTab("measurement")}
-              >
-                وحدات القياس
-              </button>
-              <button
-                className={`${styles.tab} ${activeTab === "source" ? styles.active : ""}`}
-                onClick={() => setActiveTab("source")}
-              >
-                مصادر المنتج
-              </button>
-
-            </div>
-  
-            {/* Render classifications or tags based on activeTab */}
-
-            {activeTab === "classification" && (
-              <ClassificationsList
-              categoryId={selectedCategory.id}
-              classifications={classifications}
-              isLoading={isLoadingClassifications}
-              onRefresh={fetchClassifications}
-              showNotification={showNotification}
-              />
-            )}
-  
-            {activeTab === "tag" && (
-              <TagsList
-              categoryId={selectedCategory.id}
-              tags={tags}
-              isLoading={isLoadingTags}
-              onRefresh={fetchTags}
-              showNotification={showNotification}
-              />
-            )}
-            {activeTab === "measurement" && (
-            <MeasurementsList
-              onRefresh={refreshAllDropdowns}
-              showNotification={showNotification}
-            />
           )}
-
-          {activeTab === "source" && (
-            <SourcesList
-              onRefresh={refreshAllDropdowns}
-              showNotification={showNotification}
-            />
-          )}
-
-          </>
-        ) : (
-          <div className={styles.noSelection}>
-            الرجاء اختيار فئة من القائمة
-          </div>
-        )}
+        </nav>
       </div>
-  
+
       {/* Modals for add/edit and delete confirmation */}
       <AddEditCategoryModal
         isOpen={showAddModal || !!editingCategory}
@@ -473,7 +433,7 @@ useEffect(() => {
         }
         category={editingCategory}
       />
-  
+
       <DeleteConfirmModal
         isOpen={!!categoryToDelete}
         onClose={() => setCategoryToDelete(null)}
@@ -481,12 +441,11 @@ useEffect(() => {
         itemName={categoryToDelete?.name}
         itemType="الفئة"
       />
-  
+
       {/* Notification component */}
       <Notification notification={notification} />
     </div>
   );
-  
 };
 
 export default CategoryManager;
