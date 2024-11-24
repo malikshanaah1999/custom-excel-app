@@ -83,30 +83,26 @@ const fetchDependentOptions = useCallback(async (categoryValue) => {
     if (!categoryValue) return;
     
     try {
-
-        
         // Fetch classifications
         const classResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/التصنيف?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const classData = await classResponse.json();
-   
 
         // Fetch tags
         const tagResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/علامات تصنيف المنتج?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const tagData = await tagResponse.json();
-      
 
         setClassificationOptions(prev => ({
             ...prev,
-            [categoryValue]: classData
+            [categoryValue]: classData.map(opt => opt.value || opt.name)
         }));
 
         setTagOptions(prev => ({
             ...prev,
-            [categoryValue]: tagData
+            [categoryValue]: tagData.map(opt => opt.value || opt.name)
         }));
     } catch (error) {
         console.error('Error fetching dependent options:', error);
@@ -227,12 +223,12 @@ const getColumnOptions = useCallback((columnIndex, row) => {
     } else if (columnIndex === 4) {  // التصنيف
         const categoryValue = data?.[row]?.[3];
         return categoryValue ? 
-            (classificationOptions[categoryValue]?.map(opt => opt.value) || []) : 
+            (classificationOptions[categoryValue] || []) : 
             [];
     } else if (columnIndex === 5) {  // علامات تصنيف المنتج
         const categoryValue = data?.[row]?.[3];
         return categoryValue ? 
-            (tagOptions[categoryValue]?.map(opt => opt.value) || []) : 
+            (tagOptions[categoryValue] || []) : 
             [];
     }
     
@@ -247,7 +243,29 @@ const getColumnOptions = useCallback((columnIndex, row) => {
         [];
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
+// Add effect to refresh options periodically
+useEffect(() => {
+    const interval = setInterval(() => {
+        data?.forEach(row => {
+            const categoryValue = row[3];
+            if (categoryValue) {
+                fetchDependentOptions(categoryValue);
+            }
+        });
+    }, 30000); // Refresh every 30 seconds
 
+    return () => clearInterval(interval);
+}, [data, fetchDependentOptions]);
+
+// Add effect to fetch dependent options when category changes
+useEffect(() => {
+    data?.forEach(row => {
+        const categoryValue = row[3];
+        if (categoryValue && (!classificationOptions[categoryValue] || !tagOptions[categoryValue])) {
+            fetchDependentOptions(categoryValue);
+        }
+    });
+}, [data, fetchDependentOptions]);
 
 
 
@@ -266,7 +284,7 @@ const createDropdownRenderer = useCallback((columnIndex) => {
             
             if (row === undefined) return;
             
-            let options;
+            let options = [];
             if (columnIndex === 4 || columnIndex === 5) {
                 const categoryValue = data[row][3];
                 if (!categoryValue) {
@@ -277,7 +295,7 @@ const createDropdownRenderer = useCallback((columnIndex) => {
             } else {
                 options = await getColumnOptions(columnIndex, row);
             }
-        
+
             const rect = td.getBoundingClientRect();
             instance.deselectCell();
             
@@ -286,6 +304,14 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                 options,
                 onSelect: (newValue) => {
                     instance.setDataAtCell(row, col, newValue, 'edit');
+                    
+                    // If category changed, clear dependent fields
+                    if (columnIndex === 3) {
+                        instance.setDataAtCell(row, 4, '', 'edit');
+                        instance.setDataAtCell(row, 5, '', 'edit');
+                        fetchDependentOptions(newValue);
+                    }
+                    
                     instance.render();
                 },
                 position: {
@@ -300,7 +326,7 @@ const createDropdownRenderer = useCallback((columnIndex) => {
         
         return td;
     };
-}, [getColumnOptions, showDropdownEditor, data]);
+}, [data, getColumnOptions, showDropdownEditor, fetchDependentOptions]);
 
 // Update validateClassification
 const validateClassification = useCallback((row, value, columnIndex) => {
