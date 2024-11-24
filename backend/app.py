@@ -228,6 +228,93 @@ def test_dropdown(category):
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
+    
+# backend/app.py
+# Make sure these endpoints exist
+
+@app.route('/admin/measurement-units', methods=['GET'])
+def get_measurement_units():
+    try:
+        units = MeasurementUnit.query.all()
+        return jsonify([{
+            'id': unit.id,
+            'name': unit.name
+        } for unit in units])
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/measurement-units', methods=['POST'])
+def add_measurement_unit():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Name is required'
+            }), 400
+
+        unit = MeasurementUnit(name=name)
+        db.session.add(unit)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'id': unit.id,
+            'name': unit.name
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/product-sources', methods=['GET'])
+def get_product_sources():
+    try:
+        sources = ProductSource.query.all()
+        return jsonify([{
+            'id': source.id,
+            'name': source.name
+        } for source in sources])
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/product-sources', methods=['POST'])
+def add_product_source():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Name is required'
+            }), 400
+
+        source = ProductSource(name=name)
+        db.session.add(source)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'id': source.id,
+            'name': source.name
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 @app.route('/save/<int:sheet_id>', methods=['POST'])
 def save_data(sheet_id):
     try:

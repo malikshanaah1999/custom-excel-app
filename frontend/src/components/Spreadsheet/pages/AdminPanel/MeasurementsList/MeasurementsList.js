@@ -16,19 +16,24 @@ const MeasurementsList = ({ showNotification, onRefresh }) => {
   const fetchMeasurements = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/measurement-units`);
-      if (response.ok) {
+        // Add error logging
+        console.log('Fetching measurement units...');
+        const response = await fetch(`${API_BASE_URL}/admin/measurement-units`);
+        console.log('Response:', response);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
+        console.log('Data received:', data);
         setMeasurements(data);
-      } else {
-        throw new Error('Failed to fetch measurements');
-      }
     } catch (error) {
-      showNotification('فشل في جلب وحدات القياس', 'error');
+        console.error('Error fetching measurements:', error);
+        showNotification('فشل في جلب وحدات القياس', 'error');
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   useEffect(() => {
     fetchMeasurements();

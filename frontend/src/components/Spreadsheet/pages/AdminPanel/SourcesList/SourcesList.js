@@ -16,19 +16,24 @@ const SourcesList = ({ showNotification, onRefresh }) => {
   const fetchSources = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/product-sources`);
-      if (response.ok) {
+        // Add error logging
+        console.log('Fetching product sources...');
+        const response = await fetch(`${API_BASE_URL}/admin/product-sources`);
+        console.log('Response:', response);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
+        console.log('Data received:', data);
         setSources(data);
-      } else {
-        throw new Error('Failed to fetch sources');
-      }
     } catch (error) {
-      showNotification('فشل في جلب مصادر المنتجات', 'error');
+        console.error('Error fetching sources:', error);
+        showNotification('فشل في جلب مصادر المنتجات', 'error');
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   useEffect(() => {
     fetchSources();
