@@ -1,4 +1,4 @@
-/* src/components/Spreadsheet/pages/AdminPanel/AdminPanel.module.css */
+/* AdminPanel.module.css */
 
 .adminPage {
   display: flex;
@@ -9,9 +9,9 @@
 .header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 20px;
   background-color: #f5f5f5;
-  border-bottom: 1px solid #ddd;
 }
 
 .headerLeft {
@@ -25,6 +25,42 @@
   margin: 0;
 }
 
+.globalOptions {
+  display: flex;
+  gap: 10px;
+}
+
+.globalButton {
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.globalButton:hover {
+  background-color: #e6e6e6;
+}
+
+.globalButton.active {
+  background-color: #007bff;
+  color: #ffffff;
+  border-color: #007bff;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
 .content {
   flex: 1;
   padding: 20px;
@@ -34,72 +70,32 @@
 .mainContent {
   display: flex;
   gap: 20px;
-  height: calc(100vh - 80px); /* Adjust based on header height */
 }
 
-/* Column Styles */
 .leftColumn {
-  flex: 0 0 25%;
+  flex: 2;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow-y: auto;
-}
-
-.middleColumn {
-  flex: 0 0 30%;
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow-y: auto;
 }
 
 .rightColumn {
-  flex: 0 0 45%;
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow-y: auto;
-}
-
-/* Section Titles */
-.sectionTitle {
-  font-size: 18px;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-/* Search Inputs */
-.searchInput {
-  padding: 8px 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-/* Options List */
-.optionsList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  min-width: 250px;
 }
 
-/* Option Buttons */
-.optionButton {
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
   padding: 10px 15px;
-  font-size: 14px;
-  text-align: right;
   cursor: pointer;
   background-color: #ffffff;
   border: 1px solid #ccc;
@@ -107,82 +103,36 @@
   transition: background-color 0.3s, color 0.3s;
 }
 
-.optionButton:hover {
-  background-color: #f0f0f0;
+.tab:hover {
+  background-color: #e6e6e6;
 }
 
-.optionButton.active {
+.tab.active {
   background-color: #007bff;
   color: #ffffff;
   border-color: #007bff;
 }
 
-.optionButton:disabled {
-  background-color: #e6e6e6;
-  color: #888;
-  cursor: not-allowed;
+.tabContent {
+  flex: 1;
 }
 
-/* Selected Category Display */
-.selectedCategory {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: #fafafa;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.selectedCategory span {
-  font-weight: 500;
-}
-
-.selectedCategory strong {
-  margin-left: 5px;
-  color: #007bff;
-}
-
-/* Placeholder Message */
-.placeholder {
+.loading, .noData {
   text-align: center;
-  color: #888;
-  font-size: 16px;
   margin-top: 50px;
 }
 
-/* No Results Message */
-.noResults {
-  text-align: center;
-  color: #888;
-  font-size: 14px;
-  margin-top: 10px;
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 2s linear infinite;
+  margin: 0 auto 10px;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .leftColumn {
-    flex: 0 0 20%;
-  }
-
-  .middleColumn {
-    flex: 0 0 25%;
-  }
-
-  .rightColumn {
-    flex: 0 0 55%;
-  }
-}
-
-@media (max-width: 768px) {
-  .mainContent {
-    flex-direction: column;
-  }
-
-  .leftColumn, .middleColumn, .rightColumn {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
-
-  .rightColumn {
-    margin-top: 20px;
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
