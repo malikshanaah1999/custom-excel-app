@@ -299,52 +299,46 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                     showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
                     return;
                 }
-                // Pre-fetch options for dependent dropdowns if needed
                 await fetchDependentOptions(categoryValue);
             }
 
-            // Get options after potential fetch
-            options = await getColumnOptions(columnIndex, row);
-            console.log('Options for dropdown:', options);
+            options = getColumnOptions(columnIndex, row);
+            console.log('Available options for selection:', options);
 
             if (!options || options.length === 0) {
-                console.log('No options available for this dropdown');
-                if (columnIndex === 4 || columnIndex === 5) {
-                    showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
-                }
+                console.log('No options available');
                 return;
             }
 
             const rect = td.getBoundingClientRect();
-            instance.deselectCell();
             
             showDropdownEditor({
                 category: COLUMN_CATEGORIES[columnIndex],
                 options,
-                onSelect: (newValue) => {
-                    console.log('Selected value:', newValue);
-                    // Directly set cell value without using setDataAtCell
-                    if (columnIndex === 4 || columnIndex === 5) {
-                        const rowData = [...data[row]];
-                        rowData[columnIndex] = newValue;
-                        setData(prevData => {
-                            const newData = [...prevData];
-                            newData[row] = rowData;
-                            return newData;
-                        });
-                        instance.setSourceData(data);
-                    } else {
-                        instance.setDataAtCell(row, col, newValue, 'edit');
-                    }
+                onSelect: (selectedValue) => {
+                    console.log('Selected value:', selectedValue, 'for column:', columnIndex);
+
+                    // Update data directly
+                    const newData = [...data];
+                    newData[row][col] = selectedValue;
+                    setData(newData);
+
+                    // Force update the cell
+                    instance.setDataAtCell(row, col, selectedValue, 'edit');
                     
-                    // If category changed, clear dependent fields
+                    // Set the cell text directly
+                    wrapper.textContent = selectedValue;
+                    
+                    // Update dependent fields if category changes
                     if (columnIndex === 3) {
-                        instance.setDataAtCell(row, 4, '', 'edit');
-                        instance.setDataAtCell(row, 5, '', 'edit');
-                        fetchDependentOptions(newValue);
+                        newData[row][4] = '';
+                        newData[row][5] = '';
+                        setData(newData);
+                        fetchDependentOptions(selectedValue);
                     }
-                    
+
                     instance.render();
+                    setHasChanges(true);
                 },
                 position: {
                     top: rect.bottom + window.scrollY,
@@ -355,10 +349,9 @@ const createDropdownRenderer = useCallback((columnIndex) => {
 
         Handsontable.dom.empty(td);
         td.appendChild(wrapper);
-        
         return td;
     };
-}, [data, getColumnOptions, showDropdownEditor, fetchDependentOptions, setData]);
+}, [data, getColumnOptions, showDropdownEditor, fetchDependentOptions, setData, setHasChanges]);
 
 // Update validateClassification
 const validateClassification = useCallback((row, value, columnIndex) => {
