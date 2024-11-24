@@ -43,24 +43,24 @@ const useHotSettings = ({
     
 }) => {
 
-    const { 
-        options: categoryOptions,  // Changed from categoryOptionsHook 
-        loading: categoryLoading,
-        error: categoryError,
-        refreshOptions: refreshCategories  // Add this to get the refresh function
-    } = useDropdownOptions('فئة المنتج');
-    
+ // Initialize dropdown options at top level
+ const { 
+    options: categoryOptionsHook, 
+    refreshOptions: refreshCategories 
+} = useDropdownOptions('فئة المنتج');
 
  
-    const { 
-        options: measurementUnitOptions,
-        refreshOptions: refreshMeasurementUnits
-    } = useDropdownOptions('وحدة القياس');
-    
-    const { 
-        options: sourceOptions,
-        refreshOptions: refreshSources
-    } = useDropdownOptions('مصدر المنتج');
+ const categoryOptions = categoryOptionsHook.options || [];
+
+
+ const { 
+    options: measurementUnitOptions,
+    refreshOptions: refreshMeasurementUnits
+} = useDropdownOptions('وحدة القياس');
+ const { 
+    options: sourceOptions,
+    refreshOptions: refreshSources
+} = useDropdownOptions('مصدر المنتج');
 
  // State for dependent options
  const [classificationOptions, setClassificationOptions] = useState({});
@@ -83,37 +83,36 @@ const fetchDependentOptions = useCallback(async (categoryValue) => {
     if (!categoryValue) return;
     
     try {
-        console.log('Fetching dependent options for category:', categoryValue);
 
+        
         // Fetch classifications
         const classResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/التصنيف?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const classData = await classResponse.json();
-        console.log('Received classifications:', classData);
+   
 
         // Fetch tags
         const tagResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/علامات تصنيف المنتج?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const tagData = await tagResponse.json();
-        console.log('Received tags:', tagData);
+      
 
         setClassificationOptions(prev => ({
             ...prev,
-            [categoryValue]: classData.map(opt => opt.value || opt.name)
+            [categoryValue]: classData
         }));
 
         setTagOptions(prev => ({
             ...prev,
-            [categoryValue]: tagData.map(opt => opt.value || opt.name)
+            [categoryValue]: tagData
         }));
     } catch (error) {
         console.error('Error fetching dependent options:', error);
         showNotification('خطأ في تحميل الخيارات', 'error');
     }
 }, [showNotification]);
-
 // Effect to fetch dependent options when needed
 // Add to useEffect to refresh periodically
 useEffect(() => {
@@ -220,57 +219,35 @@ useEffect(() => {
 
 
 
-// src/hooks/useHotSettings.js
-
 const getColumnOptions = useCallback((columnIndex, row) => {
-    switch(columnIndex) {
-        case 3:  // فئة المنتج
-            return categoryOptions?.map(opt => opt.value) || [];
-            
-        case 4:  // التصنيف
-            const categoryValue = data?.[row]?.[3];
-            if (!categoryValue) return [];
-            return classificationOptions[categoryValue] || [];
-            
-        case 5:  // علامات تصنيف المنتج
-            const catValue = data?.[row]?.[3];
-            if (!catValue) return [];
-            return tagOptions[catValue] || [];
-            
-        case 7:  // وحدة القياس
-            return measurementUnitOptions?.map(opt => opt.value) || [];
-            
-        case 9:  // مصدر المنتج
-            return sourceOptions?.map(opt => opt.value) || [];
-            
-        default:
-            return [];
+    if (columnIndex === 3) {  // فئة المنتج
+        return categoryOptions?.map(opt => opt.value) || [];
+    } else if (columnIndex === 4) {  // التصنيف
+        const categoryValue = data?.[row]?.[3];
+        return categoryValue ? 
+            (classificationOptions[categoryValue]?.map(opt => opt.value) || []) : 
+            [];
+    } else if (columnIndex === 5) {  // علامات تصنيف المنتج
+        const categoryValue = data?.[row]?.[3];
+        return categoryValue ? 
+            (tagOptions[categoryValue]?.map(opt => opt.value) || []) : 
+            [];
     }
+    
+    // Independent dropdowns
+    const columnToOptions = {
+        7: measurementUnitOptions,  // وحدة القياس
+        9: sourceOptions           // مصدر المنتج
+    };
+    
+    return columnToOptions[columnIndex] ? 
+        columnToOptions[columnIndex].map(opt => opt.value) : 
+        [];
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
-// Add effect to refresh options periodically
-useEffect(() => {
-    const interval = setInterval(() => {
-        data?.forEach(row => {
-            const categoryValue = row[3];
-            if (categoryValue) {
-                fetchDependentOptions(categoryValue);
-            }
-        });
-    }, 30000); // Refresh every 30 seconds
 
-    return () => clearInterval(interval);
-}, [data, fetchDependentOptions]);
 
-// Add effect to fetch dependent options when category changes
-useEffect(() => {
-    data?.forEach(row => {
-        const categoryValue = row[3];
-        if (categoryValue && (!classificationOptions[categoryValue] || !tagOptions[categoryValue])) {
-            fetchDependentOptions(categoryValue);
-        }
-    });
-}, [data, fetchDependentOptions]);
+
 
 
 const createDropdownRenderer = useCallback((columnIndex) => {
@@ -287,73 +264,27 @@ const createDropdownRenderer = useCallback((columnIndex) => {
             
             if (row === undefined) return;
             
-            let options = [];
+            let options;
             if (columnIndex === 4 || columnIndex === 5) {
                 const categoryValue = data[row][3];
                 if (!categoryValue) {
                     showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
                     return;
                 }
-                await fetchDependentOptions(categoryValue);
+                options = await getColumnOptions(columnIndex, row);
+            } else {
+                options = await getColumnOptions(columnIndex, row);
             }
-
-            // Get options after potential fetch
-            options = getColumnOptions(columnIndex, row);
-            console.log('Available options for selection:', options);
-
-            if (!options || options.length === 0) {
-                console.log('No options available');
-                if (columnIndex === 4 || columnIndex === 5) {
-                    showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
-                }
-                return;
-            }
-
+        
             const rect = td.getBoundingClientRect();
+            instance.deselectCell();
             
             showDropdownEditor({
                 category: COLUMN_CATEGORIES[columnIndex],
                 options,
-                onSelect: (selectedValue) => {
-                    console.log('Selected value:', selectedValue, 'for column:', columnIndex);
-
-                    // Directly update the data state
-                    const newData = [...data];
-                    newData[row][columnIndex] = selectedValue;
-                    setData(newData);
-                    setHasChanges(true);
-
-                    // Force a cell update in Handsontable
-                    setTimeout(() => {
-                        // Update the cell value
-                        instance.setSourceData(newData);
-                        
-                        // Force re-render the specific cell
-                        instance.render();
-                        
-                        // Update cell visual immediately
-                        wrapper.textContent = selectedValue;
-                        
-                        // Trigger afterChange hook
-                        instance.runHooks('afterChange', [[row, columnIndex, '', selectedValue]], 'edit');
-                    }, 0);
-
-                    // Handle category change and dependent fields
-                    if (columnIndex === 3) {
-                        // Clear dependent fields
-                        newData[row][4] = '';
-                        newData[row][5] = '';
-                        setData(newData);
-                        
-                        // Fetch new options for dependent dropdowns
-                        fetchDependentOptions(selectedValue);
-                        
-                        // Force re-render dependent cells
-                        setTimeout(() => {
-                            instance.setSourceData(newData);
-                            instance.render();
-                        }, 0);
-                    }
+                onSelect: (newValue) => {
+                    instance.setDataAtCell(row, col, newValue, 'edit');
+                    instance.render();
                 },
                 position: {
                     top: rect.bottom + window.scrollY,
@@ -364,9 +295,10 @@ const createDropdownRenderer = useCallback((columnIndex) => {
 
         Handsontable.dom.empty(td);
         td.appendChild(wrapper);
+        
         return td;
     };
-}, [data, getColumnOptions, showDropdownEditor, fetchDependentOptions, setData, setHasChanges]);
+}, [getColumnOptions, showDropdownEditor, data]);
 
 // Update validateClassification
 const validateClassification = useCallback((row, value, columnIndex) => {
@@ -391,19 +323,21 @@ const getColumnSettings = useCallback((columnIndex) => {
             allowInvalid: false,
             source: function(query, callback) {
                 const row = this.row;
-                const options = getColumnOptions(columnIndex, row);
-                console.log(`Options for column ${columnIndex}:`, options);
-                callback(options);
+                callback(getColumnOptions(columnIndex, row));
             },
-            editor: 'dropdown',  // Keep the default dropdown editor for all columns
-            renderer: createDropdownRenderer(columnIndex)  // Use our custom renderer
+            editor: 'dropdown',
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                td.style.direction = 'rtl';
+                td.style.textAlign = 'center';
+            },
         };
     }
     return { 
         type: 'text',
         editor: 'text'
     };
-}, [getColumnOptions, createDropdownRenderer]);
+}, [getColumnOptions]);
 
 
 const getColumnType = useCallback((index) => {
@@ -619,19 +553,20 @@ const getColumnType = useCallback((index) => {
         fillHandle: true,
         columns: spreadsheetColumns.map((col, index) => ({
             ...col,
-            type: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
-            editor: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
             ...getColumnSettings(index),
+            // Hide the last 5 columns while maintaining the direction-aware rendering
             ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
-            renderer: [3, 4, 5, 7, 9].includes(index) ? 
-                createDropdownRenderer(index) : 
-                function(instance, td, row, col, prop, value, cellProperties) {
-                    if (Array.from({ length: 17 }, (_, i) => i).includes(col)) {
-                        directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
-                    } else {
-                        Handsontable.renderers.TextRenderer.apply(this, arguments);
-                    }
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                // Define visible columns that need direction-aware rendering
+                const columnsToApply = Array.from({ length: 17 }, (_, i) => i); // Columns 0-16
+        
+                if (columnsToApply.includes(col)) {
+                    directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
+                } else {
+                    // Use default renderer for hidden columns
+                    Handsontable.renderers.TextRenderer.apply(this, arguments);
                 }
+            }
         })),
         // Hide last 5 columns
         hiddenColumns: {
@@ -789,18 +724,20 @@ const getColumnType = useCallback((index) => {
                 cellProperties.className = 'row-number-cell';
             }
             
-            // Make last 6 columns read-only
+            // Make last 6 columns read-only (including new 'pos' column)
             if (col >= 17 && col <= 21) {
                 cellProperties.readOnly = true;
             }
             
-            // Add special class for all dropdown cells including cols 4 and 5
-            if ([3, 4, 5, 7, 9].includes(col)) {
+            // Add special class for dropdown cells
+            if ([3, 7, 4, 9].includes(col)) {
                 cellProperties.className = `${cellProperties.className || ''} dropdown-cell`;
-                cellProperties.editor = 'dropdown';  // Use dropdown editor for all dropdown columns
             }
             
             cellProperties.className = `${cellProperties.className || ''} ${row % 2 === 0 ? 'even-row' : 'odd-row'}`;
+
+
+
             
             return cellProperties;
         },
