@@ -1,5 +1,5 @@
 // src/components/Spreadsheet/pages/AdminPanel/CategoryManager/CategoryManager.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../../../../../config/api';
 import useNotification from '../../../hooks/useNotification';
@@ -9,7 +9,8 @@ import Notification from '../../../components/Notification';
 import ClassificationsList from '../ClassificationsList/ClassificationsList';
 import TagsList from '../TagsList/TagsList';
 import styles from './CategoryManager.module.css';
-
+import MeasurementsList from '../MeasurementsList/MeasurementsList';
+import SourcesList from '../SourcesList/SourcesList';
 
 const CategoryManager = () => {
     const [categories, setCategories] = useState([]);
@@ -53,7 +54,13 @@ const CategoryManager = () => {
         setIsLoadingClassifications(false);
     }
 };
-
+const refreshAllDropdowns = useCallback(() => {
+  fetchCategories();
+  if (selectedCategory) {
+    fetchClassifications();
+    fetchTags();
+  }
+}, [selectedCategory]);
 // Fetch tags for selected category
 const fetchTags = async () => {
     if (!selectedCategory) return;
@@ -391,6 +398,7 @@ useEffect(() => {
               >
                 التصنيفات
               </button>
+
               <button
                 className={`${styles.tab} ${
                   activeTab === "tag" ? styles.active : ""
@@ -399,10 +407,24 @@ useEffect(() => {
               >
                 علامات التصنيف
               </button>
+              <button
+                className={`${styles.tab} ${activeTab === "measurement" ? styles.active : ""}`}
+                onClick={() => setActiveTab("measurement")}
+              >
+                وحدات القياس
+              </button>
+              <button
+                className={`${styles.tab} ${activeTab === "source" ? styles.active : ""}`}
+                onClick={() => setActiveTab("source")}
+              >
+                مصادر المنتج
+              </button>
+
             </div>
   
             {/* Render classifications or tags based on activeTab */}
-            {selectedCategory && activeTab === "classification" && (
+
+            {activeTab === "classification" && (
               <ClassificationsList
               categoryId={selectedCategory.id}
               classifications={classifications}
@@ -421,6 +443,20 @@ useEffect(() => {
               showNotification={showNotification}
               />
             )}
+            {activeTab === "measurement" && (
+            <MeasurementsList
+              onRefresh={refreshAllDropdowns}
+              showNotification={showNotification}
+            />
+          )}
+
+          {activeTab === "source" && (
+            <SourcesList
+              onRefresh={refreshAllDropdowns}
+              showNotification={showNotification}
+            />
+          )}
+
           </>
         ) : (
           <div className={styles.noSelection}>
