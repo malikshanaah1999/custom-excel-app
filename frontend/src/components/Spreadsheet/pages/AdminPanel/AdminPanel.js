@@ -14,6 +14,7 @@ import useNotification from '../../hooks/useNotification';
 import Notification from '../../components/Notification';
 import { API_BASE_URL } from '../../../../config/api';
 
+
 const AdminPanel = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -25,6 +26,9 @@ const AdminPanel = () => {
   const [tags, setTags] = useState([]);
   const [isLoadingClassifications, setIsLoadingClassifications] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
+
+  // State for global options
+  const [activeGlobalTab, setActiveGlobalTab] = useState(null); // 'source' or 'measurement'
 
   // Fetch classifications and tags when a category is selected
   const fetchClassifications = useCallback(async (categoryId) => {
@@ -69,6 +73,7 @@ const AdminPanel = () => {
       fetchClassifications(selectedCategory.id);
       fetchTags(selectedCategory.id);
       setActiveTab('classification'); // Reset to default tab on new selection
+      setActiveGlobalTab(null); // Reset global tabs when a new category is selected
     }
   }, [selectedCategory, fetchClassifications, fetchTags]);
 
@@ -90,7 +95,7 @@ const AdminPanel = () => {
     }
   };
 
-  const renderContent = () => {
+  const renderCategoryContent = () => {
     if (!selectedCategory) {
       return (
         <CategoryManager
@@ -119,7 +124,6 @@ const AdminPanel = () => {
           >
             علامات التصنيف
           </button>
-          {/* Remove the Measurement Units and Product Sources tabs from here */}
         </div>
 
         <div className={styles.tabContent}>
@@ -159,30 +163,64 @@ const AdminPanel = () => {
     );
   };
 
+  const renderGlobalContent = () => {
+    if (!activeGlobalTab) {
+      return null;
+    }
+
+    if (activeGlobalTab === 'measurement') {
+      return (
+        <MeasurementsList 
+          onRefresh={() => {}} // Implement if necessary
+          showNotification={showNotification}
+        />
+      );
+    }
+
+    if (activeGlobalTab === 'source') {
+      return (
+        <SourcesList 
+          onRefresh={() => {}} // Implement if necessary
+          showNotification={showNotification}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className={styles.adminPage}>
       <header className={styles.header}>
-        <button 
-          onClick={() => navigate('/')} 
-          className={styles.backButton}
-          aria-label="Back to Home"
-        >
-          <ArrowLeft size={18} />
-          <span>العودة للرئيسية</span>
-        </button>
-        <h1 className={styles.title}>لوحة التحكم</h1>
+        <div className={styles.headerLeft}>
+          <button 
+            onClick={() => navigate('/')} 
+            className={styles.backButton}
+            aria-label="Back to Home"
+          >
+            <ArrowLeft size={18} />
+            <span>العودة للرئيسية</span>
+          </button>
+          <h1 className={styles.title}>لوحة التحكم</h1>
+        </div>
         {/* Add Product Sources and Measurement Units buttons here */}
         <div className={styles.globalOptions}>
           <button
-            onClick={() => setActiveTab('source')}
-            className={`${styles.globalButton} ${activeTab === 'source' ? styles.active : ''}`}
+            onClick={() => {
+              setActiveGlobalTab(activeGlobalTab === 'source' ? null : 'source');
+              setActiveTab(null); // Optional: Reset activeTab
+            }}
+            className={`${styles.globalButton} ${activeGlobalTab === 'source' ? styles.active : ''}`}
             aria-label="Manage Product Sources"
           >
             مصادر المنتجات
           </button>
           <button
-            onClick={() => setActiveTab('measurement')}
-            className={`${styles.globalButton} ${activeTab === 'measurement' ? styles.active : ''}`}
+            onClick={() => {
+              setActiveGlobalTab(activeGlobalTab === 'measurement' ? null : 'measurement');
+              setActiveTab(null); // Optional: Reset activeTab
+            }}
+            className={`${styles.globalButton} ${activeGlobalTab === 'measurement' ? styles.active : ''}`}
             aria-label="Manage Measurement Units"
           >
             وحدات القياس
@@ -191,20 +229,17 @@ const AdminPanel = () => {
       </header>
 
       <main className={styles.content}>
-        {renderContent()}
-        {/* Render global options content when activeTab is 'source' or 'measurement' */}
-        {activeTab === 'measurement' && (
-          <MeasurementsList 
-            onRefresh={() => {}} // Implement if necessary
-            showNotification={showNotification}
-          />
-        )}
-        {activeTab === 'source' && (
-          <SourcesList 
-            onRefresh={() => {}} // Implement if necessary
-            showNotification={showNotification}
-          />
-        )}
+        <div className={styles.mainContent}>
+          {/* Left Column: Product Category Related Content */}
+          <div className={styles.leftColumn}>
+            {renderCategoryContent()}
+          </div>
+
+          {/* Right Column: Global Options */}
+          <div className={styles.rightColumn}>
+            {renderGlobalContent()}
+          </div>
+        </div>
       </main>
 
       {/* Notification component */}
