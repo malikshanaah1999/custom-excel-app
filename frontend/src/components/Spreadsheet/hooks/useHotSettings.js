@@ -411,8 +411,8 @@ const getColumnType = useCallback((index) => {
         return {
             type: 'dropdown',
             source: getColumnOptions(index),
-            editor: 'dropdown',  // Change this from false to 'dropdown'
-            renderer: createDropdownRenderer(index),
+            editor: 'dropdown',  // Use built-in dropdown editor
+            renderer: Handsontable.renderers.AutocompleteRenderer,  // Use built-in renderer
             allowInvalid: false
         };
     }
@@ -420,7 +420,9 @@ const getColumnType = useCallback((index) => {
         type: 'text',
         editor: 'text'
     };
-}, [getColumnOptions, createDropdownRenderer]);
+}, [getColumnOptions]);
+
+
 
     
     // Add this function to handle automatic values
@@ -619,9 +621,11 @@ const getColumnType = useCallback((index) => {
             ...getColumnSettings(index),
             ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
             renderer: [3, 4, 5, 7, 9].includes(index) ? 
-                Handsontable.renderers.AutocompleteRenderer : 
+                Handsontable.renderers.AutocompleteRenderer :  // Use built-in renderer
                 Handsontable.renderers.TextRenderer
         })),
+        
+        
         // Hide last 5 columns
         hiddenColumns: {
             columns: [17, 18, 19, 20, 21],
