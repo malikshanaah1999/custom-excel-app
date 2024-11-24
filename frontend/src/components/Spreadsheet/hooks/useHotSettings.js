@@ -224,17 +224,21 @@ useEffect(() => {
 
 const getColumnOptions = useCallback((columnIndex, row) => {
     if (columnIndex === 3) {  // فئة المنتج
-        return categoryOptions?.map(opt => opt.value) || [];  // Changed from categoryOptionsHook
+        return categoryOptions?.map(opt => opt.value) || [];
     } else if (columnIndex === 4) {  // التصنيف
         const categoryValue = data?.[row]?.[3];
-        return categoryValue ? 
+        const options = categoryValue ? 
             (classificationOptions[categoryValue] || []) : 
             [];
+        console.log('Classification options:', options);
+        return options;
     } else if (columnIndex === 5) {  // علامات تصنيف المنتج
         const categoryValue = data?.[row]?.[3];
-        return categoryValue ? 
+        const options = categoryValue ? 
             (tagOptions[categoryValue] || []) : 
             [];
+        console.log('Tag options:', options);
+        return options;
     }
     
     // Independent dropdowns
@@ -318,7 +322,20 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                 category: COLUMN_CATEGORIES[columnIndex],
                 options,
                 onSelect: (newValue) => {
-                    instance.setDataAtCell(row, col, newValue, 'edit');
+                    console.log('Selected value:', newValue);
+                    // Directly set cell value without using setDataAtCell
+                    if (columnIndex === 4 || columnIndex === 5) {
+                        const rowData = [...data[row]];
+                        rowData[columnIndex] = newValue;
+                        setData(prevData => {
+                            const newData = [...prevData];
+                            newData[row] = rowData;
+                            return newData;
+                        });
+                        instance.setSourceData(data);
+                    } else {
+                        instance.setDataAtCell(row, col, newValue, 'edit');
+                    }
                     
                     // If category changed, clear dependent fields
                     if (columnIndex === 3) {
@@ -341,7 +358,7 @@ const createDropdownRenderer = useCallback((columnIndex) => {
         
         return td;
     };
-}, [data, getColumnOptions, showDropdownEditor, fetchDependentOptions]);
+}, [data, getColumnOptions, showDropdownEditor, fetchDependentOptions, setData]);
 
 // Update validateClassification
 const validateClassification = useCallback((row, value, columnIndex) => {
