@@ -1,4 +1,4 @@
-/* src/components/Spreadsheet/pages/AdminPanel/AdminPanel.module.css */
+/* AdminPanel.module.css */
 
 .adminPage {
   display: flex;
@@ -9,9 +9,9 @@
 .header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 20px;
   background-color: #f5f5f5;
-  border-bottom: 1px solid #ddd;
 }
 
 .headerLeft {
@@ -25,6 +25,42 @@
   margin: 0;
 }
 
+.globalOptions {
+  display: flex;
+  gap: 10px;
+}
+
+.globalButton {
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.globalButton:hover {
+  background-color: #e6e6e6;
+}
+
+.globalButton.active {
+  background-color: #007bff;
+  color: #ffffff;
+  border-color: #007bff;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
 .content {
   flex: 1;
   padding: 20px;
@@ -34,45 +70,32 @@
 .mainContent {
   display: flex;
   gap: 20px;
-  height: calc(100vh - 80px); /* Adjust based on header height */
-}
-
-.leftColumn, .middleColumn, .rightColumn {
-  background-color: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow-y: auto;
 }
 
 .leftColumn {
-  flex: 1;
-  max-width: 200px;
-}
-
-.middleColumn {
-  flex: 1;
-  max-width: 200px;
+  flex: 2;
+  display: flex;
+  flex-direction: column;
 }
 
 .rightColumn {
-  flex: 2;
-  min-width: 300px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  min-width: 250px;
 }
 
-.sectionTitle {
-  font-size: 18px;
-  margin-bottom: 15px;
-  text-align: center;
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.optionButton {
-  display: block;
-  width: 100%;
+.tab {
   padding: 10px 15px;
-  margin-bottom: 10px;
-  font-size: 14px;
-  text-align: right;
   cursor: pointer;
   background-color: #ffffff;
   border: 1px solid #ccc;
@@ -80,57 +103,36 @@
   transition: background-color 0.3s, color 0.3s;
 }
 
-.optionButton:hover {
-  background-color: #f0f0f0;
+.tab:hover {
+  background-color: #e6e6e6;
 }
 
-.optionButton.active {
+.tab.active {
   background-color: #007bff;
   color: #ffffff;
   border-color: #007bff;
 }
 
-.optionButton:disabled {
-  background-color: #e6e6e6;
-  color: #888;
-  cursor: not-allowed;
+.tabContent {
+  flex: 1;
 }
 
-.selectedCategory {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: #fafafa;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.placeholder {
+.loading, .noData {
   text-align: center;
-  color: #888;
   margin-top: 50px;
 }
 
-@media (max-width: 1024px) {
-  .leftColumn, .middleColumn {
-    max-width: 150px;
-  }
-
-  .rightColumn {
-    min-width: 200px;
-  }
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 2s linear infinite;
+  margin: 0 auto 10px;
 }
 
-@media (max-width: 768px) {
-  .mainContent {
-    flex-direction: column;
-  }
-
-  .leftColumn, .middleColumn, .rightColumn {
-    max-width: 100%;
-    min-width: 100%;
-  }
-
-  .rightColumn {
-    margin-top: 20px;
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
