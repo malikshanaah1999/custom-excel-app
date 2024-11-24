@@ -85,28 +85,29 @@ const fetchDependentOptions = useCallback(async (categoryValue) => {
     try {
         console.log('Fetching dependent options for category:', categoryValue);
 
+        // Fetch classifications
         const classResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/التصنيف?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const classData = await classResponse.json();
-        console.log('Classification data:', classData);
+        console.log('Received classifications:', classData);
 
+        // Fetch tags
         const tagResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/علامات تصنيف المنتج?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const tagData = await tagResponse.json();
-        console.log('Tag data:', tagData);
+        console.log('Received tags:', tagData);
 
         setClassificationOptions(prev => ({
             ...prev,
-            [categoryValue]: classData
+            [categoryValue]: classData.map(opt => opt.value || opt.name)
         }));
 
         setTagOptions(prev => ({
             ...prev,
-            [categoryValue]: tagData
+            [categoryValue]: tagData.map(opt => opt.value || opt.name)
         }));
-
     } catch (error) {
         console.error('Error fetching dependent options:', error);
         showNotification('خطأ في تحميل الخيارات', 'error');
@@ -298,13 +299,16 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                     showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
                     return;
                 }
+                // Pre-fetch options for dependent dropdowns if needed
                 await fetchDependentOptions(categoryValue);
             }
 
-            options = getColumnOptions(columnIndex, row);
-            console.log('Available options:', options);
+            // Get options after potential fetch
+            options = await getColumnOptions(columnIndex, row);
+            console.log('Options for dropdown:', options);
 
             if (!options || options.length === 0) {
+                console.log('No options available for this dropdown');
                 if (columnIndex === 4 || columnIndex === 5) {
                     showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
                 }
@@ -312,29 +316,34 @@ const createDropdownRenderer = useCallback((columnIndex) => {
             }
 
             const rect = td.getBoundingClientRect();
+            instance.deselectCell();
             
             showDropdownEditor({
                 category: COLUMN_CATEGORIES[columnIndex],
                 options,
-                onSelect: (selectedValue) => {
-                    console.log('Selected value:', selectedValue, 'for column:', columnIndex);
+                onSelect: (newValue) => {
+                    console.log('Selected value:', newValue);
+                    // Directly set cell value without using setDataAtCell
+                    if (columnIndex === 4 || columnIndex === 5) {
+                        const rowData = [...data[row]];
+                        rowData[columnIndex] = newValue;
+                        setData(prevData => {
+                            const newData = [...prevData];
+                            newData[row] = rowData;
+                            return newData;
+                        });
+                        instance.setSourceData(data);
+                    } else {
+                        instance.setDataAtCell(row, col, newValue, 'edit');
+                    }
                     
-                    // Direct data update
-                    const newData = [...data];
-                    newData[row][col] = selectedValue;
-                    setData(newData);
-                    
-                    // Update the cell display
-                    instance.setDataAtCell(row, col, selectedValue);
-                    
-                    // If category changed, handle dependent fields
+                    // If category changed, clear dependent fields
                     if (columnIndex === 3) {
                         instance.setDataAtCell(row, 4, '', 'edit');
                         instance.setDataAtCell(row, 5, '', 'edit');
-                        fetchDependentOptions(selectedValue);
+                        fetchDependentOptions(newValue);
                     }
                     
-                    // Force re-render
                     instance.render();
                 },
                 position: {
@@ -366,6 +375,7 @@ const validateClassification = useCallback((row, value, columnIndex) => {
     return false;
 }, [data, classificationOptions, tagOptions]);
 
+// Update getColumnSettings
 const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
         return {
@@ -375,15 +385,19 @@ const getColumnSettings = useCallback((columnIndex) => {
                 const row = this.row;
                 callback(getColumnOptions(columnIndex, row));
             },
-            editor: true, // Disable default editor
-            renderer: createDropdownRenderer(columnIndex)
+            editor: 'dropdown',
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                td.style.direction = 'rtl';
+                td.style.textAlign = 'center';
+            },
         };
     }
     return { 
         type: 'text',
         editor: 'text'
     };
-}, [getColumnOptions, createDropdownRenderer]);
+}, [getColumnOptions]);
 
 
 const getColumnType = useCallback((index) => {
