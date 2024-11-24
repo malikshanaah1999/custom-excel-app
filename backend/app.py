@@ -656,6 +656,130 @@ def delete_dropdown_option(option_id):
             "status": "error",
             "message": str(e)
         }), 500
+# backend/app.py
+# Add these new routes
+
+@app.route('/admin/categories', methods=['GET'])
+def get_categories():
+    try:
+        categories = ProductCategory.query.all()
+        return jsonify([{
+            'id': category.id,
+            'name': category.name
+        } for category in categories])
+    except Exception as e:
+        logger.error(f"Error fetching categories: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to fetch categories'
+        }), 500
+
+@app.route('/admin/categories', methods=['POST'])
+def add_category():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Category name is required'
+            }), 400
+
+        # Check if category already exists
+        existing = ProductCategory.query.filter_by(name=name).first()
+        if existing:
+            return jsonify({
+                'status': 'error',
+                'message': 'Category already exists'
+            }), 409
+
+        new_category = ProductCategory(name=name)
+        db.session.add(new_category)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'id': new_category.id,
+            'name': new_category.name
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error adding category: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to add category'
+        }), 500
+
+@app.route('/admin/categories/<int:category_id>', methods=['PUT'])
+def update_category(category_id):
+    try:
+        category = ProductCategory.query.get_or_404(category_id)
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'Category name is required'
+            }), 400
+
+        # Check if new name already exists for different category
+        existing = ProductCategory.query.filter(
+            ProductCategory.name == name,
+            ProductCategory.id != category_id
+        ).first()
+        if existing:
+            return jsonify({
+                'status': 'error',
+                'message': 'Category name already exists'
+            }), 409
+
+        category.name = name
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'id': category.id,
+            'name': category.name
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating category: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to update category'
+        }), 500
+
+@app.route('/admin/categories/<int:category_id>', methods=['DELETE'])
+def delete_category(category_id):
+    try:
+        category = ProductCategory.query.get_or_404(category_id)
+        
+        # Check for related records
+        if category.classifications or category.product_tags:
+            return jsonify({
+                'status': 'error',
+                'message': 'Cannot delete category with existing classifications or tags'
+            }), 400
+
+        db.session.delete(category)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Category deleted successfully'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting category: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to delete category'
+        }), 500
 
 @app.errorhandler(404)
 def not_found_error(error):
