@@ -489,7 +489,7 @@ const getColumnType = useCallback((index) => {
         checkEmptyBarcode(changes);
     
         changes.forEach(([row, prop, oldValue, newValue]) => {
-            // Auto-fill logic for "الرقم"
+            // Auto-fill logic for "الرقم" (Number) - column 0
             if (prop === 0 && newValue !== oldValue && newValue !== '') {
                 const existingRow = data.find((r, index) =>
                     index !== row &&
@@ -525,7 +525,7 @@ const getColumnType = useCallback((index) => {
                 updateSharedNumberRows(row, prop, newValue);
             }
     
-            // Mutual fill for "وحدة القياس" and "قياس التعبئة"
+            // Mutual fill for "وحدة القياس" and "قياس التعبئة" - columns 7 and 8
             if ((prop === 7 || prop === 8) && newValue !== oldValue) {
                 setData(prevData => {
                     const updatedData = [...prevData];
@@ -551,7 +551,7 @@ const getColumnType = useCallback((index) => {
                 }, 0);
             }
     
-            // Mutual fill for category and POS Cat
+            // Mutual fill for category and POS Cat - columns 3 and 15
             if ((prop === 3 || prop === 15) && newValue !== oldValue) {
                 setData(prevData => {
                     const updatedData = [...prevData];
@@ -564,38 +564,34 @@ const getColumnType = useCallback((index) => {
                 });
             }
     
-            if (row === undefined || !data?.[row]) return;
-    
-            // When فئة المنتج changes
-            if (prop === 3 && newValue !== oldValue) {
-                // Fetch new options for dependent dropdowns
+            // Handle changes in "التصنيف" - column 4
+            if (prop === 4 && newValue !== oldValue) {
                 fetchDependentOptions(newValue);
-
-                // Clear dependent fields
                 setData(prevData => {
                     const updatedData = [...prevData];
                     if (updatedData[row]) {
-                        updatedData[row][4] = ''; // Clear التصنيف
-                        updatedData[row][5] = ''; // Clear علامات تصنيف المنتج
+                        updatedData[row][5] = ''; // Clear علامات تصنيف المنتج (Tags)
                     }
                     return updatedData;
                 });
             }
     
-            // When "التصنيف" changes
-            if (prop === 3 && newValue !== oldValue) {
-                fetchDependentOptions(newValue);
-                setData(prevData => {
-                    const updatedData = [...prevData];
-                    if (updatedData[row]) {
-                        updatedData[row][4] = ''; // Clear classification
-                        updatedData[row][5] = ''; // Clear tags
-                    }
-                    return updatedData;
-                });
+            // Handle changes in "علامات تصنيف المنتج" - column 5
+            if (prop === 5 && newValue !== oldValue) {
+                // If any specific logic is needed when tags change, add here
+                // Currently, no additional action is taken
             }
         });
-    }, [data, setData, fetchDependentOptions, checkEmptyBarcode, ensureDefaultValues, showNotification, updateSharedNumberRows]);
+    }, [
+        data, 
+        setData, 
+        fetchDependentOptions, 
+        checkEmptyBarcode, 
+        ensureDefaultValues, 
+        showNotification, 
+        updateSharedNumberRows
+    ]);
+    
     
 
     const getHotSettings = useCallback(() => ({
