@@ -223,33 +223,29 @@ useEffect(() => {
 // src/hooks/useHotSettings.js
 
 const getColumnOptions = useCallback((columnIndex, row) => {
-    if (columnIndex === 3) {  // فئة المنتج
-        return categoryOptions?.map(opt => opt.value) || [];
-    } else if (columnIndex === 4) {  // التصنيف
-        const categoryValue = data?.[row]?.[3];
-        const options = categoryValue ? 
-            (classificationOptions[categoryValue] || []) : 
-            [];
-        console.log('Classification options:', options);
-        return options;
-    } else if (columnIndex === 5) {  // علامات تصنيف المنتج
-        const categoryValue = data?.[row]?.[3];
-        const options = categoryValue ? 
-            (tagOptions[categoryValue] || []) : 
-            [];
-        console.log('Tag options:', options);
-        return options;
+    switch(columnIndex) {
+        case 3:  // فئة المنتج
+            return categoryOptions?.map(opt => opt.value) || [];
+            
+        case 4:  // التصنيف
+            const categoryValue = data?.[row]?.[3];
+            if (!categoryValue) return [];
+            return classificationOptions[categoryValue] || [];
+            
+        case 5:  // علامات تصنيف المنتج
+            const catValue = data?.[row]?.[3];
+            if (!catValue) return [];
+            return tagOptions[catValue] || [];
+            
+        case 7:  // وحدة القياس
+            return measurementUnitOptions?.map(opt => opt.value) || [];
+            
+        case 9:  // مصدر المنتج
+            return sourceOptions?.map(opt => opt.value) || [];
+            
+        default:
+            return [];
     }
-    
-    // Independent dropdowns
-    const columnToOptions = {
-        7: measurementUnitOptions,  // وحدة القياس
-        9: sourceOptions           // مصدر المنتج
-    };
-    
-    return columnToOptions[columnIndex] ? 
-        columnToOptions[columnIndex].map(opt => opt.value) : 
-        [];
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
 // Add effect to refresh options periodically
@@ -395,21 +391,19 @@ const getColumnSettings = useCallback((columnIndex) => {
             allowInvalid: false,
             source: function(query, callback) {
                 const row = this.row;
-                callback(getColumnOptions(columnIndex, row));
+                const options = getColumnOptions(columnIndex, row);
+                console.log(`Options for column ${columnIndex}:`, options);
+                callback(options);
             },
-            editor: 'dropdown',
-            renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-                td.style.direction = 'rtl';
-                td.style.textAlign = 'center';
-            },
+            editor: 'dropdown',  // Keep the default dropdown editor for all columns
+            renderer: createDropdownRenderer(columnIndex)  // Use our custom renderer
         };
     }
     return { 
         type: 'text',
         editor: 'text'
     };
-}, [getColumnOptions]);
+}, [getColumnOptions, createDropdownRenderer]);
 
 
 const getColumnType = useCallback((index) => {
@@ -625,20 +619,19 @@ const getColumnType = useCallback((index) => {
         fillHandle: true,
         columns: spreadsheetColumns.map((col, index) => ({
             ...col,
+            type: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
+            editor: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
             ...getColumnSettings(index),
-            // Hide the last 5 columns while maintaining the direction-aware rendering
             ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
-            renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                // Define visible columns that need direction-aware rendering
-                const columnsToApply = Array.from({ length: 17 }, (_, i) => i); // Columns 0-16
-        
-                if (columnsToApply.includes(col)) {
-                    directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
-                } else {
-                    // Use default renderer for hidden columns
-                    Handsontable.renderers.TextRenderer.apply(this, arguments);
+            renderer: [3, 4, 5, 7, 9].includes(index) ? 
+                createDropdownRenderer(index) : 
+                function(instance, td, row, col, prop, value, cellProperties) {
+                    if (Array.from({ length: 17 }, (_, i) => i).includes(col)) {
+                        directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
+                    } else {
+                        Handsontable.renderers.TextRenderer.apply(this, arguments);
+                    }
                 }
-            }
         })),
         // Hide last 5 columns
         hiddenColumns: {
@@ -796,21 +789,18 @@ const getColumnType = useCallback((index) => {
                 cellProperties.className = 'row-number-cell';
             }
             
-            // Make last 6 columns read-only (including new 'pos' column)
+            // Make last 6 columns read-only
             if (col >= 17 && col <= 21) {
                 cellProperties.readOnly = true;
             }
             
-            if ([3, 4, 5, 7, 9].includes(col)) {  // Added columns 4 and 5
+            // Add special class for all dropdown cells including cols 4 and 5
+            if ([3, 4, 5, 7, 9].includes(col)) {
                 cellProperties.className = `${cellProperties.className || ''} dropdown-cell`;
-                cellProperties.renderer = createDropdownRenderer(col);
-                //cellProperties.editor = false; // Disable default editor
+                cellProperties.editor = 'dropdown';  // Use dropdown editor for all dropdown columns
             }
             
             cellProperties.className = `${cellProperties.className || ''} ${row % 2 === 0 ? 'even-row' : 'odd-row'}`;
-
-
-
             
             return cellProperties;
         },
