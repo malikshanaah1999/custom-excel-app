@@ -1,7 +1,5 @@
 // src/components/Spreadsheet/pages/AdminPanel/ClassificationsList/ClassificationsList.js
-
 import React, { useState } from 'react';
-import PropTypes from 'prop-types'; // Import PropTypes
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import styles from './ClassificationsList.module.css';
 import AddEditModal from '../components/AddEditModal';
@@ -113,21 +111,19 @@ const ClassificationsList = ({
         <button
           onClick={() => setShowAddModal(true)}
           className={styles.addButton}
-          aria-label="Add New Classification"
         >
           <Plus size={18} />
-          <span>إضافة تصنيف جديد</span>
+          إضافة تصنيف جديد
         </button>
       </div>
 
       <div className={styles.listContainer}>
         {isLoading ? (
-          <div className={styles.loading}>
-            <div className={styles.spinner}></div>
-            <span>جارٍ التحميل...</span>
+          <div className={styles.emptyState}>
+            جاري التحميل...
           </div>
         ) : classifications.length === 0 ? (
-          <div className={styles.noData}>
+          <div className={styles.emptyState}>
             لا توجد تصنيفات مضافة لهذه الفئة
           </div>
         ) : (
@@ -140,7 +136,6 @@ const ClassificationsList = ({
                     onClick={() => setEditingClassification(classification)}
                     className={styles.editButton}
                     title="تعديل"
-                    aria-label={`Edit classification ${classification.name}`}
                   >
                     <Edit2 size={16} />
                   </button>
@@ -148,7 +143,6 @@ const ClassificationsList = ({
                     onClick={() => setClassificationToDelete(classification)}
                     className={styles.deleteButton}
                     title="حذف"
-                    aria-label={`Delete classification ${classification.name}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -183,19 +177,6 @@ const ClassificationsList = ({
       />
     </div>
   );
-};
-
-ClassificationsList.propTypes = {
-  categoryId: PropTypes.number.isRequired,
-  classifications: PropTypes.array.isRequired,
-  isLoading: PropTypes.bool,
-  onRefresh: PropTypes.func.isRequired,
-  showNotification: PropTypes.func.isRequired,
-};
-
-ClassificationsList.defaultProps = {
-  classifications: [],
-  isLoading: false,
 };
 
 export default ClassificationsList;

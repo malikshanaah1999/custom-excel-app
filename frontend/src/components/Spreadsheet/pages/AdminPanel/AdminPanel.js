@@ -11,7 +11,7 @@ import SourcesList from './SourcesList/SourcesList';
 import styles from './AdminPanel.module.css';
 import useNotification from '../../hooks/useNotification';
 import Notification from '../../components/Notification';
-import { API_BASE_URL } from '../../../../../config/api';
+import { API_BASE_URL } from '../../../../config/api';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
