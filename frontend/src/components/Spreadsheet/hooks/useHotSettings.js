@@ -221,7 +221,6 @@ useEffect(() => {
 
 
 // src/hooks/useHotSettings.js
-
 const getColumnOptions = useCallback((columnIndex, row) => {
     switch(columnIndex) {
         case 3:  // فئة المنتج
@@ -248,6 +247,7 @@ const getColumnOptions = useCallback((columnIndex, row) => {
     }
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
+
 // Add effect to refresh options periodically
 useEffect(() => {
     const interval = setInterval(() => {
@@ -273,100 +273,7 @@ useEffect(() => {
 }, [data, fetchDependentOptions]);
 
 
-const createDropdownRenderer = useCallback((columnIndex) => {
-    return function(instance, td, row, col, prop, value, cellProperties) {
-        if (!td) return td;
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'htDropdownWrapper';
-        wrapper.textContent = value || '-- اختر --';
-        
-        wrapper.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (row === undefined) return;
-            
-            let options = [];
-            if (columnIndex === 4 || columnIndex === 5) {
-                const categoryValue = data[row][3];
-                if (!categoryValue) {
-                    showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
-                    return;
-                }
-                await fetchDependentOptions(categoryValue);
-            }
-
-            // Get options after potential fetch
-            options = getColumnOptions(columnIndex, row);
-            console.log('Available options for selection:', options);
-
-            if (!options || options.length === 0) {
-                console.log('No options available');
-                if (columnIndex === 4 || columnIndex === 5) {
-                    showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
-                }
-                return;
-            }
-
-            const rect = td.getBoundingClientRect();
-            
-            showDropdownEditor({
-                category: COLUMN_CATEGORIES[columnIndex],
-                options,
-                onSelect: (selectedValue) => {
-                    console.log('Selected value:', selectedValue, 'for column:', columnIndex);
-
-                    // Directly update the data state
-                    const newData = [...data];
-                    newData[row][columnIndex] = selectedValue;
-                    setData(newData);
-                    setHasChanges(true);
-
-                    // Force a cell update in Handsontable
-                    setTimeout(() => {
-                        // Update the cell value
-                        instance.setSourceData(newData);
-                        
-                        // Force re-render the specific cell
-                        instance.render();
-                        
-                        // Update cell visual immediately
-                        wrapper.textContent = selectedValue;
-                        
-                        // Trigger afterChange hook
-                        instance.runHooks('afterChange', [[row, columnIndex, '', selectedValue]], 'edit');
-                    }, 0);
-
-                    // Handle category change and dependent fields
-                    if (columnIndex === 3) {
-                        // Clear dependent fields
-                        newData[row][4] = '';
-                        newData[row][5] = '';
-                        setData(newData);
-                        
-                        // Fetch new options for dependent dropdowns
-                        fetchDependentOptions(selectedValue);
-                        
-                        // Force re-render dependent cells
-                        setTimeout(() => {
-                            instance.setSourceData(newData);
-                            instance.render();
-                        }, 0);
-                    }
-                },
-                position: {
-                    top: rect.bottom + window.scrollY,
-                    left: rect.left + window.scrollX
-                }
-            });
-        });
-
-        Handsontable.dom.empty(td);
-        td.appendChild(wrapper);
-        return td;
-    };
-}, [data, getColumnOptions, showDropdownEditor, fetchDependentOptions, setData, setHasChanges]);
 
 // Update validateClassification
 const validateClassification = useCallback((row, value, columnIndex) => {
@@ -394,7 +301,7 @@ const getColumnSettings = useCallback((columnIndex) => {
                 const options = getColumnOptions(columnIndex, row);
                 callback(options);
             },
-            editor: 'dropdown',  // Use built-in dropdown editor
+            editor: 'dropdown',
             renderer: Handsontable.renderers.AutocompleteRenderer  // Use built-in renderer
         };
     }
@@ -402,7 +309,8 @@ const getColumnSettings = useCallback((columnIndex) => {
         type: 'text',
         editor: 'text'
     };
-}, [getColumnOptions]);
+}, [COLUMN_CATEGORIES, getColumnOptions]);
+
 
 
 const getColumnType = useCallback((index) => {
@@ -621,9 +529,10 @@ const getColumnType = useCallback((index) => {
             ...getColumnSettings(index),
             ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
             renderer: [3, 4, 5, 7, 9].includes(index) ? 
-                Handsontable.renderers.AutocompleteRenderer :  // Use built-in renderer
+                Handsontable.renderers.AutocompleteRenderer : 
                 Handsontable.renderers.TextRenderer
         })),
+        
         
         
         // Hide last 5 columns
