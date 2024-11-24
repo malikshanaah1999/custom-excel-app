@@ -614,20 +614,13 @@ const getColumnType = useCallback((index) => {
         fillHandle: true,
         columns: spreadsheetColumns.map((col, index) => ({
             ...col,
+            type: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
+            editor: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
             ...getColumnSettings(index),
-            // Hide the last 5 columns while maintaining the direction-aware rendering
             ...(index >= 17 && index <= 21 ? { hidden: true, readOnly: true } : {}),
-            renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                // Define visible columns that need direction-aware rendering
-                const columnsToApply = Array.from({ length: 17 }, (_, i) => i); // Columns 0-16
-        
-                if (columnsToApply.includes(col)) {
-                    directionAwareRenderer.call(this, instance, td, row, col, prop, value, cellProperties);
-                } else {
-                    // Use default renderer for hidden columns
-                    Handsontable.renderers.TextRenderer.apply(this, arguments);
-                }
-            }
+            renderer: [3, 4, 5, 7, 9].includes(index) ? 
+                Handsontable.renderers.AutocompleteRenderer : 
+                Handsontable.renderers.TextRenderer
         })),
         // Hide last 5 columns
         hiddenColumns: {
