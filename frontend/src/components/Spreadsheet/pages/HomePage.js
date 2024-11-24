@@ -1,6 +1,7 @@
 // src/pages/HomePage.js
 
-import React, { useState, useEffect, useCallback, useNavigate } from 'react';  
+import React, { useState, useEffect, useCallback } from 'react';  
+import { useNavigate } from 'react-router-dom';
 import { Plus, Loader2, FileX, List, Grid } from 'lucide-react';
 import useSheets from '../hooks/useSheets';
 import useNotification from '../hooks/useNotification';
