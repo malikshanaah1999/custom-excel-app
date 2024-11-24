@@ -287,7 +287,53 @@ def get_product_sources():
             'status': 'error',
             'message': str(e)
         }), 500
+@app.route('/admin/measurement-units/validate', methods=['POST'])
+def validate_measurement_unit():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        existing = MeasurementUnit.query.filter_by(name=name).first()
+        
+        return jsonify({
+            'isValid': existing is None
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+@app.route('/admin/product-sources/validate', methods=['POST'])
+def validate_product_source():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        exclude_id = data.get('excludeId')  # For edit validation
+        
+        if not name:
+            return jsonify({
+                'isValid': False,
+                'message': 'Name is required'
+            }), 400
 
+        # Build query
+        query = ProductSource.query.filter_by(name=name)
+        
+        # If we're editing, exclude the current item
+        if exclude_id:
+            query = query.filter(ProductSource.id != exclude_id)
+            
+        existing = query.first()
+        
+        return jsonify({
+            'isValid': existing is None,
+            'message': 'Product source already exists' if existing else None
+        })
+    except Exception as e:
+        logger.error(f"Error validating product source: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 @app.route('/admin/product-sources', methods=['POST'])
 def add_product_source():
     try:

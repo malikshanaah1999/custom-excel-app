@@ -338,24 +338,18 @@ useEffect(() => {
           <div className={styles.searchContainer}>
             <Search size={20} className={styles.searchIcon} />
             <input
-              type="text"
-              placeholder="البحث عن فئة..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
+            type="text"
+            placeholder="البحث عن فئة..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
           </div>
         </div>
   
         <div className={styles.categoriesList}>
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              className={`${styles.categoryItem} ${
-                selectedCategory?.id === category.id ? styles.selected : ""
-              }`}
-              onClick={() => handleCategorySelect(category)}
-            >
+        {filteredCategories.map((category) => (
+            <div key={category.id} className={styles.categoryItem}>
               <span>{category.name}</span>
               <div className={styles.actions}>
                 <button

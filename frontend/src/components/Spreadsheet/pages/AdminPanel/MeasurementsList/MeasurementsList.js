@@ -39,26 +39,40 @@ const MeasurementsList = ({ showNotification, onRefresh }) => {
     fetchMeasurements();
   }, []);
 
-  const handleAdd = async (data) => {
+  // src/components/Spreadsheet/pages/AdminPanel/MeasurementsList/MeasurementsList.js
+const handleAdd = async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/measurement-units`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (response.ok) {
+        // First validate
+        const validateResponse = await fetch(`${API_BASE_URL}/admin/measurement-units/validate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: data.name })
+        });
+        const validateData = await validateResponse.json();
+        
+        if (!validateData.isValid) {
+            showNotification('وحدة القياس موجودة مسبقاً', 'error');
+            return;
+        }
+
+        // Then add
+        const response = await fetch(`${API_BASE_URL}/admin/measurement-units`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to add measurement unit');
+        }
+
         showNotification('تم إضافة وحدة القياس بنجاح', 'success');
         setShowAddModal(false);
         fetchMeasurements();
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error('Failed to add measurement unit');
-      }
     } catch (error) {
-      showNotification('فشل في إضافة وحدة القياس', 'error');
+        showNotification('فشل في إضافة وحدة القياس', 'error');
     }
-  };
+};
 
   const handleEdit = async (id, data) => {
     try {
@@ -81,33 +95,37 @@ const MeasurementsList = ({ showNotification, onRefresh }) => {
     }
   };
 
-  const handleDelete = async (id) => {
+  // For both MeasurementsList and SourcesList
+const handleDelete = async (id) => {
     try {
-      // Check if measurement unit is in use
-      const checkResponse = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}/check-usage`);
-      const checkData = await checkResponse.json();
-      
-      if (checkData.isInUse) {
-        showNotification('لا يمكن حذف وحدة القياس لأنها مستخدمة في بعض الجداول', 'error');
-        return;
-      }
+        // First check usage
+        const checkResponse = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}/check-usage`);
+        const checkData = await checkResponse.json();
 
-      const response = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        showNotification('تم حذف وحدة القياس بنجاح', 'success');
-        setMeasurementToDelete(null);
+        
+        
+        if (checkData.isInUse) {
+            showNotification('لا يمكن حذف وحدة القياس لأنها مستخدمة في بعض الجداول', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete');
+        }
+
+        showNotification('تم الحذف بنجاح', 'success');
         fetchMeasurements();
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error('Failed to delete measurement unit');
-      }
     } catch (error) {
-      showNotification('فشل في حذف وحدة القياس', 'error');
+        console.error('Delete error:', error);
+        showNotification('فشل في عملية الحذف', 'error');
     }
-  };
+};
 
   const validateMeasurementName = async (name) => {
     try {

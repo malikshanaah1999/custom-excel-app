@@ -219,6 +219,8 @@ useEffect(() => {
 
 
 
+// src/hooks/useHotSettings.js
+
 const getColumnOptions = useCallback((columnIndex, row) => {
     if (columnIndex === 3) {  // فئة المنتج
         return categoryOptions?.map(opt => opt.value) || [];

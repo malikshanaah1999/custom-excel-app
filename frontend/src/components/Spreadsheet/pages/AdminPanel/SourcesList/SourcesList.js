@@ -81,33 +81,34 @@ const SourcesList = ({ showNotification, onRefresh }) => {
     }
   };
 
+ 
   const handleDelete = async (id) => {
     try {
-      // Check if source is in use
-      const checkResponse = await fetch(`${API_BASE_URL}/admin/product-sources/${id}/check-usage`);
-      const checkData = await checkResponse.json();
-      
-      if (checkData.isInUse) {
-        showNotification('لا يمكن حذف مصدر المنتج لأنه مستخدم في بعض الجداول', 'error');
-        return;
-      }
+        // Check if product source is in use
+        const checkResponse = await fetch(`${API_BASE_URL}/admin/product-sources/${id}/check-usage`);
+        const checkData = await checkResponse.json();
+        
+        if (checkData.isInUse) {
+            showNotification('لا يمكن حذف مصدر المنتج لأنه مستخدم في بعض الجداول', 'error');
+            return;
+        }
 
-      const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        showNotification('تم حذف مصدر المنتج بنجاح', 'success');
-        setSourceToDelete(null);
-        fetchSources();
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error('Failed to delete product source');
-      }
+        const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            showNotification('تم حذف مصدر المنتج بنجاح', 'success');
+            setSourceToDelete(null);
+            fetchSources();
+            if (onRefresh) onRefresh();
+        } else {
+            throw new Error('Failed to delete product source');
+        }
     } catch (error) {
-      showNotification('فشل في حذف مصدر المنتج', 'error');
+        showNotification('فشل في حذف مصدر المنتج', 'error');
     }
-  };
+};
 
   const validateSourceName = async (name) => {
     try {
