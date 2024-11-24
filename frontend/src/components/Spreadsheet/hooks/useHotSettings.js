@@ -217,34 +217,32 @@ useEffect(() => {
     });
 }, [data, showNotification]);
 
-// Update getColumnOptions
+
+
 const getColumnOptions = useCallback((columnIndex, row) => {
-    
-    if (columnIndex === 3) {  // فئة المنتج column
+    if (columnIndex === 3) {  // فئة المنتج
         return categoryOptions?.map(opt => opt.value) || [];
-    } else if (columnIndex === 4) {  // التصنيف column
+    } else if (columnIndex === 4) {  // التصنيف
         const categoryValue = data?.[row]?.[3];
-        const options = categoryValue ? 
+        return categoryValue ? 
             (classificationOptions[categoryValue]?.map(opt => opt.value) || []) : 
             [];
-        return options;
-    } else if (columnIndex === 5) {  // علامات تصنيف المنتج column
+    } else if (columnIndex === 5) {  // علامات تصنيف المنتج
         const categoryValue = data?.[row]?.[3];
-        const options = categoryValue ? 
+        return categoryValue ? 
             (tagOptions[categoryValue]?.map(opt => opt.value) || []) : 
             [];
-        return options;
-    } else {
-        const columnToOptions = {
-            7: measurementUnitOptions,  // وحدة القياس
-            9: sourceOptions           // مصدر المنتج
-        };
-
-        const options = columnToOptions[columnIndex] ? 
-            columnToOptions[columnIndex].map(opt => opt.value) : 
-            [];
-        return options;
     }
+    
+    // Independent dropdowns
+    const columnToOptions = {
+        7: measurementUnitOptions,  // وحدة القياس
+        9: sourceOptions           // مصدر المنتج
+    };
+    
+    return columnToOptions[columnIndex] ? 
+        columnToOptions[columnIndex].map(opt => opt.value) : 
+        [];
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
 
