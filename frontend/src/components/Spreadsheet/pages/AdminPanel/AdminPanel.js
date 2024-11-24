@@ -1,6 +1,7 @@
 // src/components/Spreadsheet/pages/AdminPanel/AdminPanel.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import styles from '../../Stylings/AdminPanel.module.css';
 import CategoryManager from './CategoryManager';
