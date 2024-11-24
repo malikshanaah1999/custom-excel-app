@@ -46,7 +46,8 @@ const useHotSettings = ({
  // Initialize dropdown options at top level
  const { 
     options: categoryOptionsHook, 
-    refreshOptions: refreshCategories 
+    loading: categoryLoading,
+    error: categoryError
 } = useDropdownOptions('فئة المنتج');
 
  
@@ -83,17 +84,21 @@ const fetchDependentOptions = useCallback(async (categoryValue) => {
     if (!categoryValue) return;
     
     try {
+        console.log('Fetching dependent options for category:', categoryValue);
+
         // Fetch classifications
         const classResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/التصنيف?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const classData = await classResponse.json();
+        console.log('Received classifications:', classData);
 
         // Fetch tags
         const tagResponse = await fetch(
             `${API_BASE_URL}/api/dropdown-options/علامات تصنيف المنتج?parent_category=${encodeURIComponent(categoryValue)}`
         );
         const tagData = await tagResponse.json();
+        console.log('Received tags:', tagData);
 
         setClassificationOptions(prev => ({
             ...prev,
@@ -109,6 +114,7 @@ const fetchDependentOptions = useCallback(async (categoryValue) => {
         showNotification('خطأ في تحميل الخيارات', 'error');
     }
 }, [showNotification]);
+
 // Effect to fetch dependent options when needed
 // Add to useEffect to refresh periodically
 useEffect(() => {
@@ -218,18 +224,26 @@ useEffect(() => {
 // src/hooks/useHotSettings.js
 
 const getColumnOptions = useCallback((columnIndex, row) => {
+    console.log('Getting options for column:', columnIndex, 'row:', row);
+    
     if (columnIndex === 3) {  // فئة المنتج
-        return categoryOptions?.map(opt => opt.value) || [];
+        const options = categoryOptionsHook?.map(opt => opt.value);
+        console.log('Category options:', options);
+        return options || [];
     } else if (columnIndex === 4) {  // التصنيف
         const categoryValue = data?.[row]?.[3];
-        return categoryValue ? 
-            (classificationOptions[categoryValue] || []) : 
-            [];
+        if (!categoryValue) return [];
+        
+        const options = classificationOptions[categoryValue];
+        console.log('Classification options for', categoryValue, ':', options);
+        return options || [];
     } else if (columnIndex === 5) {  // علامات تصنيف المنتج
         const categoryValue = data?.[row]?.[3];
-        return categoryValue ? 
-            (tagOptions[categoryValue] || []) : 
-            [];
+        if (!categoryValue) return [];
+        
+        const options = tagOptions[categoryValue];
+        console.log('Tag options for', categoryValue, ':', options);
+        return options || [];
     }
     
     // Independent dropdowns
@@ -241,7 +255,7 @@ const getColumnOptions = useCallback((columnIndex, row) => {
     return columnToOptions[columnIndex] ? 
         columnToOptions[columnIndex].map(opt => opt.value) : 
         [];
-}, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
+}, [data, categoryOptionsHook, classificationOptions, tagOptions]);
 
 // Add effect to refresh options periodically
 useEffect(() => {
@@ -269,7 +283,6 @@ useEffect(() => {
 
 
 
-
 const createDropdownRenderer = useCallback((columnIndex) => {
     return function(instance, td, row, col, prop, value, cellProperties) {
         if (!td) return td;
@@ -291,9 +304,20 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                     showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
                     return;
                 }
-                options = await getColumnOptions(columnIndex, row);
-            } else {
-                options = await getColumnOptions(columnIndex, row);
+                // Pre-fetch options for dependent dropdowns if needed
+                await fetchDependentOptions(categoryValue);
+            }
+
+            // Get options after potential fetch
+            options = await getColumnOptions(columnIndex, row);
+            console.log('Options for dropdown:', options);
+
+            if (!options || options.length === 0) {
+                console.log('No options available for this dropdown');
+                if (columnIndex === 4 || columnIndex === 5) {
+                    showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
+                }
+                return;
             }
 
             const rect = td.getBoundingClientRect();
