@@ -277,7 +277,6 @@ useEffect(() => {
 }, [data, fetchDependentOptions]);
 
 
-
 const createDropdownRenderer = useCallback((columnIndex) => {
     return function(instance, td, row, col, prop, value, cellProperties) {
         if (!td) return td;
@@ -302,11 +301,15 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                 await fetchDependentOptions(categoryValue);
             }
 
+            // Get options after potential fetch
             options = getColumnOptions(columnIndex, row);
             console.log('Available options for selection:', options);
 
             if (!options || options.length === 0) {
                 console.log('No options available');
+                if (columnIndex === 4 || columnIndex === 5) {
+                    showNotification('الرجاء اختيار فئة المنتج أولاً', 'info');
+                }
                 return;
             }
 
@@ -318,27 +321,43 @@ const createDropdownRenderer = useCallback((columnIndex) => {
                 onSelect: (selectedValue) => {
                     console.log('Selected value:', selectedValue, 'for column:', columnIndex);
 
-                    // Update data directly
+                    // Directly update the data state
                     const newData = [...data];
-                    newData[row][col] = selectedValue;
+                    newData[row][columnIndex] = selectedValue;
                     setData(newData);
+                    setHasChanges(true);
 
-                    // Force update the cell
-                    instance.setDataAtCell(row, col, selectedValue, 'edit');
-                    
-                    // Set the cell text directly
-                    wrapper.textContent = selectedValue;
-                    
-                    // Update dependent fields if category changes
+                    // Force a cell update in Handsontable
+                    setTimeout(() => {
+                        // Update the cell value
+                        instance.setSourceData(newData);
+                        
+                        // Force re-render the specific cell
+                        instance.render();
+                        
+                        // Update cell visual immediately
+                        wrapper.textContent = selectedValue;
+                        
+                        // Trigger afterChange hook
+                        instance.runHooks('afterChange', [[row, columnIndex, '', selectedValue]], 'edit');
+                    }, 0);
+
+                    // Handle category change and dependent fields
                     if (columnIndex === 3) {
+                        // Clear dependent fields
                         newData[row][4] = '';
                         newData[row][5] = '';
                         setData(newData);
+                        
+                        // Fetch new options for dependent dropdowns
                         fetchDependentOptions(selectedValue);
+                        
+                        // Force re-render dependent cells
+                        setTimeout(() => {
+                            instance.setSourceData(newData);
+                            instance.render();
+                        }, 0);
                     }
-
-                    instance.render();
-                    setHasChanges(true);
                 },
                 position: {
                     top: rect.bottom + window.scrollY,
@@ -782,9 +801,10 @@ const getColumnType = useCallback((index) => {
                 cellProperties.readOnly = true;
             }
             
-            // Add special class for dropdown cells
-            if ([3, 7, 4, 9].includes(col)) {
+            if ([3, 4, 5, 7, 9].includes(col)) {  // Added columns 4 and 5
                 cellProperties.className = `${cellProperties.className || ''} dropdown-cell`;
+                cellProperties.renderer = createDropdownRenderer(col);
+                //cellProperties.editor = false; // Disable default editor
             }
             
             cellProperties.className = `${cellProperties.className || ''} ${row % 2 === 0 ? 'even-row' : 'odd-row'}`;
