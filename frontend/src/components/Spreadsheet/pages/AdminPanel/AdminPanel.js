@@ -11,7 +11,7 @@ import SourcesList from './SourcesList/SourcesList';
 import styles from './AdminPanel.module.css';
 import useNotification from '../../hooks/useNotification';
 import Notification from '../../components/Notification';
-import { API_BASE_URL } from '../../../../config/api';
+import { API_BASE_URL } from 'config/api'; // Assuming absolute imports are set up
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const AdminPanel = () => {
   const [isLoadingClassifications, setIsLoadingClassifications] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  // Fetch classifications when a category is selected
+  // Fetch classifications and tags when a category is selected
   const fetchClassifications = useCallback(async (categoryId) => {
     setIsLoadingClassifications(true);
     try {
@@ -44,7 +44,6 @@ const AdminPanel = () => {
     }
   }, [showNotification]);
 
-  // Fetch tags when a category is selected
   const fetchTags = useCallback(async (categoryId) => {
     setIsLoadingTags(true);
     try {
@@ -119,51 +118,40 @@ const AdminPanel = () => {
           >
             علامات التصنيف
           </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'measurement' ? styles.active : ''}`}
-            onClick={() => setActiveTab('measurement')}
-            aria-selected={activeTab === 'measurement'}
-            role="tab"
-          >
-            وحدات القياس
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'source' ? styles.active : ''}`}
-            onClick={() => setActiveTab('source')}
-            aria-selected={activeTab === 'source'}
-            role="tab"
-          >
-            مصادر المنتج
-          </button>
+          {/* Remove the Measurement Units and Product Sources tabs from here */}
         </div>
 
         <div className={styles.tabContent}>
           {activeTab === 'classification' ? (
-            <ClassificationsList 
-              categoryId={selectedCategory.id} 
-              classifications={classifications} 
-              isLoading={isLoadingClassifications}
-              onRefresh={handleRefreshClassifications}
-              showNotification={showNotification}
-            />
+            isLoadingClassifications ? (
+              <div className={styles.loading}>
+                <div className={styles.spinner}></div>
+                <span>جارٍ التحميل...</span>
+              </div>
+            ) : (
+              <ClassificationsList 
+                categoryId={selectedCategory.id} 
+                classifications={classifications} 
+                isLoading={isLoadingClassifications}
+                onRefresh={handleRefreshClassifications}
+                showNotification={showNotification}
+              />
+            )
           ) : activeTab === 'tag' ? (
-            <TagsList 
-              categoryId={selectedCategory.id} 
-              tags={tags} 
-              isLoading={isLoadingTags}
-              onRefresh={handleRefreshTags}
-              showNotification={showNotification}
-            />
-          ) : activeTab === 'measurement' ? (
-            <MeasurementsList 
-              onRefresh={() => {}} // Implement if necessary
-              showNotification={showNotification}
-            />
-          ) : activeTab === 'source' ? (
-            <SourcesList 
-              onRefresh={() => {}} // Implement if necessary
-              showNotification={showNotification}
-            />
+            isLoadingTags ? (
+              <div className={styles.loading}>
+                <div className={styles.spinner}></div>
+                <span>جارٍ التحميل...</span>
+              </div>
+            ) : (
+              <TagsList 
+                categoryId={selectedCategory.id} 
+                tags={tags} 
+                isLoading={isLoadingTags}
+                onRefresh={handleRefreshTags}
+                showNotification={showNotification}
+              />
+            )
           ) : null}
         </div>
       </>
@@ -182,10 +170,40 @@ const AdminPanel = () => {
           <span>العودة للرئيسية</span>
         </button>
         <h1 className={styles.title}>لوحة التحكم</h1>
+        {/* Add Product Sources and Measurement Units buttons here */}
+        <div className={styles.globalOptions}>
+          <button
+            onClick={() => setActiveTab('source')}
+            className={`${styles.globalButton} ${activeTab === 'source' ? styles.active : ''}`}
+            aria-label="Manage Product Sources"
+          >
+            مصادر المنتجات
+          </button>
+          <button
+            onClick={() => setActiveTab('measurement')}
+            className={`${styles.globalButton} ${activeTab === 'measurement' ? styles.active : ''}`}
+            aria-label="Manage Measurement Units"
+          >
+            وحدات القياس
+          </button>
+        </div>
       </header>
 
       <main className={styles.content}>
         {renderContent()}
+        {/* Render global options content when activeTab is 'source' or 'measurement' */}
+        {activeTab === 'measurement' && (
+          <MeasurementsList 
+            onRefresh={() => {}} // Implement if necessary
+            showNotification={showNotification}
+          />
+        )}
+        {activeTab === 'source' && (
+          <SourcesList 
+            onRefresh={() => {}} // Implement if necessary
+            showNotification={showNotification}
+          />
+        )}
       </main>
 
       {/* Notification component */}
