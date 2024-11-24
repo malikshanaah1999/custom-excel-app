@@ -43,25 +43,24 @@ const useHotSettings = ({
     
 }) => {
 
- // Initialize dropdown options at top level
- const { 
-    options: categoryOptionsHook, 
-    loading: categoryLoading,
-    error: categoryError
-} = useDropdownOptions('فئة المنتج');
+    const { 
+        options: categoryOptions,  // Changed from categoryOptionsHook 
+        loading: categoryLoading,
+        error: categoryError,
+        refreshOptions: refreshCategories  // Add this to get the refresh function
+    } = useDropdownOptions('فئة المنتج');
+    
 
  
- const categoryOptions = categoryOptionsHook.options || [];
-
-
- const { 
-    options: measurementUnitOptions,
-    refreshOptions: refreshMeasurementUnits
-} = useDropdownOptions('وحدة القياس');
- const { 
-    options: sourceOptions,
-    refreshOptions: refreshSources
-} = useDropdownOptions('مصدر المنتج');
+    const { 
+        options: measurementUnitOptions,
+        refreshOptions: refreshMeasurementUnits
+    } = useDropdownOptions('وحدة القياس');
+    
+    const { 
+        options: sourceOptions,
+        refreshOptions: refreshSources
+    } = useDropdownOptions('مصدر المنتج');
 
  // State for dependent options
  const [classificationOptions, setClassificationOptions] = useState({});
@@ -224,26 +223,18 @@ useEffect(() => {
 // src/hooks/useHotSettings.js
 
 const getColumnOptions = useCallback((columnIndex, row) => {
-    console.log('Getting options for column:', columnIndex, 'row:', row);
-    
     if (columnIndex === 3) {  // فئة المنتج
-        const options = categoryOptionsHook?.map(opt => opt.value);
-        console.log('Category options:', options);
-        return options || [];
+        return categoryOptions?.map(opt => opt.value) || [];  // Changed from categoryOptionsHook
     } else if (columnIndex === 4) {  // التصنيف
         const categoryValue = data?.[row]?.[3];
-        if (!categoryValue) return [];
-        
-        const options = classificationOptions[categoryValue];
-        console.log('Classification options for', categoryValue, ':', options);
-        return options || [];
+        return categoryValue ? 
+            (classificationOptions[categoryValue] || []) : 
+            [];
     } else if (columnIndex === 5) {  // علامات تصنيف المنتج
         const categoryValue = data?.[row]?.[3];
-        if (!categoryValue) return [];
-        
-        const options = tagOptions[categoryValue];
-        console.log('Tag options for', categoryValue, ':', options);
-        return options || [];
+        return categoryValue ? 
+            (tagOptions[categoryValue] || []) : 
+            [];
     }
     
     // Independent dropdowns
@@ -255,7 +246,7 @@ const getColumnOptions = useCallback((columnIndex, row) => {
     return columnToOptions[columnIndex] ? 
         columnToOptions[columnIndex].map(opt => opt.value) : 
         [];
-}, [data, categoryOptionsHook, classificationOptions, tagOptions]);
+}, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
 // Add effect to refresh options periodically
 useEffect(() => {

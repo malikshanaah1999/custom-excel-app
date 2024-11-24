@@ -7,6 +7,7 @@ export const useDropdownOptions = (category, parentCategory = null) => {
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+   
 
     const fetchOptions = useCallback(async () => {
         if (!category) return;
@@ -52,6 +53,9 @@ export const useDropdownOptions = (category, parentCategory = null) => {
     useEffect(() => {
         fetchOptions();
     }, [fetchOptions]);
+    const refreshOptions = useCallback(() => {
+        fetchOptions();
+    }, [fetchOptions]);
 
-    return { options, loading, error };
+    return { options, loading, error , refreshOptions  };
 };
