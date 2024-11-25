@@ -227,21 +227,19 @@ const getColumnOptions = useCallback((columnIndex, row) => {
             console.log('Fetching options for فئة المنتج');
             return categoryOptions?.map(opt => opt.value) || [];
             
-            case 4:  // التصنيف
+        case 4:  // التصنيف
             const categoryValue = data?.[row]?.[3];
-            console.log('Current category value:', categoryValue);
-            console.log('Available classifications:', classificationOptions);
-            options = classificationOptions[categoryValue] || [];
-            console.log('Classification options for this category:', options);
-            
+            console.log(`Current category value: ${categoryValue}`);
+            if (!categoryValue) return [];
+            console.log('Fetching options for التصنيف');
+            return classificationOptions[categoryValue] || [];
             
         case 5:  // علامات تصنيف المنتج
             const catValue = data?.[row]?.[3];
-            console.log('Current category value:', catValue);
-            console.log('Available tags:', tagOptions);
-            options = tagOptions[catValue] || [];
-            console.log('Tag options for this category:', options);
-            
+            console.log(`Current category value: ${catValue}`);
+            if (!catValue) return [];
+            console.log('Fetching options for علامات تصنيف المنتج');
+            return tagOptions[catValue] || [];
             
         case 7:  // وحدة القياس
             console.log('Fetching options for وحدة القياس');
@@ -254,7 +252,6 @@ const getColumnOptions = useCallback((columnIndex, row) => {
         default:
             return [];
     }
-    
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
 
