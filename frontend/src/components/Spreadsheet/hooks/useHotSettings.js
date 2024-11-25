@@ -227,19 +227,21 @@ const getColumnOptions = useCallback((columnIndex, row) => {
             console.log('Fetching options for فئة المنتج');
             return categoryOptions?.map(opt => opt.value) || [];
             
-        case 4:  // التصنيف
+            case 4:  // التصنيف
             const categoryValue = data?.[row]?.[3];
-            console.log(`Current category value: ${categoryValue}`);
-            if (!categoryValue) return [];
-            console.log('Fetching options for التصنيف');
-            return classificationOptions[categoryValue] || [];
+            console.log('Current category value:', categoryValue);
+            console.log('Available classifications:', classificationOptions);
+            options = classificationOptions[categoryValue] || [];
+            console.log('Classification options for this category:', options);
+            
             
         case 5:  // علامات تصنيف المنتج
             const catValue = data?.[row]?.[3];
-            console.log(`Current category value: ${catValue}`);
-            if (!catValue) return [];
-            console.log('Fetching options for علامات تصنيف المنتج');
-            return tagOptions[catValue] || [];
+            console.log('Current category value:', catValue);
+            console.log('Available tags:', tagOptions);
+            options = tagOptions[catValue] || [];
+            console.log('Tag options for this category:', options);
+            
             
         case 7:  // وحدة القياس
             console.log('Fetching options for وحدة القياس');
@@ -252,6 +254,7 @@ const getColumnOptions = useCallback((columnIndex, row) => {
         default:
             return [];
     }
+    
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
 
 
@@ -282,34 +285,63 @@ useEffect(() => {
 
 
 const validateClassification = useCallback((row, value, columnIndex) => {
+    console.group(`Validating Classification - Column ${columnIndex}, Row ${row}`);
     const categoryValue = data[row][3];
-    if (!categoryValue) return false;
+    console.log('Category value:', categoryValue);
+    console.log('Attempting to validate value:', value);
     
     if (columnIndex === 4) {
-        const validOptions = classificationOptions[categoryValue]?.map(opt => opt.value) || [];
-        return validOptions.includes(value);
+        const validOptions = classificationOptions[categoryValue] || [];
+        console.log('Valid classification options:', validOptions);
+        const isValid = validOptions.includes(value);
+        console.log('Is valid classification?', isValid);
+        console.groupEnd();
+        return isValid;
     } else if (columnIndex === 5) {
-        const validOptions = tagOptions[categoryValue]?.map(opt => opt.value) || [];
-        return validOptions.includes(value);
+        const validOptions = tagOptions[categoryValue] || [];
+        console.log('Valid tag options:', validOptions);
+        const isValid = validOptions.includes(value);
+        console.log('Is valid tag?', isValid);
+        console.groupEnd();
+        return isValid;
     }
+    console.groupEnd();
     return false;
 }, [data, classificationOptions, tagOptions]);
 
 
 const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
-        return {
+        console.group(`Column Settings - Column ${columnIndex}`);
+        const settings = {
             type: 'dropdown',
             allowInvalid: false,
             source: function(query, callback) {
                 const row = this.row;
+                console.log('Getting options for dropdown:', {
+                    column: columnIndex,
+                    row: row,
+                    currentValue: this.instance.getDataAtCell(row, columnIndex)
+                });
                 const options = getColumnOptions(columnIndex, row);
+                console.log('Retrieved options:', options);
                 callback(options);
             },
             editor: 'dropdown',
-            // Use AutocompleteRenderer directly without custom renderer
-            renderer: Handsontable.renderers.AutocompleteRenderer
+            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                console.log('Rendering cell:', {
+                    row,
+                    col,
+                    value,
+                    currentData: instance.getDataAtCell(row, col)
+                });
+                Handsontable.renderers.DropdownRenderer.apply(this, arguments);
+                return td;
+            }
         };
+        console.log('Returning settings:', settings);
+        console.groupEnd();
+        return settings;
     }
     return { 
         type: 'text',
@@ -489,7 +521,32 @@ const getColumnType = useCallback((index) => {
 
 
             if (row === undefined || !data?.[row]) return;
-
+            if (prop === 4 || prop === 5) { // التصنيف or علامات تصنيف المنتج
+                console.group(`Dropdown Change - Column ${prop}, Row ${row}`);
+                console.log('Old value:', oldValue);
+                console.log('New value:', newValue);
+                console.log('Current row data:', data[row]);
+                console.log('Category value:', data[row][3]);
+                
+                if (prop === 4) {
+                    console.log('Available classifications:', classificationOptions[data[row][3]]);
+                } else {
+                    console.log('Available tags:', tagOptions[data[row][3]]);
+                }
+                
+                // Update the data
+                setData(prevData => {
+                    const updatedData = [...prevData];
+                    updatedData[row][prop] = newValue;
+                    console.log('Updated row data:', updatedData[row]);
+                    return updatedData;
+                });
+                
+                // Force rendering
+                console.log('Forcing cell render');
+                instance.render();
+                console.groupEnd();
+            }
             // Handle changes in "التصنيف" - column 4
             if (prop === 4 && newValue !== oldValue) {
                 const categoryValue = data[row][3];
