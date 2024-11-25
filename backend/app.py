@@ -1207,14 +1207,7 @@ def delete_measurement_unit(unit_id):
             'message': 'فشل في حذف وحدة القياس'
         }), 500
 
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Error deleting measurement unit: {str(e)}")
-        logger.error(traceback.format_exc())
-        return jsonify({
-            'status': 'error',
-            'message': 'فشل في حذف وحدة القياس'
-        }), 500
+    
 
 # Similar endpoints for ProductSources
 @app.route('/admin/product-sources/<int:source_id>', methods=['PUT'])
@@ -1266,17 +1259,6 @@ def delete_product_source(source_id):
     try:
         logger.info(f"Attempting to delete product source {source_id}")
         source = ProductSource.query.get_or_404(source_id)
-        
-        # Check if source is being used in any sheets
-        is_in_use = Sheet.query.filter(
-            Sheet.data.cast(String).ilike(f'%{source.name}%')
-        ).first() is not None
-        
-        if is_in_use:
-            return jsonify({
-                'status': 'error',
-                'message': 'لا يمكن حذف مصدر المنتج لأنه مستخدم في بعض الجداول'
-            }), 400
 
         db.session.delete(source)
         db.session.commit()
