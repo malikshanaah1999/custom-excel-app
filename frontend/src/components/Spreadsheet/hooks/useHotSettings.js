@@ -583,19 +583,11 @@ const getColumnType = useCallback((index) => {
             if (categoryValue) {
                 const validOptions = tagOptions[categoryValue] || [];
                 
-                // Validate selection
-                if (!validOptions.includes(newValue)) {
-                    console.log('Invalid علامات تصنيف المنتج value:', newValue);
-                    console.log('Clearing علامات تصنيف المنتج value');
-                } else {
-                    console.log('Valid علامات تصنيف المنتج value:', newValue);
-                    console.log('Setting علامات تصنيف المنتج value to:', newValue);
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        updatedData[row][5] = newValue;
-                        return updatedData;
-                    });
-                }
+                setData(prevData => {
+                    const updatedData = [...prevData];
+                    updatedData[row][5] = newValue;
+                    return updatedData;
+                });
             }
         }
         });
