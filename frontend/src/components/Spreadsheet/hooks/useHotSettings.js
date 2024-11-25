@@ -417,6 +417,7 @@ const getColumnType = useCallback((index) => {
         checkEmptyBarcode(changes);
     
         changes.forEach(([row, prop, oldValue, newValue]) => {
+            console.log(`Change in row ${row}, prop ${prop}: ${oldValue} -> ${newValue}`);
             // Auto-fill logic for "الرقم" (Number) - column 0
             if (prop === 0 && newValue !== oldValue && newValue !== '') {
                 const existingRow = data.find((r, index) =>
@@ -517,6 +518,7 @@ const getColumnType = useCallback((index) => {
                 // When "فئة المنتج" changes
                 // When "فئة المنتج" changes
                 if (prop === 3 && newValue !== oldValue) {
+                    console.log('فئة المنتج changed');
                     setData(prevData => {
                         const updatedData = [...prevData];
                         if (updatedData[row]) {
@@ -526,62 +528,66 @@ const getColumnType = useCallback((index) => {
                         return updatedData;
                     });
 
-                    // Update the dropdown options
-                    fetchDependentOptions(newValue).then(() => {
-                        // Get options for the current category
-                        const classificationOpts = classificationOptions[newValue] || [];
-                        const tagOpts = tagOptions[newValue] || [];
-                        
-                        // Set the dropdown sources
-                        instance.setCellMeta(row, 4, 'source', classificationOpts);
-                        instance.setCellMeta(row, 5, 'source', tagOpts);
+                   // Update the dropdown options
+            console.log('Fetching new options for dependent dropdowns');
+            fetchDependentOptions(newValue).then(() => {
+                // Get options for the current category
+                const classificationOpts = classificationOptions[newValue] || [];
+                const tagOpts = tagOptions[newValue] || [];
+                
+                // Set the dropdown sources
+                console.log('Updating dropdown options');
+                instance.setCellMeta(row, 4, 'source', classificationOpts);
+                instance.setCellMeta(row, 5, 'source', tagOpts);
+                instance.render();
 
-                        // Update the cell values to reflect the new options
-                        setData(prevData => {
-                            const updatedData = [...prevData];
-                            if (updatedData[row]) {
-                                updatedData[row][4] = updatedData[row][4]; // Update التصنيف value
-                                updatedData[row][5] = updatedData[row][5]; // Update علامات تصنيف المنتج value
-                            }
-                            return updatedData;
-                        });
-
-                        instance.render();
+                // Update the cell values to reflect the new options
+                console.log('Updating cell values');
+                setData(prevData => {
+                    const updatedData = [...prevData];
+                    if (updatedData[row]) {
+                        updatedData[row][4] = updatedData[row][4]; // Update التصنيف value
+                        updatedData[row][5] = updatedData[row][5]; // Update علامات تصنيف المنتج value
+                    }
+                    return updatedData;
+                });
+            });
+        }
+                 // When "التصنيف" changes
+        if (prop === 4 && newValue) {
+            const categoryValue = data[row][3];
+            if (categoryValue) {
+                const validOptions = classificationOptions[categoryValue] || [];
+                
+                // Validate selection
+                if (!validOptions.includes(newValue)) {
+                    console.log('Invalid التصنيف value:', newValue);
+                    setData(prevData => {
+                        const updatedData = [...prevData];
+                        updatedData[row][4] = '';
+                        return updatedData;
                     });
                 }
-                    // When "التصنيف" changes
-                    if (prop === 4 && newValue) {
-                        const categoryValue = data[row][3];
-                        if (categoryValue) {
-                            const validOptions = classificationOptions[categoryValue] || [];
-                            
-                            // Validate selection
-                            if (!validOptions.includes(newValue)) {
-                                setData(prevData => {
-                                    const updatedData = [...prevData];
-                                    updatedData[row][4] = '';
-                                    return updatedData;
-                                });
-                            }
-                        }
-                    }
+            }
+        }
 
-                    // Handle tags changes
-                    if (prop === 5 && newValue) {
-                        const categoryValue = data[row][3];
-                        if (categoryValue) {
-                            const validOptions = tagOptions[categoryValue] || [];
-                            
-                            // Validate selection
-                            if (!validOptions.includes(newValue)) {
-                                setData(prevData => {
-                                    const updatedData = [...prevData];
-                                    updatedData[row][5] = '';
-                                    return updatedData;
-                                });
-                            }
-                        }
-                    }
+        // Handle tags changes
+        if (prop === 5 && newValue) {
+            const categoryValue = data[row][3];
+            if (categoryValue) {
+                const validOptions = tagOptions[categoryValue] || [];
+                
+                // Validate selection
+                if (!validOptions.includes(newValue)) {
+                    console.log('Invalid علامات تصنيف المنتج value:', newValue);
+                    setData(prevData => {
+                        const updatedData = [...prevData];
+                        updatedData[row][5] = '';
+                        return updatedData;
+                    });
+                }
+            }
+        }
         });
     }, [
         data, 
