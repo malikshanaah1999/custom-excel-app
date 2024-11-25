@@ -1267,17 +1267,6 @@ def delete_product_source(source_id):
         logger.info(f"Attempting to delete product source {source_id}")
         source = ProductSource.query.get_or_404(source_id)
         
-        # Check if source is being used in any sheets
-        is_in_use = Sheet.query.filter(
-            Sheet.data.cast(String).ilike(f'%{source.name}%')
-        ).first() is not None
-        
-        if is_in_use:
-            return jsonify({
-                'status': 'error',
-                'message': 'لا يمكن حذف مصدر المنتج لأنه مستخدم في بعض الجداول'
-            }), 400
-
         db.session.delete(source)
         db.session.commit()
         logger.info(f"Successfully deleted product source {source_id}")

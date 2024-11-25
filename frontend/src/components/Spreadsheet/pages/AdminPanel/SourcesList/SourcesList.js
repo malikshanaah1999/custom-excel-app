@@ -94,7 +94,7 @@ const SourcesList = ({ showNotification, onRefresh }) => {
  
 const handleDelete = async (id) => {
   try {
-      console.log('Debug - Deleting source with ID:', id); // Add this log
+      console.log('Deleting product source:', id);
 
       const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
           method: 'DELETE',
@@ -105,8 +105,7 @@ const handleDelete = async (id) => {
 
       if (!response.ok) {
           const errorData = await response.json();
-          console.error('Delete response:', errorData); // Add this log
-          throw new Error(errorData.message || 'Failed to delete source');
+          throw new Error(errorData.message || 'Failed to delete product source');
       }
 
       showNotification('تم حذف مصدر المنتج بنجاح', 'success');
