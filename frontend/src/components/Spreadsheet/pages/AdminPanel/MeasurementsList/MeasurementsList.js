@@ -123,8 +123,8 @@ const handleEdit = async (id, data) => {
         }
 
         showNotification('تم حذف وحدة القياس بنجاح', 'success');
-        setMeasurementToDelete(null); // Fixed
-        fetchMeasurements(); // Call fetchMeasurements instead of onRefresh
+        setMeasurementToDelete(null); // This is correct - matches your state
+        fetchMeasurements(); // This is correct
     } catch (error) {
         console.error('Delete error:', error);
         showNotification('فشل في حذف وحدة القياس', 'error');
@@ -215,11 +215,11 @@ const handleEdit = async (id, data) => {
       />
 
       <DeleteConfirmModal
-        isOpen={!!measurementToDelete}
-        onClose={() => setMeasurementToDelete(null)}
-        onConfirm={() => handleDelete(measurementToDelete.id)}
-        itemName={measurementToDelete?.name}
-        itemType="وحدة القياس"
+          isOpen={!!measurementToDelete}  // or !!sourceToDelete
+          onClose={() => setMeasurementToDelete(null)}  // or setSourceToDelete(null)
+          onConfirm={() => handleDelete(measurementToDelete.id)}  // Access the id from the stored object
+          itemName={measurementToDelete?.name}
+          itemType="وحدة القياس"  // or "مصدر المنتج"
       />
     </div>
   );

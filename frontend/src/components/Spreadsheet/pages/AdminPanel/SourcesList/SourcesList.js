@@ -109,8 +109,8 @@ const handleDelete = async (id) => {
       }
 
       showNotification('تم حذف مصدر المنتج بنجاح', 'success');
-      setSourceToDelete(null);
-      fetchSources(); // Call fetchSources instead of onRefresh
+      setSourceToDelete(null); // This is correct - matches your state
+      fetchSources(); // This is correct
   } catch (error) {
       console.error('Delete error:', error);
       showNotification('فشل في حذف مصدر المنتج', 'error');
@@ -200,13 +200,13 @@ const handleDelete = async (id) => {
         validateName={validateSourceName}
       />
 
-      <DeleteConfirmModal
-        isOpen={!!sourceToDelete}
-        onClose={() => setSourceToDelete(null)}
-        onConfirm={() => handleDelete(sourceToDelete.id)}
-        itemName={sourceToDelete?.name}
-        itemType="مصدر المنتج"
-      />
+<DeleteConfirmModal
+    isOpen={!!sourceToDelete}
+    onClose={() => setSourceToDelete(null)}
+    onConfirm={() => handleDelete(sourceToDelete.id)}
+    itemName={sourceToDelete?.name}
+    itemType="مصدر المنتج"
+/>
     </div>
   );
 };
