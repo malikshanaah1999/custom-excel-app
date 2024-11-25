@@ -62,50 +62,57 @@ const SourcesList = ({ showNotification, onRefresh }) => {
 
   const handleEdit = async (id, data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (response.ok) {
-        showNotification('تم تحديث مصدر المنتج بنجاح', 'success');
-        setEditingSource(null);
-        fetchSources();
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error('Failed to update product source');
-      }
-    } catch (error) {
-      showNotification('فشل في تحديث مصدر المنتج', 'error');
-    }
-  };
-
- 
-  const handleDelete = async (id) => {
-    try {
-        // Check if product source is in use
-        const checkResponse = await fetch(`${API_BASE_URL}/admin/product-sources/${id}/check-usage`);
-        const checkData = await checkResponse.json();
-        
-        if (checkData.isInUse) {
-            showNotification('لا يمكن حذف مصدر المنتج لأنه مستخدم في بعض الجداول', 'error');
+        // First validate
+        const isValid = await validateName(data.name);
+        if (!isValid) {
+            showNotification('مصدر المنتج موجود مسبقاً', 'error');
             return;
         }
 
         const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
-            method: 'DELETE'
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
-        
-        if (response.ok) {
-            showNotification('تم حذف مصدر المنتج بنجاح', 'success');
-            setSourceToDelete(null);
-            fetchSources();
-            if (onRefresh) onRefresh();
-        } else {
-            throw new Error('Failed to delete product source');
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update product source');
         }
+
+        showNotification('تم تحديث مصدر المنتج بنجاح', 'success');
+        setEditingSource(null);
+        onRefresh();
     } catch (error) {
+        console.error('Edit error:', error);
+        showNotification('فشل في تحديث مصدر المنتج', 'error');
+    }
+};
+
+ 
+  const handleDelete = async (id) => {
+    try {
+        console.log('Deleting product source:', id);
+
+        const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete product source');
+        }
+
+        showNotification('تم حذف مصدر المنتج بنجاح', 'success');
+        setSourceToDelete(null);
+        onRefresh(); // Refresh the list
+    } catch (error) {
+        console.error('Delete error:', error);
         showNotification('فشل في حذف مصدر المنتج', 'error');
     }
 };

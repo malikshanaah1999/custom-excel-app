@@ -1139,7 +1139,164 @@ def delete_tag(tag_id):
         }), 500
 # backend/app.py
 # Add these new routes
+@app.route('/admin/measurement-units/<int:unit_id>', methods=['PUT'])
+def update_measurement_unit(unit_id):
+    try:
+        logger.info(f"Attempting to update measurement unit {unit_id}")
+        unit = MeasurementUnit.query.get_or_404(unit_id)
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'اسم وحدة القياس مطلوب'
+            }), 400
 
+        # Check if name exists for another unit
+        existing = MeasurementUnit.query.filter(
+            MeasurementUnit.name == name,
+            MeasurementUnit.id != unit_id
+        ).first()
+        
+        if existing:
+            return jsonify({
+                'status': 'error',
+                'message': 'وحدة القياس موجودة مسبقاً'
+            }), 409
+
+        unit.name = name
+        db.session.commit()
+        logger.info(f"Successfully updated measurement unit {unit_id}")
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم تحديث وحدة القياس بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating measurement unit: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في تحديث وحدة القياس'
+        }), 500
+
+@app.route('/admin/measurement-units/<int:unit_id>', methods=['DELETE'])
+def delete_measurement_unit(unit_id):
+    try:
+        logger.info(f"Attempting to delete measurement unit {unit_id}")
+        unit = MeasurementUnit.query.get_or_404(unit_id)
+        
+        # Check if unit is being used in any sheets
+        is_in_use = Sheet.query.filter(
+            Sheet.data.cast(String).ilike(f'%{unit.name}%')
+        ).first() is not None
+        
+        if is_in_use:
+            return jsonify({
+                'status': 'error',
+                'message': 'لا يمكن حذف وحدة القياس لأنها مستخدمة في بعض الجداول'
+            }), 400
+
+        db.session.delete(unit)
+        db.session.commit()
+        logger.info(f"Successfully deleted measurement unit {unit_id}")
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم حذف وحدة القياس بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting measurement unit: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في حذف وحدة القياس'
+        }), 500
+
+# Similar endpoints for ProductSources
+@app.route('/admin/product-sources/<int:source_id>', methods=['PUT'])
+def update_product_source(source_id):
+    try:
+        logger.info(f"Attempting to update product source {source_id}")
+        source = ProductSource.query.get_or_404(source_id)
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({
+                'status': 'error',
+                'message': 'اسم مصدر المنتج مطلوب'
+            }), 400
+
+        # Check if name exists for another source
+        existing = ProductSource.query.filter(
+            ProductSource.name == name,
+            ProductSource.id != source_id
+        ).first()
+        
+        if existing:
+            return jsonify({
+                'status': 'error',
+                'message': 'مصدر المنتج موجود مسبقاً'
+            }), 409
+
+        source.name = name
+        db.session.commit()
+        logger.info(f"Successfully updated product source {source_id}")
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم تحديث مصدر المنتج بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating product source: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في تحديث مصدر المنتج'
+        }), 500
+
+@app.route('/admin/product-sources/<int:source_id>', methods=['DELETE'])
+def delete_product_source(source_id):
+    try:
+        logger.info(f"Attempting to delete product source {source_id}")
+        source = ProductSource.query.get_or_404(source_id)
+        
+        # Check if source is being used in any sheets
+        is_in_use = Sheet.query.filter(
+            Sheet.data.cast(String).ilike(f'%{source.name}%')
+        ).first() is not None
+        
+        if is_in_use:
+            return jsonify({
+                'status': 'error',
+                'message': 'لا يمكن حذف مصدر المنتج لأنه مستخدم في بعض الجداول'
+            }), 400
+
+        db.session.delete(source)
+        db.session.commit()
+        logger.info(f"Successfully deleted product source {source_id}")
+
+        return jsonify({
+            'status': 'success',
+            'message': 'تم حذف مصدر المنتج بنجاح'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting product source: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في حذف مصدر المنتج'
+        }), 500
 @app.route('/admin/categories', methods=['GET'])
 def get_categories():
     try:

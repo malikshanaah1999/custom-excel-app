@@ -74,56 +74,60 @@ const handleAdd = async (data) => {
     }
 };
 
-  const handleEdit = async (id, data) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (response.ok) {
-        showNotification('تم تحديث وحدة القياس بنجاح', 'success');
-        setEditingMeasurement(null);
-        fetchMeasurements();
-        if (onRefresh) onRefresh();
-      } else {
-        throw new Error('Failed to update measurement unit');
+const handleEdit = async (id, data) => {
+  try {
+      // First validate
+      const isValid = await validateName(data.name);
+      if (!isValid) {
+          showNotification('وحدة القياس موجودة مسبقاً', 'error');
+          return;
       }
-    } catch (error) {
+
+      const response = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}`, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to update measurement unit');
+      }
+
+      showNotification('تم تحديث وحدة القياس بنجاح', 'success');
+      setEditingUnit(null);
+      onRefresh();
+  } catch (error) {
+      console.error('Edit error:', error);
       showNotification('فشل في تحديث وحدة القياس', 'error');
-    }
-  };
+  }
+};
 
   // For both MeasurementsList and SourcesList
-const handleDelete = async (id) => {
+  const handleDelete = async (id) => {
     try {
-        // First check usage
-        const checkResponse = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}/check-usage`);
-        const checkData = await checkResponse.json();
-
-        
-        
-        if (checkData.isInUse) {
-            showNotification('لا يمكن حذف وحدة القياس لأنها مستخدمة في بعض الجداول', 'error');
-            return;
-        }
+        console.log('Deleting measurement unit:', id);
 
         const response = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
-        
+
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to delete');
+            throw new Error(errorData.message || 'Failed to delete measurement unit');
         }
 
-        showNotification('تم الحذف بنجاح', 'success');
-        fetchMeasurements();
+        showNotification('تم حذف وحدة القياس بنجاح', 'success');
+        setUnitToDelete(null);
+        onRefresh(); // Refresh the list
     } catch (error) {
         console.error('Delete error:', error);
-        showNotification('فشل في عملية الحذف', 'error');
+        showNotification('فشل في حذف وحدة القياس', 'error');
     }
 };
 
