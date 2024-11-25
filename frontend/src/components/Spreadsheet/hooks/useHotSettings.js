@@ -564,7 +564,15 @@ const getColumnType = useCallback((index) => {
                         // Validate selection
                         if (!validOptions.includes(newValue)) {
                             console.log('Invalid التصنيف value:', newValue);
-                            console.log('Clearing التصنيف value');
+                            console.log('Setting التصنيف value to:', newValue);
+                            setData(prevData => {
+                                const updatedData = [...prevData];
+                                updatedData[row][4] = newValue;
+                                return updatedData;
+                            });
+                        } else {
+                            console.log('Valid التصنيف value:', newValue);
+                            console.log('Setting التصنيف value to:', newValue);
                             setData(prevData => {
                                 const updatedData = [...prevData];
                                 updatedData[row][4] = newValue;
@@ -575,23 +583,32 @@ const getColumnType = useCallback((index) => {
                 }
 
         // Handle tags changes
-        if (prop === 5 && newValue) {
-            const categoryValue = data[row][3];
-            if (categoryValue) {
-                const validOptions = tagOptions[categoryValue] || [];
-                
-                // Validate selection
-                if (!validOptions.includes(newValue)) {
-                    console.log('Invalid علامات تصنيف المنتج value:', newValue);
-                    console.log('Clearing علامات تصنيف المنتج value');
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        updatedData[row][5] = newValue;
-                        return updatedData;
-                    });
-                }
-            }
+        // Handle tags changes
+if (prop === 5 && newValue) {
+    const categoryValue = data[row][3];
+    if (categoryValue) {
+        const validOptions = tagOptions[categoryValue] || [];
+        
+        // Validate selection
+        if (!validOptions.includes(newValue)) {
+            console.log('Invalid علامات تصنيف المنتج value:', newValue);
+            console.log('Setting علامات تصنيف المنتج value to:', newValue);
+            setData(prevData => {
+                const updatedData = [...prevData];
+                updatedData[row][5] = newValue;
+                return updatedData;
+            });
+        } else {
+            console.log('Valid علامات تصنيف المنتج value:', newValue);
+            console.log('Setting علامات تصنيف المنتج value to:', newValue);
+            setData(prevData => {
+                const updatedData = [...prevData];
+                updatedData[row][5] = newValue;
+                return updatedData;
+            });
         }
+    }
+}
         });
     }, [
         data, 
