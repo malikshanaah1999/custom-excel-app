@@ -472,6 +472,8 @@ const getColumnType = useCallback((index) => {
                     instance.selectCell(row, 12);
                 }, 0);
             }
+
+
             if (prop === 3) { // If فئة المنتج changed
                 // Clear dependent fields
                 setData(prevData => {
@@ -488,6 +490,8 @@ const getColumnType = useCallback((index) => {
                     fetchDependentOptions(newValue);
                 }
             }
+
+
             // Handle classification changes
         if (prop === 4) { // If التصنيف changed
             setData(prevData => {
@@ -498,9 +502,18 @@ const getColumnType = useCallback((index) => {
                 return newData;
             });
         }
-        if ([3, 4, 5].includes(Number(prop))) {
-            this.setDataAtCell(row, prop, newValue);
-        }
+
+
+
+       // if ([3, 4, 5].includes(Number(prop))) {
+        //    this.setDataAtCell(row, prop, newValue);
+       // }
+
+
+
+
+
+
             // Mutual fill for category and POS Cat - columns 3 and 15
             if ((prop === 3 || prop === 15) && newValue !== oldValue) {
                 setData(prevData => {
