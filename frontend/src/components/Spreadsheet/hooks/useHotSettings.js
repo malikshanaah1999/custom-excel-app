@@ -221,24 +221,32 @@ useEffect(() => {
 
 
 const getColumnOptions = useCallback((columnIndex, row) => {
+    console.log(`Getting options for column ${columnIndex}, row ${row}`);
     switch(columnIndex) {
         case 3:  // فئة المنتج
+            console.log('Fetching options for فئة المنتج');
             return categoryOptions?.map(opt => opt.value) || [];
             
         case 4:  // التصنيف
             const categoryValue = data?.[row]?.[3];
+            console.log(`Current category value: ${categoryValue}`);
             if (!categoryValue) return [];
+            console.log('Fetching options for التصنيف');
             return classificationOptions[categoryValue] || [];
             
         case 5:  // علامات تصنيف المنتج
             const catValue = data?.[row]?.[3];
+            console.log(`Current category value: ${catValue}`);
             if (!catValue) return [];
+            console.log('Fetching options for علامات تصنيف المنتج');
             return tagOptions[catValue] || [];
             
         case 7:  // وحدة القياس
+            console.log('Fetching options for وحدة القياس');
             return measurementUnitOptions?.map(opt => opt.value) || [];
             
         case 9:  // مصدر المنتج
+            console.log('Fetching options for مصدر المنتج');
             return sourceOptions?.map(opt => opt.value) || [];
             
         default:
@@ -404,7 +412,7 @@ const getColumnType = useCallback((index) => {
     
         // Store reference to Handsontable instance
         const instance = this;
-    
+        console.log('Changes:', changes);
         // Check for empty barcode after any change
         checkEmptyBarcode(changes);
     
@@ -506,6 +514,8 @@ const getColumnType = useCallback((index) => {
             }
     
                 // When "فئة المنتج" changes
+                // When "فئة المنتج" changes
+                // When "فئة المنتج" changes
                 if (prop === 3 && newValue !== oldValue) {
                     setData(prevData => {
                         const updatedData = [...prevData];
@@ -515,20 +525,29 @@ const getColumnType = useCallback((index) => {
                         }
                         return updatedData;
                     });
-        
-                    // This is key - setting the cell metadata for dropdowns
-                    if (instance) {
-                        fetchDependentOptions(newValue).then(() => {
-                            // Get options for the current category
-                            const classificationOpts = classificationOptions[newValue] || [];
-                            const tagOpts = tagOptions[newValue] || [];
-                            
-                            // Set the dropdown sources
-                            instance.setCellMeta(row, 4, 'source', classificationOpts);
-                            instance.setCellMeta(row, 5, 'source', tagOpts);
-                            instance.render();
+
+                    // Update the dropdown options
+                    fetchDependentOptions(newValue).then(() => {
+                        // Get options for the current category
+                        const classificationOpts = classificationOptions[newValue] || [];
+                        const tagOpts = tagOptions[newValue] || [];
+                        
+                        // Set the dropdown sources
+                        instance.setCellMeta(row, 4, 'source', classificationOpts);
+                        instance.setCellMeta(row, 5, 'source', tagOpts);
+
+                        // Update the cell values to reflect the new options
+                        setData(prevData => {
+                            const updatedData = [...prevData];
+                            if (updatedData[row]) {
+                                updatedData[row][4] = updatedData[row][4]; // Update التصنيف value
+                                updatedData[row][5] = updatedData[row][5]; // Update علامات تصنيف المنتج value
+                            }
+                            return updatedData;
                         });
-                    }
+
+                        instance.render();
+                    });
                 }
                     // When "التصنيف" changes
                     if (prop === 4 && newValue) {
