@@ -515,7 +515,7 @@ const getColumnType = useCallback((index) => {
                         }
                         return updatedData;
                     });
-
+        
                     // This is key - setting the cell metadata for dropdowns
                     if (instance) {
                         fetchDependentOptions(newValue).then(() => {
@@ -530,7 +530,6 @@ const getColumnType = useCallback((index) => {
                         });
                     }
                 }
-
                     // When "التصنيف" changes
                     if (prop === 4 && newValue) {
                         const categoryValue = data[row][3];
