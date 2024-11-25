@@ -446,6 +446,8 @@ const getColumnType = useCallback((index) => {
                 // Handle mutual updates for shared "الرقم" rows
                 updateSharedNumberRows(row, prop, newValue);
             }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
     
             // Mutual fill for "وحدة القياس" and "قياس التعبئة" - columns 7 and 8
             if ((prop === 7 || prop === 8) && newValue !== oldValue) {
@@ -472,6 +474,8 @@ const getColumnType = useCallback((index) => {
                     instance.selectCell(row, 12);
                 }, 0);
             }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
             
             // Mutual fill for category and POS Cat - columns 3 and 15
             if ((prop === 3 || prop === 15) && newValue !== oldValue) {
@@ -486,12 +490,11 @@ const getColumnType = useCallback((index) => {
                 });
             }
 
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
             if (row === undefined || !data?.[row]) return;
 
-
-
-    
             // Handle changes in "التصنيف" - column 4
             if (prop === 4 && newValue !== oldValue) {
                 fetchDependentOptions(newValue);
@@ -504,65 +507,65 @@ const getColumnType = useCallback((index) => {
                 });
             }
     
-           // When "فئة المنتج" changes
-        if (prop === 3 && newValue !== oldValue) {
-            setData(prevData => {
-                const updatedData = [...prevData];
-                if (updatedData[row]) {
-                    updatedData[row][4] = ''; // Clear التصنيف value
-                    updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
-                }
-                return updatedData;
-            });
-
-            // This is key - setting the cell metadata for dropdowns
-            if (instance) {
-                fetchDependentOptions(newValue).then(() => {
-                    // Get options for the current category
-                    const classificationOpts = classificationOptions[newValue] || [];
-                    const tagOpts = tagOptions[newValue] || [];
-                    
-                    // Set the dropdown sources
-                    instance.setCellMeta(row, 4, 'source', classificationOpts);
-                    instance.setCellMeta(row, 5, 'source', tagOpts);
-                    instance.render();
-                });
-            }
-        }
-
-        // When "التصنيف" changes
-        if (prop === 4 && newValue) {
-            const categoryValue = data[row][3];
-            if (categoryValue) {
-                const validOptions = classificationOptions[categoryValue] || [];
-                
-                // Validate selection
-                if (!validOptions.includes(newValue)) {
+                // When "فئة المنتج" changes
+                if (prop === 3 && newValue !== oldValue) {
                     setData(prevData => {
                         const updatedData = [...prevData];
-                        updatedData[row][4] = '';
+                        if (updatedData[row]) {
+                            updatedData[row][4] = ''; // Clear التصنيف value
+                            updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
+                        }
                         return updatedData;
                     });
-                }
-            }
-        }
 
-        // Handle tags changes
-        if (prop === 5 && newValue) {
-            const categoryValue = data[row][3];
-            if (categoryValue) {
-                const validOptions = tagOptions[categoryValue] || [];
-                
-                // Validate selection
-                if (!validOptions.includes(newValue)) {
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        updatedData[row][5] = '';
-                        return updatedData;
-                    });
+                    // This is key - setting the cell metadata for dropdowns
+                    if (instance) {
+                        fetchDependentOptions(newValue).then(() => {
+                            // Get options for the current category
+                            const classificationOpts = classificationOptions[newValue] || [];
+                            const tagOpts = tagOptions[newValue] || [];
+                            
+                            // Set the dropdown sources
+                            instance.setCellMeta(row, 4, 'source', classificationOpts);
+                            instance.setCellMeta(row, 5, 'source', tagOpts);
+                            instance.render();
+                        });
+                    }
                 }
-            }
-        }
+
+                    // When "التصنيف" changes
+                    if (prop === 4 && newValue) {
+                        const categoryValue = data[row][3];
+                        if (categoryValue) {
+                            const validOptions = classificationOptions[categoryValue] || [];
+                            
+                            // Validate selection
+                            if (!validOptions.includes(newValue)) {
+                                setData(prevData => {
+                                    const updatedData = [...prevData];
+                                    //updatedData[row][4] = '';
+                                    return updatedData;
+                                });
+                            }
+                        }
+                    }
+
+                    // Handle tags changes
+                    if (prop === 5 && newValue) {
+                        const categoryValue = data[row][3];
+                        if (categoryValue) {
+                            const validOptions = tagOptions[categoryValue] || [];
+                            
+                            // Validate selection
+                            if (!validOptions.includes(newValue)) {
+                                setData(prevData => {
+                                    const updatedData = [...prevData];
+                                    //updatedData[row][5] = '';
+                                    return updatedData;
+                                });
+                            }
+                        }
+                    }
         });
     }, [
         data, 
