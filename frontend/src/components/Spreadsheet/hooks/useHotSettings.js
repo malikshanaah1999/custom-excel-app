@@ -223,7 +223,7 @@ useEffect(() => {
 const getColumnOptions = useCallback((columnIndex, row) => {
     switch(columnIndex) {
         case 3:  // فئة المنتج
-            return categoryOptions || [];
+            return categoryOptions?.map(opt => opt.value) || [];
             
         case 4:  // التصنيف
             const categoryValue = data?.[row]?.[3];
@@ -236,16 +236,15 @@ const getColumnOptions = useCallback((columnIndex, row) => {
             return tagOptions[catValue] || [];
             
         case 7:  // وحدة القياس
-            return measurementUnitOptions || [];
+            return measurementUnitOptions?.map(opt => opt.value) || [];
             
         case 9:  // مصدر المنتج
-            return sourceOptions || [];
+            return sourceOptions?.map(opt => opt.value) || [];
             
         default:
             return [];
     }
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
-
 
 
 
@@ -279,17 +278,14 @@ const validateClassification = useCallback((row, value, columnIndex) => {
     if (!categoryValue) return false;
     
     if (columnIndex === 4) {
-        // classificationOptions[categoryValue] is already an array of strings
-        const validOptions = classificationOptions[categoryValue] || [];
+        const validOptions = classificationOptions[categoryValue]?.map(opt => opt.value) || [];
         return validOptions.includes(value);
     } else if (columnIndex === 5) {
-        // tagOptions[categoryValue] is already an array of strings
-        const validOptions = tagOptions[categoryValue] || [];
+        const validOptions = tagOptions[categoryValue]?.map(opt => opt.value) || [];
         return validOptions.includes(value);
     }
     return false;
 }, [data, classificationOptions, tagOptions]);
-
 
 
 // Update getColumnSettings
@@ -305,17 +301,19 @@ const getColumnSettings = useCallback((columnIndex) => {
             },
             editor: 'dropdown',
             renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                if ((col === 4 || col === 5)) {
+                Handsontable.renderers.DropdownRenderer.apply(this, arguments);
+                
+                // Handle dependent dropdowns (التصنيفات and علامات التصنيف)
+                if ((col === 4 || col === 5) && data[row]) {
                     const categoryValue = data[row][3]; // فئة المنتج value
                     if (!categoryValue) {
-                        Handsontable.renderers.TextRenderer.apply(this, arguments);
+                        td.innerHTML = '';
                         return td;
                     }
                 }
-                Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
+                
                 return td;
             }
-            
         };
     }
     return { 
