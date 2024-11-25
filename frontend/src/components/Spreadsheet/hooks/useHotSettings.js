@@ -514,21 +514,20 @@ const getColumnType = useCallback((index) => {
                 });
             }
     
-                // When "فئة المنتج" changes
-                // When "فئة المنتج" changes
-                // When "فئة المنتج" changes
-                if (prop === 3 && newValue !== oldValue) {
-                    console.log('فئة المنتج changed');
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        if (updatedData[row]) {
-                            updatedData[row][4] = ''; // Clear التصنيف value
-                            updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
-                        }
-                        return updatedData;
-                    });
+              // When "فئة المنتج" changes
+        if (prop === 3 && newValue !== oldValue) {
+            console.log('فئة المنتج changed');
+            setData(prevData => {
+                const updatedData = [...prevData];
+                if (updatedData[row]) {
+                    console.log('Clearing التصنيف and علامات تصنيف المنتج values');
+                    updatedData[row][4] = ''; // Clear التصنيف value
+                    updatedData[row][5] = ''; // Clear علامات تصنيف المنتج value
+                }
+                return updatedData;
+            });
 
-                   // Update the dropdown options
+            // Update the dropdown options
             console.log('Fetching new options for dependent dropdowns');
             fetchDependentOptions(newValue).then(() => {
                 // Get options for the current category
@@ -546,6 +545,8 @@ const getColumnType = useCallback((index) => {
                 setData(prevData => {
                     const updatedData = [...prevData];
                     if (updatedData[row]) {
+                        console.log('Updating التصنيف value to:', updatedData[row][4]);
+                        console.log('Updating علامات تصنيف المنتج value to:', updatedData[row][5]);
                         updatedData[row][4] = updatedData[row][4]; // Update التصنيف value
                         updatedData[row][5] = updatedData[row][5]; // Update علامات تصنيف المنتج value
                     }
@@ -554,22 +555,23 @@ const getColumnType = useCallback((index) => {
             });
         }
                  // When "التصنيف" changes
-        if (prop === 4 && newValue) {
-            const categoryValue = data[row][3];
-            if (categoryValue) {
-                const validOptions = classificationOptions[categoryValue] || [];
-                
-                // Validate selection
-                if (!validOptions.includes(newValue)) {
-                    console.log('Invalid التصنيف value:', newValue);
-                    setData(prevData => {
-                        const updatedData = [...prevData];
-                        updatedData[row][4] = '';
-                        return updatedData;
-                    });
+                 if (prop === 4 && newValue) {
+                    const categoryValue = data[row][3];
+                    if (categoryValue) {
+                        const validOptions = classificationOptions[categoryValue] || [];
+                        
+                        // Validate selection
+                        if (!validOptions.includes(newValue)) {
+                            console.log('Invalid التصنيف value:', newValue);
+                            console.log('Clearing التصنيف value');
+                            setData(prevData => {
+                                const updatedData = [...prevData];
+                                updatedData[row][4] = '';
+                                return updatedData;
+                            });
+                        }
+                    }
                 }
-            }
-        }
 
         // Handle tags changes
         if (prop === 5 && newValue) {
@@ -580,6 +582,7 @@ const getColumnType = useCallback((index) => {
                 // Validate selection
                 if (!validOptions.includes(newValue)) {
                     console.log('Invalid علامات تصنيف المنتج value:', newValue);
+                    console.log('Clearing علامات تصنيف المنتج value');
                     setData(prevData => {
                         const updatedData = [...prevData];
                         updatedData[row][5] = '';
