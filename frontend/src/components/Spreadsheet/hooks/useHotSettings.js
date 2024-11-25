@@ -543,7 +543,7 @@ const getColumnType = useCallback((index) => {
                             if (!validOptions.includes(newValue)) {
                                 setData(prevData => {
                                     const updatedData = [...prevData];
-                                    //updatedData[row][4] = '';
+                                    updatedData[row][4] = '';
                                     return updatedData;
                                 });
                             }
@@ -560,7 +560,7 @@ const getColumnType = useCallback((index) => {
                             if (!validOptions.includes(newValue)) {
                                 setData(prevData => {
                                     const updatedData = [...prevData];
-                                    //updatedData[row][5] = '';
+                                    updatedData[row][5] = '';
                                     return updatedData;
                                 });
                             }
@@ -570,6 +570,8 @@ const getColumnType = useCallback((index) => {
     }, [
         data, 
         setData, 
+        classificationOptions,
+        tagOptions,
         fetchDependentOptions, 
         checkEmptyBarcode, 
         ensureDefaultValues, 
