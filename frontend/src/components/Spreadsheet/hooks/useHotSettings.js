@@ -540,13 +540,13 @@ const getColumnType = useCallback((index) => {
                             const validOptions = classificationOptions[categoryValue] || [];
                             
                             // Validate selection
-                            if (!validOptions.includes(newValue)) {
+                          ///  if (!validOptions.includes(newValue)) {
                                 setData(prevData => {
                                     const updatedData = [...prevData];
                                     updatedData[row][4] = '';
                                     return updatedData;
                                 });
-                            }
+                          //  }
                         }
                     }
 
@@ -557,14 +557,14 @@ const getColumnType = useCallback((index) => {
                             const validOptions = tagOptions[categoryValue] || [];
                             
                             // Validate selection
-                            if (!validOptions.includes(newValue)) {
+                          //  if (!validOptions.includes(newValue)) {
                                 setData(prevData => {
                                     const updatedData = [...prevData];
                                     updatedData[row][5] = '';
                                     return updatedData;
                                 });
                             }
-                        }
+                       // }
                     }
         });
     }, [
