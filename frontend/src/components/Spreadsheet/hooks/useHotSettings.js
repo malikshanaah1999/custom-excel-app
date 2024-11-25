@@ -472,7 +472,7 @@ const getColumnType = useCallback((index) => {
                     instance.selectCell(row, 12);
                 }, 0);
             }
-
+/*
 
             if (prop === 3) { // If فئة المنتج changed
                 // Clear dependent fields
@@ -503,11 +503,11 @@ const getColumnType = useCallback((index) => {
             });
         }
 
+*/
 
-
-       // if ([3, 4, 5].includes(Number(prop))) {
-        //    this.setDataAtCell(row, prop, newValue);
-       // }
+        if ([3, 4, 5].includes(Number(prop))) {
+            this.setDataAtCell(row, prop, newValue);
+        }
 
 
 
