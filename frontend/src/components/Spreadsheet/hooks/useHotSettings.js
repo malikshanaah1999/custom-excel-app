@@ -220,11 +220,10 @@ useEffect(() => {
 
 
 
-// src/hooks/useHotSettings.js
 const getColumnOptions = useCallback((columnIndex, row) => {
     switch(columnIndex) {
         case 3:  // فئة المنتج
-            return categoryOptions?.map(opt => opt.value) || [];
+            return categoryOptions || [];
             
         case 4:  // التصنيف
             const categoryValue = data?.[row]?.[3];
@@ -237,15 +236,17 @@ const getColumnOptions = useCallback((columnIndex, row) => {
             return tagOptions[catValue] || [];
             
         case 7:  // وحدة القياس
-            return measurementUnitOptions?.map(opt => opt.value) || [];
+            return measurementUnitOptions || [];
             
         case 9:  // مصدر المنتج
-            return sourceOptions?.map(opt => opt.value) || [];
+            return sourceOptions || [];
             
         default:
             return [];
     }
 }, [data, categoryOptions, classificationOptions, tagOptions, measurementUnitOptions, sourceOptions]);
+
+
 
 
 // Add effect to refresh options periodically
@@ -273,22 +274,23 @@ useEffect(() => {
 }, [data, fetchDependentOptions]);
 
 
-
-
-// Update validateClassification
 const validateClassification = useCallback((row, value, columnIndex) => {
     const categoryValue = data[row][3];
     if (!categoryValue) return false;
     
     if (columnIndex === 4) {
-        const validOptions = classificationOptions[categoryValue]?.map(opt => opt.value) || [];
+        // classificationOptions[categoryValue] is already an array of strings
+        const validOptions = classificationOptions[categoryValue] || [];
         return validOptions.includes(value);
     } else if (columnIndex === 5) {
-        const validOptions = tagOptions[categoryValue]?.map(opt => opt.value) || [];
+        // tagOptions[categoryValue] is already an array of strings
+        const validOptions = tagOptions[categoryValue] || [];
         return validOptions.includes(value);
     }
     return false;
 }, [data, classificationOptions, tagOptions]);
+
+
 
 // Update getColumnSettings
 const getColumnSettings = useCallback((columnIndex) => {
@@ -303,19 +305,17 @@ const getColumnSettings = useCallback((columnIndex) => {
             },
             editor: 'dropdown',
             renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                Handsontable.renderers.DropdownRenderer.apply(this, arguments);
-                
-                // Handle dependent dropdowns (التصنيفات and علامات التصنيف)
-                if ((col === 4 || col === 5) && data[row]) {
+                if ((col === 4 || col === 5)) {
                     const categoryValue = data[row][3]; // فئة المنتج value
                     if (!categoryValue) {
-                        td.innerHTML = '';
+                        Handsontable.renderers.TextRenderer.apply(this, arguments);
                         return td;
                     }
                 }
-                
+                Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
                 return td;
             }
+            
         };
     }
     return { 
@@ -540,13 +540,13 @@ const getColumnType = useCallback((index) => {
                             const validOptions = classificationOptions[categoryValue] || [];
                             
                             // Validate selection
-                          ///  if (!validOptions.includes(newValue)) {
+                            if (!validOptions.includes(newValue)) {
                                 setData(prevData => {
                                     const updatedData = [...prevData];
                                     updatedData[row][4] = '';
                                     return updatedData;
                                 });
-                          //  }
+                            }
                         }
                     }
 
@@ -557,14 +557,14 @@ const getColumnType = useCallback((index) => {
                             const validOptions = tagOptions[categoryValue] || [];
                             
                             // Validate selection
-                          //  if (!validOptions.includes(newValue)) {
+                            if (!validOptions.includes(newValue)) {
                                 setData(prevData => {
                                     const updatedData = [...prevData];
                                     updatedData[row][5] = '';
                                     return updatedData;
                                 });
                             }
-                       // }
+                        }
                     }
         });
     }, [
