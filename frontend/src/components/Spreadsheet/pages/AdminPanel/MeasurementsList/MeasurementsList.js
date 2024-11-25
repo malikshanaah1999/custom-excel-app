@@ -77,7 +77,7 @@ const handleAdd = async (data) => {
 const handleEdit = async (id, data) => {
   try {
       // First validate
-      const isValid = await validateName(data.name);
+      const isValid = await validateMeasurementName(data.name); // Fixed
       if (!isValid) {
           showNotification('وحدة القياس موجودة مسبقاً', 'error');
           return;
@@ -97,8 +97,8 @@ const handleEdit = async (id, data) => {
       }
 
       showNotification('تم تحديث وحدة القياس بنجاح', 'success');
-      setEditingUnit(null);
-      onRefresh();
+      setEditingMeasurement(null); // Fixed
+      fetchMeasurements(); // Call fetchMeasurements instead of onRefresh
   } catch (error) {
       console.error('Edit error:', error);
       showNotification('فشل في تحديث وحدة القياس', 'error');
@@ -123,8 +123,8 @@ const handleEdit = async (id, data) => {
         }
 
         showNotification('تم حذف وحدة القياس بنجاح', 'success');
-        setUnitToDelete(null);
-        onRefresh(); // Refresh the list
+        setMeasurementToDelete(null); // Fixed
+        fetchMeasurements(); // Call fetchMeasurements instead of onRefresh
     } catch (error) {
         console.error('Delete error:', error);
         showNotification('فشل في حذف وحدة القياس', 'error');

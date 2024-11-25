@@ -63,7 +63,7 @@ const SourcesList = ({ showNotification, onRefresh }) => {
   const handleEdit = async (id, data) => {
     try {
         // First validate
-        const isValid = await validateName(data.name);
+        const isValid = await validateSourceName(data.name); // Fixed
         if (!isValid) {
             showNotification('مصدر المنتج موجود مسبقاً', 'error');
             return;
@@ -84,7 +84,7 @@ const SourcesList = ({ showNotification, onRefresh }) => {
 
         showNotification('تم تحديث مصدر المنتج بنجاح', 'success');
         setEditingSource(null);
-        onRefresh();
+        fetchSources(); // Call fetchSources instead of onRefresh
     } catch (error) {
         console.error('Edit error:', error);
         showNotification('فشل في تحديث مصدر المنتج', 'error');
@@ -92,29 +92,29 @@ const SourcesList = ({ showNotification, onRefresh }) => {
 };
 
  
-  const handleDelete = async (id) => {
-    try {
-        console.log('Deleting product source:', id);
+const handleDelete = async (id) => {
+  try {
+      console.log('Deleting product source:', id);
 
-        const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+      const response = await fetch(`${API_BASE_URL}/admin/product-sources/${id}`, {
+          method: 'DELETE',
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to delete product source');
-        }
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete product source');
+      }
 
-        showNotification('تم حذف مصدر المنتج بنجاح', 'success');
-        setSourceToDelete(null);
-        onRefresh(); // Refresh the list
-    } catch (error) {
-        console.error('Delete error:', error);
-        showNotification('فشل في حذف مصدر المنتج', 'error');
-    }
+      showNotification('تم حذف مصدر المنتج بنجاح', 'success');
+      setSourceToDelete(null);
+      fetchSources(); // Call fetchSources instead of onRefresh
+  } catch (error) {
+      console.error('Delete error:', error);
+      showNotification('فشل في حذف مصدر المنتج', 'error');
+  }
 };
 
   const validateSourceName = async (name) => {
