@@ -296,7 +296,6 @@ const validateClassification = useCallback((row, value, columnIndex) => {
 }, [data, classificationOptions, tagOptions]);
 
 
-// Update getColumnSettings
 const getColumnSettings = useCallback((columnIndex) => {
     if (COLUMN_CATEGORIES[columnIndex]) {
         return {
@@ -308,27 +307,15 @@ const getColumnSettings = useCallback((columnIndex) => {
                 callback(options);
             },
             editor: 'dropdown',
-            renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                Handsontable.renderers.DropdownRenderer.apply(this, arguments);
-                
-                // Handle dependent dropdowns (التصنيفات and علامات التصنيف)
-                if ((col === 4 || col === 5) && data[row]) {
-                    const categoryValue = data[row][3]; // فئة المنتج value
-                    if (!categoryValue) {
-                        td.innerHTML = '';
-                        return td;
-                    }
-                }
-                
-                return td;
-            }
+            // Use AutocompleteRenderer directly without custom renderer
+            renderer: Handsontable.renderers.AutocompleteRenderer
         };
     }
     return { 
         type: 'text',
         editor: 'text'
     };
-}, [data, getColumnOptions]);
+}, [getColumnOptions]);
 
 
 
@@ -505,14 +492,18 @@ const getColumnType = useCallback((index) => {
 
             // Handle changes in "التصنيف" - column 4
             if (prop === 4 && newValue !== oldValue) {
-                fetchDependentOptions(newValue);
-                setData(prevData => {
-                    const updatedData = [...prevData];
-                    if (updatedData[row]) {
-                        updatedData[row][5] = ''; // Clear علامات تصنيف المنتج (Tags)
-                    }
-                    return updatedData;
-                });
+                const categoryValue = data[row][3];
+                if (categoryValue) {
+                    // Update the data immediately
+                    setData(prevData => {
+                        const updatedData = [...prevData];
+                        updatedData[row][4] = newValue;
+                        return updatedData;
+                    });
+                    
+                    // Force render the cell
+                    instance.render();
+                }
             }
     
               // When "فئة المنتج" changes
@@ -578,16 +569,18 @@ const getColumnType = useCallback((index) => {
                 }
 
         // Handle tags changes
-        if (prop === 5 && newValue) {
+        if (prop === 5 && newValue !== oldValue) {
             const categoryValue = data[row][3];
             if (categoryValue) {
-                const validOptions = tagOptions[categoryValue] || [];
-                
+                // Update the data immediately
                 setData(prevData => {
                     const updatedData = [...prevData];
                     updatedData[row][5] = newValue;
                     return updatedData;
                 });
+                
+                // Force render the cell
+                instance.render();
             }
         }
         });
@@ -629,8 +622,11 @@ const getColumnType = useCallback((index) => {
             type: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
             editor: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
             ...getColumnSettings(index),
-            ...([3, 4, 5, 7, 9].includes(index) ? 
-                { renderer: Handsontable.renderers.AutocompleteRenderer } : {}),
+            ...(index === 4 || index === 5 ? {
+                // Specific settings for classification and tags
+                allowInvalid: false,
+                strict: true,
+            } : {}),
         })),
         
         
