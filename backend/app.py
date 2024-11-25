@@ -1189,17 +1189,6 @@ def delete_measurement_unit(unit_id):
         logger.info(f"Attempting to delete measurement unit {unit_id}")
         unit = MeasurementUnit.query.get_or_404(unit_id)
         
-        # Check if unit is being used in any sheets
-        is_in_use = Sheet.query.filter(
-            Sheet.data.cast(String).ilike(f'%{unit.name}%')
-        ).first() is not None
-        
-        if is_in_use:
-            return jsonify({
-                'status': 'error',
-                'message': 'لا يمكن حذف وحدة القياس لأنها مستخدمة في بعض الجداول'
-            }), 400
-
         db.session.delete(unit)
         db.session.commit()
         logger.info(f"Successfully deleted measurement unit {unit_id}")
@@ -1208,6 +1197,15 @@ def delete_measurement_unit(unit_id):
             'status': 'success',
             'message': 'تم حذف وحدة القياس بنجاح'
         })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting measurement unit: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': 'فشل في حذف وحدة القياس'
+        }), 500
 
     except Exception as e:
         db.session.rollback()

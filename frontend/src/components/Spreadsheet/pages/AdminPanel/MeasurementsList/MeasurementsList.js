@@ -108,7 +108,7 @@ const handleEdit = async (id, data) => {
   // For both MeasurementsList and SourcesList
   const handleDelete = async (id) => {
     try {
-        console.log('Deleting measurement unit:', id);
+        console.log('Debug - Deleting measurement with ID:', id); // Add this log
 
         const response = await fetch(`${API_BASE_URL}/admin/measurement-units/${id}`, {
             method: 'DELETE',
@@ -119,12 +119,13 @@ const handleEdit = async (id, data) => {
 
         if (!response.ok) {
             const errorData = await response.json();
+            console.error('Delete response:', errorData); // Add this log
             throw new Error(errorData.message || 'Failed to delete measurement unit');
         }
 
         showNotification('تم حذف وحدة القياس بنجاح', 'success');
-        setMeasurementToDelete(null); // This is correct - matches your state
-        fetchMeasurements(); // This is correct
+        setMeasurementToDelete(null);
+        fetchMeasurements();
     } catch (error) {
         console.error('Delete error:', error);
         showNotification('فشل في حذف وحدة القياس', 'error');
