@@ -75,32 +75,30 @@ const ClassificationsList = ({
     }
 };
 
-  const handleDelete = async (id) => {
-    try {
-      // First check if classification is being used
-      const checkResponse = await fetch(`${API_BASE_URL}/admin/classifications/${id}/check-usage`);
-      const checkData = await checkResponse.json();
-      
-      if (checkData.isInUse) {
-        showNotification('لا يمكن حذف التصنيف لأنه مستخدم في بعض الجداول', 'error');
-        return;
-      }
+const handleDelete = async (id) => {
+  try {
+      console.log('Deleting classification:', id);
 
       const response = await fetch(`${API_BASE_URL}/admin/classifications/${id}`, {
-        method: 'DELETE'
+          method: 'DELETE',
+          headers: {
+              'Content-Type': 'application/json'
+          }
       });
-      
-      if (response.ok) {
-        showNotification('تم حذف التصنيف بنجاح', 'success');
-        setClassificationToDelete(null);
-        onRefresh(); // Refresh the list
-      } else {
-        throw new Error('Failed to delete classification');
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete classification');
       }
-    } catch (error) {
+
+      showNotification('تم حذف التصنيف بنجاح', 'success');
+      setClassificationToDelete(null);
+      onRefresh(); // Refresh the list
+  } catch (error) {
+      console.error('Delete error:', error);
       showNotification('فشل في حذف التصنيف', 'error');
-    }
-  };
+  }
+};
   const validateClassificationName = async (name) => {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/classifications/validate`, {

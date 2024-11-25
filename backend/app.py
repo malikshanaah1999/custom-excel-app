@@ -933,21 +933,12 @@ def update_classification(classification_id):
 @app.route('/admin/classifications/<int:classification_id>', methods=['DELETE'])
 def delete_classification(classification_id):
     try:
+        logger.info(f"Attempting to delete classification {classification_id}")
         classification = Classification.query.get_or_404(classification_id)
         
-        # Check if classification is being used in any sheets
-        sheet_usage = Sheet.query.filter(
-            Sheet.data.cast(String).like(f'%{classification.name}%')
-        ).first()
-        
-        if sheet_usage:
-            return jsonify({
-                'status': 'error',
-                'message': 'لا يمكن حذف التصنيف لأنه مستخدم في بعض الجداول'
-            }), 400
-
         db.session.delete(classification)
         db.session.commit()
+        logger.info(f"Successfully deleted classification {classification_id}")
 
         return jsonify({
             'status': 'success',
@@ -957,6 +948,7 @@ def delete_classification(classification_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error deleting classification: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({
             'status': 'error',
             'message': 'فشل في حذف التصنيف'
@@ -1079,35 +1071,45 @@ def validate_tag():
 def check_classification_usage(classification_id):
     try:
         classification = Classification.query.get_or_404(classification_id)
+        from sqlalchemy import cast, String
+        
         # Check if classification is used in any sheets
         is_in_use = Sheet.query.filter(
-            Sheet.data.cast(String).ilike(f'%{classification.name}%')
+            cast(Sheet.data, String).ilike(f'%{classification.name}%')
         ).first() is not None
+        
+        logger.info(f"Checking usage for classification {classification.name} (ID: {classification_id}): {is_in_use}")
         
         return jsonify({
             'isInUse': is_in_use
         })
     except Exception as e:
         logger.error(f"Error checking classification usage: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({
             'status': 'error',
             'message': str(e)
         }), 500
 
-@app.route('/admin/tags/<int:tag_id>/check-usage', methods=['GET']) 
+@app.route('/admin/tags/<int:tag_id>/check-usage', methods=['GET'])  
 def check_tag_usage(tag_id):
     try:
         tag = ProductClassificationTag.query.get_or_404(tag_id)
+        from sqlalchemy import cast, String
+        
         # Check if tag is used in any sheets
         is_in_use = Sheet.query.filter(
-            Sheet.data.cast(String).ilike(f'%{tag.name}%')
+            cast(Sheet.data, String).ilike(f'%{tag.name}%')
         ).first() is not None
+        
+        logger.info(f"Checking usage for tag {tag.name} (ID: {tag_id}): {is_in_use}")
         
         return jsonify({
             'isInUse': is_in_use
         })
     except Exception as e:
         logger.error(f"Error checking tag usage: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({
             'status': 'error',
             'message': str(e)
@@ -1115,21 +1117,12 @@ def check_tag_usage(tag_id):
 @app.route('/admin/tags/<int:tag_id>', methods=['DELETE'])
 def delete_tag(tag_id):
     try:
+        logger.info(f"Attempting to delete tag {tag_id}")
         tag = ProductClassificationTag.query.get_or_404(tag_id)
         
-        # Check if tag is being used in any sheets
-        sheet_usage = Sheet.query.filter(
-            Sheet.data.cast(String).like(f'%{tag.name}%')
-        ).first()
-        
-        if sheet_usage:
-            return jsonify({
-                'status': 'error',
-                'message': 'لا يمكن حذف العلامة لأنها مستخدمة في بعض الجداول'
-            }), 400
-
         db.session.delete(tag)
         db.session.commit()
+        logger.info(f"Successfully deleted tag {tag_id}")
 
         return jsonify({
             'status': 'success',
@@ -1139,6 +1132,7 @@ def delete_tag(tag_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error deleting tag: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({
             'status': 'error',
             'message': 'فشل في حذف العلامة'

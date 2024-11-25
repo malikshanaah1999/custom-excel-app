@@ -77,32 +77,30 @@ const TagsList = ({
     }
 };
 
-  const handleDelete = async (id) => {
-    try {
-      // First check if tag is being used
-      const checkResponse = await fetch(`${API_BASE_URL}/admin/tags/${id}/check-usage`);
-      const checkData = await checkResponse.json();
-      
-      if (checkData.isInUse) {
-        showNotification('لا يمكن حذف العلامة لأنها مستخدمة في بعض الجداول', 'error');
-        return;
-      }
+const handleDelete = async (id) => {
+  try {
+      console.log('Deleting tag:', id);
 
       const response = await fetch(`${API_BASE_URL}/admin/tags/${id}`, {
-        method: 'DELETE'
+          method: 'DELETE',
+          headers: {
+              'Content-Type': 'application/json'
+          }
       });
-      
-      if (response.ok) {
-        showNotification('تم حذف العلامة بنجاح', 'success');
-        setTagToDelete(null);
-        onRefresh(); // Refresh tags list
-      } else {
-        throw new Error('Failed to delete tag');
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete tag');
       }
-    } catch (error) {
+
+      showNotification('تم حذف العلامة بنجاح', 'success');
+      setTagToDelete(null);
+      onRefresh(); // Refresh the list
+  } catch (error) {
+      console.error('Delete error:', error);
       showNotification('فشل في حذف العلامة', 'error');
-    }
-  };
+  }
+};
 
   const validateTagName = async (name) => {
     try {
