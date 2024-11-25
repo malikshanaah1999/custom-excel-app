@@ -408,6 +408,7 @@ const getColumnType = useCallback((index) => {
     
     // Update afterChange to handle category changes
     const afterChange = useCallback(function (changes, source) {
+        debugger;
         if (!changes || source === 'loadData') return;
     
         // Store reference to Handsontable instance
@@ -566,7 +567,7 @@ const getColumnType = useCallback((index) => {
                             console.log('Clearing التصنيف value');
                             setData(prevData => {
                                 const updatedData = [...prevData];
-                                updatedData[row][4] = '';
+                                updatedData[row][4] = newValue;
                                 return updatedData;
                             });
                         }
@@ -585,7 +586,7 @@ const getColumnType = useCallback((index) => {
                     console.log('Clearing علامات تصنيف المنتج value');
                     setData(prevData => {
                         const updatedData = [...prevData];
-                        updatedData[row][5] = '';
+                        updatedData[row][5] = newValue;
                         return updatedData;
                     });
                 }
