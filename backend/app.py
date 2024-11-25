@@ -1004,7 +1004,114 @@ def update_tag(tag_id):
             'status': 'error',
             'message': 'فشل في تحديث العلامة'
         }), 500
+@app.route('/admin/classifications/validate', methods=['POST'])
+def validate_classification():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        category_id = data.get('categoryId')
+        exclude_id = data.get('excludeId')
+        
+        # Check if name exists
+        if not name:
+            return jsonify({
+                'isValid': False,
+                'message': 'Name is required'
+            })
 
+        # Build query with category filter
+        query = Classification.query.filter_by(
+            name=name,
+            category_id=category_id
+        )
+        
+        # If editing, exclude current classification
+        if exclude_id:
+            query = query.filter(Classification.id != exclude_id)
+            
+        existing = query.first()
+        
+        return jsonify({
+            'isValid': existing is None
+        })
+    except Exception as e:
+        logger.error(f"Error validating classification: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/tags/validate', methods=['POST'])
+def validate_tag():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        category_id = data.get('categoryId')
+        exclude_id = data.get('excludeId')
+        
+        if not name:
+            return jsonify({
+                'isValid': False,
+                'message': 'Name is required'
+            })
+
+        query = ProductClassificationTag.query.filter_by(
+            name=name,
+            category_id=category_id  
+        )
+        
+        if exclude_id:
+            query = query.filter(ProductClassificationTag.id != exclude_id)
+            
+        existing = query.first()
+        
+        return jsonify({
+            'isValid': existing is None
+        })
+    except Exception as e:
+        logger.error(f"Error validating tag: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/classifications/<int:classification_id>/check-usage', methods=['GET'])
+def check_classification_usage(classification_id):
+    try:
+        classification = Classification.query.get_or_404(classification_id)
+        # Check if classification is used in any sheets
+        is_in_use = Sheet.query.filter(
+            Sheet.data.cast(String).ilike(f'%{classification.name}%')
+        ).first() is not None
+        
+        return jsonify({
+            'isInUse': is_in_use
+        })
+    except Exception as e:
+        logger.error(f"Error checking classification usage: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/admin/tags/<int:tag_id>/check-usage', methods=['GET']) 
+def check_tag_usage(tag_id):
+    try:
+        tag = ProductClassificationTag.query.get_or_404(tag_id)
+        # Check if tag is used in any sheets
+        is_in_use = Sheet.query.filter(
+            Sheet.data.cast(String).ilike(f'%{tag.name}%')
+        ).first() is not None
+        
+        return jsonify({
+            'isInUse': is_in_use
+        })
+    except Exception as e:
+        logger.error(f"Error checking tag usage: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 @app.route('/admin/tags/<int:tag_id>', methods=['DELETE'])
 def delete_tag(tag_id):
     try:

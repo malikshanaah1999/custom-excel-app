@@ -19,43 +19,61 @@ const ClassificationsList = ({
 
   const handleAdd = async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/categories/${categoryId}/classifications`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (response.ok) {
+        // First validate
+        const isValid = await validateClassificationName(data.name);
+        if (!isValid) {
+            showNotification('التصنيف موجود مسبقاً', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/categories/${categoryId}/classifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to add classification');
+        }
+
         showNotification('تم إضافة التصنيف بنجاح', 'success');
         setShowAddModal(false);
-        onRefresh(); // Refresh the list
-      } else {
-        throw new Error('Failed to add classification');
-      }
+        onRefresh();
     } catch (error) {
-      showNotification('فشل في إضافة التصنيف', 'error');
+        console.error('Add error:', error);
+        showNotification('فشل في إضافة التصنيف', 'error');
     }
-  };
+};
 
   const handleEdit = async (id, data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/classifications/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (response.ok) {
-        showNotification('تم تحديث التصنيف بنجاح', 'success');
-        setEditingClassification(null);
-        onRefresh(); // Refresh the list
-      } else {
-        throw new Error('Failed to update classification');
-      }
+        // First validate
+        const isValid = await validateClassificationName(data.name);
+        if (!isValid) {
+            showNotification('التصنيف موجود مسبقاً', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/classifications/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            showNotification('تم تحديث التصنيف بنجاح', 'success');
+            setEditingClassification(null);
+            onRefresh();
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update classification');
+        }
     } catch (error) {
-      showNotification('فشل في تحديث التصنيف', 'error');
+        console.error('Edit error:', error);
+        showNotification('فشل في تحديث التصنيف', 'error');
     }
-  };
+};
 
   const handleDelete = async (id) => {
     try {
@@ -83,26 +101,31 @@ const ClassificationsList = ({
       showNotification('فشل في حذف التصنيف', 'error');
     }
   };
-
   const validateClassificationName = async (name) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/classifications/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          categoryId,
-          excludeId: editingClassification?.id
-        })
-      });
-      
-      const data = await response.json();
-      return data.isValid;
+        const response = await fetch(`${API_BASE_URL}/admin/classifications/validate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                categoryId,
+                excludeId: editingClassification?.id
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Validation response not OK:', response.status);
+            return false;
+        }
+
+        const data = await response.json();
+        console.log('Validation response:', data); // Debug log
+        return data.isValid;
     } catch (error) {
-      console.error('Validation error:', error);
-      return false;
+        console.error('Validation error:', error);
+        return false;
     }
-  };
+};
 
   return (
     <div className={styles.container}>

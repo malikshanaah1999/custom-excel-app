@@ -21,43 +21,61 @@ const TagsList = ({
 
   const handleAdd = async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/categories/${categoryId}/tags`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (response.ok) {
+        // First validate
+        const isValid = await validateTagName(data.name);
+        if (!isValid) {
+            showNotification('علامة التصنيف موجود مسبقاً', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/categories/${categoryId}/tags`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to add tag');
+        }
+
         showNotification('تم إضافة العلامة بنجاح', 'success');
         setShowAddModal(false);
-        onRefresh(); // Refresh tags list
-      } else {
-        throw new Error('Failed to add tag');
-      }
+        onRefresh();
     } catch (error) {
-      showNotification('فشل في إضافة العلامة', 'error');
+        console.error('Add error:', error);
+        showNotification('فشل في إضافة العلامة', 'error');
     }
-  };
+};
 
   const handleEdit = async (id, data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/tags/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (response.ok) {
-        showNotification('تم تحديث العلامة بنجاح', 'success');
-        setEditingTag(null);
-        onRefresh(); // Refresh tags list
-      } else {
-        throw new Error('Failed to update tag');
-      }
+        // First validate
+        const isValid = await validateTagName(data.name);
+        if (!isValid) {
+            showNotification('علامة التصنيف موجود مسبقاً', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/tags/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            showNotification('تم تحديث العلامة بنجاح', 'success');
+            setEditingTag(null);
+            onRefresh();
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update tag');
+        }
     } catch (error) {
-      showNotification('فشل في تحديث العلامة', 'error');
+        console.error('Edit error:', error);
+        showNotification('فشل في تحديث العلامة', 'error');
     }
-  };
+};
 
   const handleDelete = async (id) => {
     try {
@@ -88,23 +106,29 @@ const TagsList = ({
 
   const validateTagName = async (name) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/tags/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          categoryId,
-          excludeId: editingTag?.id
-        })
-      });
-      
-      const data = await response.json();
-      return data.isValid;
+        const response = await fetch(`${API_BASE_URL}/admin/tags/validate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                categoryId,
+                excludeId: editingTag?.id
+            })
+        });
+
+        if (!response.ok) {
+            console.error('Validation response not OK:', response.status);
+            return false;
+        }
+        
+        const data = await response.json();
+        console.log('Validation response:', data); // Debug log
+        return data.isValid;
     } catch (error) {
-      console.error('Validation error:', error);
-      return false;
+        console.error('Validation error:', error);
+        return false;
     }
-  };
+};
 
   return (
     <div className={styles.container}>
