@@ -599,19 +599,9 @@ const getColumnType = useCallback((index) => {
             ...col,
             type: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
             editor: [3, 4, 5, 7, 9].includes(index) ? 'dropdown' : 'text',
-            source: function(query, callback) {
-                const row = this.row;
-                if (index === 4) { // For التصنيف
-                    const categoryValue = data[row]?.[3];
-                    callback(categoryValue ? (classificationOptions[categoryValue] || []) : []);
-                } else if (index === 5) { // For علامات تصنيف المنتج
-                    const categoryValue = data[row]?.[3];
-                    callback(categoryValue ? (tagOptions[categoryValue] || []) : []);
-                } else {
-                    callback(getColumnOptions(index));
-                }
-            },
-            renderer: Handsontable.renderers.AutocompleteRenderer
+            ...getColumnSettings(index),
+            ...([3, 4, 5, 7, 9].includes(index) ? 
+                { renderer: Handsontable.renderers.AutocompleteRenderer } : {}),
         })),
         
         
