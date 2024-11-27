@@ -1,194 +1,133 @@
+/* src/components/Spreadsheet/pages/AdminPanel/MeasurementsList/MeasurementsList.module.css */
 .container {
-  padding: 20px;
-  background-color: #ffffff;
-  border: 2px solid #3182ce; /* Added border for better visual separation */
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
-  transition: box-shadow 0.3s ease;
-}
-
-.container:hover {
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Elevation effect on hover */
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.title {
-  font-size: 20px; /* Increased font size for better readability */
-  font-weight: 600; /* Added weight for emphasis */
-  color: #2d3748;
-  margin: 0;
-}
-
-.addButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #2e7d32;
-  color: white;
-  padding: 10px 20px; /* Slightly larger padding for better touch targets */
-  border-radius: 8px; /* Larger radius for a softer look */
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Added subtle shadow */
-}
-
-.addButton:hover {
-  background-color: #1b5e20;
-  transform: translateY(-2px); /* Slight elevation on hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
-}
-
-.listContainer {
-  background-color: white;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  padding: 16px;
-  margin-top: 20px; /* Added spacing between header and list */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Added subtle shadow */
-}
-
-.emptyState {
-  padding: 40px;
-  text-align: center;
-  font-size: 16px; /* Slightly larger font for better visibility */
-  color: #718096;
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Added spacing between list items */
-}
-
-.item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background-color: #f7fafc; /* Subtle background for each item */
-  border-radius: 6px;
-  border: 1px solid #e2e8f0; /* Border for better separation */
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.item:hover {
-  background-color: #ebf8ff; /* Highlight effect on hover */
-  transform: scale(1.02); /* Slight scaling for a dynamic feel */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Shadow for elevation */
-}
-
-.itemName {
-  font-size: 16px; /* Increased font size for readability */
-  color: #2d3748;
-  font-weight: 500; /* Added weight for emphasis */
-}
-
-.actions {
-  display: flex;
-  gap: 10px; /* Increased gap between action buttons */
-  opacity: 0; /* Hidden by default */
-  transition: opacity 0.2s ease;
-}
-
-.item:hover .actions {
-  opacity: 1; /* Fade in on hover */
-}
-
-.editButton,
-.deleteButton {
-  padding: 8px; /* Larger touch target */
-  border: none;
-  border-radius: 6px; /* Rounded corners for a modern look */
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for buttons */
-}
-
-.editButton {
-  background-color: #ebf8ff;
-  color: #3182ce;
-}
-
-.editButton:hover {
-  background-color: #bee3f8;
-  transform: translateY(-2px); /* Slight elevation on hover */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
-}
-
-.deleteButton {
-  background-color: #fff5f5;
-  color: #e53e3e;
-}
-
-.deleteButton:hover {
-  background-color: #fed7d7;
-  transform: translateY(-2px); /* Slight elevation on hover */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
-}
-
-/* Loading Animation */
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
+    padding: 20px;
   }
-  50% {
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .title {
+    font-size: 18px;
+    color: #2d3748;
+    margin: 0;
+  }
+  
+  .addButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #2E7D32;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .addButton:hover {
+    background-color: #1B5E20;
+  }
+  
+  .listContainer {
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .emptyState {
+    padding: 40px;
+    text-align: center;
+    color: #718096;
+  }
+  
+  .list {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+  }
+  
+  .item:last-child {
+    border-bottom: none;
+  }
+  
+  .item:hover {
+    background-color: #f7fafc;
+  }
+  
+  .itemName {
+    font-size: 14px;
+    color: #2d3748;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .item:hover .actions {
     opacity: 1;
   }
-  100% {
-    opacity: 0.6;
+  
+  .editButton,
+  .deleteButton {
+    padding: 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-}
-
-.loading {
-  animation: pulse 1.5s infinite;
-  text-align: center;
-  color: #718096;
-}
-
-/* Responsive Enhancements */
-@media (max-width: 768px) {
-  .container {
-    padding: 16px;
+  
+  .editButton {
+    background-color: #ebf8ff;
+    color: #3182ce;
   }
-
-  .addButton {
-    padding: 8px 16px;
+  
+  .editButton:hover {
+    background-color: #bee3f8;
+    transform: translateY(-1px);
   }
-
-  .item {
-    padding: 10px 12px;
+  
+  .deleteButton {
+    background-color: #fff5f5;
+    color: #e53e3e;
   }
-
-  .itemName {
-    font-size: 14px;
+  
+  .deleteButton:hover {
+    background-color: #fed7d7;
+    transform: translateY(-1px);
   }
-
-  .actions {
-    gap: 8px;
+  
+  /* Loading Animation */
+  @keyframes pulse {
+    0% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.6;
+    }
   }
-}
-
-@media (max-width: 480px) {
-  .title {
-    font-size: 16px;
+  
+  .loading {
+    animation: pulse 1.5s infinite;
   }
-
-  .addButton {
-    font-size: 14px;
-    padding: 6px 12px;
-  }
-
-  .itemName {
-    font-size: 12px;
-  }
-}
