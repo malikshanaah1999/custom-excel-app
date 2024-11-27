@@ -1,8 +1,10 @@
+/* AdminPanel.module.css */
+
+/* Global Enhancements */
 .adminPage {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header {
@@ -10,70 +12,44 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  background-color: #f0f4f8; /* Soft background for the header */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
-  border-bottom: 2px solid #e2e8f0; /* Bottom border for header separation */
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 15px; /* Increased spacing between elements */
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #ddd;
 }
 
 .title {
-  font-size: 28px; /* Larger font size for emphasis */
-  font-weight: 600; /* Stronger emphasis for the title */
-  color: #2d3748;
-  margin: 0 auto; /* Centered title */
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 auto;
   text-align: center;
 }
 
 .globalOptions {
   display: flex;
-  gap: 12px; /* Consistent spacing between global buttons */
+  gap: 10px;
 }
 
 .globalButton {
-  padding: 12px 18px; /* Increased padding for better click targets */
-  font-size: 16px; /* Larger font size for readability */
+  padding: 10px 15px;
+  font-size: 14px;
   cursor: pointer;
   background-color: #ffffff;
-  border: 1px solid #e2e8f0; /* Subtle border for buttons */
-  border-radius: 6px; /* Softer corners for modern look */
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: all 0.3s;
 }
 
 .globalButton:hover {
-  background-color: #edf2f7; /* Slight highlight on hover */
-  transform: translateY(-2px); /* Lift effect on hover */
+  background-color: #e6e6e6;
 }
 
 .globalButton.active {
-  background-color: #3182ce; /* Blue for active state */
+  background-color: #007bff;
   color: #ffffff;
-  border-color: #3182ce;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); /* Elevated shadow for active state */
-}
-
-.backButton {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Increased spacing between icon and text */
-  padding: 10px 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  color: #3182ce; /* Blue for actionable elements */
-  border-radius: 6px; /* Rounded corners */
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.backButton:hover {
-  background-color: #ebf8ff; /* Highlight on hover */
-  transform: translateY(-1px); /* Slight lift effect */
+  border-color: #007bff;
 }
 
 .content {
@@ -81,87 +57,67 @@
   display: flex;
   gap: 20px;
   padding: 20px;
-  overflow-y: auto;
-  background-color: #f9f9f9; /* Light background for content */
-}
-
-.mainContent {
-  display: flex;
-  gap: 25px;
 }
 
 .leftColumn {
   flex: 2;
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Card-style shadow */
-  border: 1px solid #e2e8f0; /* Subtle border */
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
 }
 
 .rightColumn {
   flex: 1;
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  min-width: 300px; /* Ensures proper display even on smaller screens */
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
 }
 
 .tabs {
   display: flex;
-  gap: 15px;
+  justify-content: center;
+  gap: 10px;
   margin-bottom: 20px;
-  border-bottom: 2px solid #e2e8f0; /* Bottom border for separation */
 }
 
 .tab {
-  padding: 12px 20px;
-  cursor: pointer;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
   background-color: #ffffff;
-  border: 1px solid #e2e8f0; /* Subtle border for inactive state */
-  border-radius: 6px 6px 0 0; /* Rounded top corners */
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
 .tab:hover {
-  background-color: #edf2f7; /* Light hover effect */
+  background-color: #e6e6e6;
 }
 
 .tab.active {
-  background-color: #3182ce; /* Blue for active tab */
+  background-color: #007bff;
   color: #ffffff;
-  border-color: #3182ce;
-  border-bottom: none; /* Seamless connection to content */
+  border-color: #007bff;
 }
 
 .tabContent {
-  flex: 1;
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 0 0 6px 6px; /* Rounded bottom corners */
-  border: 1px solid #e2e8f0; /* Border to match tab connection */
-}
-
-.loading,
-.noData {
-  text-align: center;
-  margin-top: 50px;
-  color: #4a5568; /* Neutral color for loading text */
-  font-size: 16px;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #f9f9f9;
 }
 
 .spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #3182ce;
+  border-top: 4px solid #007bff;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  animation: spin 1.5s linear infinite;
-  margin: 0 auto 10px;
+  width: 30px;
+  height: 30px;
+  animation: spin 1.2s linear infinite;
+  margin: 0 auto;
 }
 
 @keyframes spin {
@@ -170,47 +126,5 @@
   }
   100% {
     transform: rotate(360deg);
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .globalOptions {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .content {
-    flex-direction: column;
-  }
-
-  .mainContent {
-    flex-direction: column;
-  }
-
-  .rightColumn {
-    min-width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .title {
-    font-size: 20px;
-  }
-
-  .globalButton {
-    font-size: 14px;
-    padding: 10px 12px;
-  }
-
-  .tab {
-    font-size: 14px;
-    padding: 10px 12px;
   }
 }
